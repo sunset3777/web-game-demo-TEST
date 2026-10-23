@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "sim": "node scripts/simulate.js",
-    "balance": "node scripts/balance.js"
+    "balance": "node scripts/balance.js",
+    "check:behavior": "node scripts/check-behavior.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",
