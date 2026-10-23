@@ -5,7 +5,14 @@ import { marks } from "../src/data/marks.js";
 import { breakthrough } from "../src/systems/breakthrough.js";
 
 const runs = Number(process.argv[2] || 20);
+if (!Number.isFinite(runs) || runs <= 0) {
+  console.error(`局數必須是大於 0 的數字（收到：${process.argv[2]}）`);
+  process.exit(1);
+}
+const MAX_TURNS = 3000;
 const results = [];
+let cappedRuns = 0;
+let finishedRuns = 0;
 for (let r = 0; r < runs; r++) {
   const G = createGame(() => {});
   G.newLife("測試" + r);
@@ -21,7 +28,7 @@ for (let r = 0; r < runs; r++) {
   G.takeTest();
   G.chooseAwakening(0);
   let guard = 0;
-  while (G.s && G.s.alive && guard++ < 3000) {
+  while (G.s && G.s.alive && guard++ < MAX_TURNS) {
     const s = G.s;
     if (s.current) {
       if (s.current.type === "deviation") G.deviate("散功重修"); else G.pick(0);
@@ -41,9 +48,18 @@ for (let r = 0; r < runs; r++) {
     G.doAction(guard % 5 === 0 ? "遊歷" : "吐納", true);
   }
   const s = G.s;
+  if (s && s.alive) cappedRuns++; else finishedRuns++;
   results.push({ mark: s.mark + (s.comboMark ? "+" + s.comboMark : ""), root: s.root.label, end: state.stageName(s), age: Math.floor(state.age(s)), cause: s.cause, turns: s.turns, fails: s.stats.breakFails, events: s.eventsDone.length, notes: s.notes.length });
 }
 console.table(results);
 const by = {};
 results.forEach(x => { const k = x.end.slice(0, 2); by[k] = (by[k] || 0) + 1; });
 console.log("最終境界分布：", by, "平均回合：", Math.round(results.reduce((a, x) => a + x.turns, 0) / runs));
+if (finishedRuns === 0) {
+  console.error("錯誤：沒有任何一局跑完");
+  process.exit(1);
+}
+if (cappedRuns > 0) {
+  console.error(`${cappedRuns} 局達到 ${MAX_TURNS} 回合上限仍未結束`);
+  process.exit(1);
+}

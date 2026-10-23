@@ -1,5 +1,6 @@
 import { numbers } from "../data/numbers.js";
 import { state } from "../systems/state.js";
+import { cultivation } from "../systems/cultivation.js";
 import BreakthroughPanel from "./BreakthroughPanel.jsx";
 import MarketPanel from "./MarketPanel.jsx";
 
@@ -21,7 +22,7 @@ export default function ActionBar({ game }) {
           <div className="act" key={a}>
             <button className="act-main" onClick={() => game.doAction(a, L > 1)}>
               <span className="act-name">{a}</span>
-              <span className="act-sub">{sub}</span>
+              <span className={"act-sub" + (cultivation.omen(s, a) ? " omen-warn" : "")}>{cultivation.omen(s, a) || sub}</span>
             </button>
             {L > 1 && <button className="act-short" title="只坐一季便起身" onClick={() => game.doAction(a, false)}>先一季</button>}
           </div>

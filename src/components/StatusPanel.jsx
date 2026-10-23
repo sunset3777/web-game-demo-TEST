@@ -2,6 +2,9 @@ import { numbers } from "../data/numbers.js";
 import { state } from "../systems/state.js";
 import { breakthrough } from "../systems/breakthrough.js";
 import Bar from "./Bar.jsx";
+import { growth } from "../systems/growth.js";
+import { routes } from "../systems/routes.js";
+import { routesData } from "../data/routes.js";
 
 const pct = x => (x * 100).toFixed(1) + "%";
 
@@ -15,7 +18,7 @@ export default function StatusPanel({ game }) {
     <aside className="status card">
       <div className="who">
         <div className="who-name">{s.name}</div>
-        <div className="muted">{s.root.label}・人稱「{s.mark}」{s.comboMark ? `「${s.comboMark}」` : ""}</div>
+        <div className="muted">{breakthrough.rootTitle(s)}{s.route && s.route !== "氣修" ? `・${routesData.routes[s.route].path}` : ""}・人稱「{routes.title(s)}」{s.comboMark ? `「${s.comboMark}」` : ""}</div>
       </div>
       <div className="realm">
         {state.stageName(s)}
@@ -24,17 +27,17 @@ export default function StatusPanel({ game }) {
       </div>
       <dl className="stats">
         <dt>年歲</dt>
-        <dd>{Math.floor(age)} 歲・{state.season(s)}　<span className="muted">壽元 {maxAge}</span>
+        <dd>{Math.floor(age)} 歲・{state.season(s)}　{game.testMode && <span className="muted test">壽元 {maxAge}</span>}
           <Bar value={age} max={maxAge} tone={age / maxAge > 0.85 ? "danger" : ""} /></dd>
         <dt>{neck ? "感悟" : "修為"}</dt>
         <dd>{neck
-          ? <>{Math.round(s.insight)}</>
-          : <>{Math.round(s.xiu)} / {req}<Bar value={s.xiu} max={req} /></>}</dd>
+          ? <>{game.testMode ? Math.round(s.insight) : <span className="muted">心有所積</span>}</>
+          : <>{game.testMode && <span className="test">{Math.round(s.xiu)} / {req}</span>}<Bar value={s.xiu} max={req} /></>}</dd>
         <dt>心魔</dt>
-        <dd>{Math.round(s.demon)}{s.demon > numbers.demon.gate && <span className="pill warn">高於 {numbers.demon.gate}</span>}
+        <dd>{game.testMode && <span className="test">{Math.round(s.demon)}</span>}{s.demon > numbers.demon.gate && <span className="pill warn">{game.testMode ? `高於 ${numbers.demon.gate}` : "心神不寧"}</span>}
           <Bar value={s.demon} max={numbers.demon.max} tone="demon" /></dd>
         <dt>道傷</dt>
-        <dd>{s.scars ? "●".repeat(s.scars) : "無"}{s.injury > 0 && <span className="pill warn">受傷 {s.injury} 季</span>}</dd>
+        <dd>{s.scars ? "●".repeat(s.scars) : "無"}{s.injury > 0 && <span className="pill warn">{game.testMode ? `受傷 ${s.injury} 季` : "帶傷"}</span>}</dd>
         <dt>靈石</dt><dd className="num">{s.stones}</dd>
         <dt>主修</dt>
         <dd><select aria-label="主修功法" value={s.technique} onChange={e => game.setTechnique(e.target.value)}>
@@ -46,8 +49,8 @@ export default function StatusPanel({ game }) {
           : <span className="muted">尚無</span>}</dd>
       </dl>
       <div className="chips"><div className="chips-label">神通與體悟</div>
-        {s.abilities.concat(s.growth).map((a, i) => <span key={i} className="chip">{a}</span>)}
-        {s.constitutions.map((c, i) => <span key={"c" + i} className="chip gold">{c.name}</span>)}
+        {s.abilities.map((a, i) => <span key={"a" + i} className="chip">{a}</span>)}
+        {growth.list(s).map(g => <span key={g.name} className="chip">{g.label}</span>)}
       </div>
       <div className="chips"><div className="chips-label">素材</div>
         {mats.length ? mats.map(([k, v]) => <span key={k} className="chip">{k} ×{v}</span>) : <span className="muted small">尚無</span>}

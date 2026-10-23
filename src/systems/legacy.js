@@ -1,6 +1,7 @@
 // 傳承系統：一生結束、一生評價、選筆記頁傳給下一世、前人遺府取得
 import { numbers } from "../data/numbers.js";
 import { state } from "./state.js";
+import { save } from "./save.js";
 
 export const legacy = {
   die(s, cause) {
@@ -22,22 +23,22 @@ export const legacy = {
   // 選定要傳下的筆記頁，寫入傳承檔
   bequeath(s, noteIndexes) {
     const st = state, N = numbers;
-    const L = st.loadLegacy();
+    const L = save.loadLegacy();
     const pages = noteIndexes.slice(0, N.legacy.maxPages).map(i => s.notes[i]).filter(Boolean)
       .map(n => ({ text: n.text, kind: n.kind, realm: n.realm, from: s.name }));
     L.lives.push({ name: s.name, title: this.title(s), realm: st.stageName(s), age: Math.floor(st.age(s)), cause: s.cause, root: s.root ? s.root.label : "" });
     L.pending = (L.pending || []).concat(pages);
-    st.saveLegacy(L);
-    st.clear();
+    save.saveLegacy(L);
+    save.clear();
     return pages.length;
   },
 
   // 前人遺府：取走所有待取的筆記頁，每頁化為感悟
   take(s) {
     const st = state, N = numbers;
-    const L = st.loadLegacy();
+    const L = save.loadLegacy();
     const pages = L.pending || [];
-    L.pending = []; st.saveLegacy(L);
+    L.pending = []; save.saveLegacy(L);
     s.legacyAvailable = false;
     const bonus = pages.length * N.legacy.pageInsight;
     if (bonus) {

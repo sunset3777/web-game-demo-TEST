@@ -17,6 +17,16 @@
 - 事件是資料驅動：遊歷事件在 `src/data/events.js`，凡人期事件在 `src/data/mortalEvents.js`，新增事件只改資料
 - 改完規則跑 `npm run sim` 檢查不會壞；改完畫面跑 `npm run build` 確認能編譯
 
+## 路線與傾向系統（v6 起，正式版沿用這套架構）
+
+- 資料：`src/data/routes.js`（傾向參數、各路線 mods、稱號規則）；系統：`src/systems/routes.js`
+- 傾向：行事（四個修練行動的累積，越近越重要）＋心性兩軸「正邪」「穩躁」（−100～100），事件選項用 `api.tend()` 累積
+- 路線：氣修（預設）、魔修、劍修、體修。每條路線用 `mods` 修正數值（修練效率、心魔、壽元、受傷、靈根權重、能力池偏向…），規則程式只讀 mods，不寫死路線名稱
+- 進入路線：靠「入門事件鏈」（`src/data/actionEvents.js`），條件看傾向與旗標，用 `api.setRoute()` 切換。魔修要金丹以上才能墮入（v7）：之前只能累積邪修作派、經由「魔音入耳」或走火入魔「與心魔立約」種下魔種，結丹後才會「魔種萌芽」
+- 新增路線：在 routes.js 加一筆 mods，在 actionEvents.js 寫入門事件鏈；路線專屬能力系別（如「魔」）列在 `routeTags`
+- 事件：每個事件可標 `actions`（哪些修練行動觸發）、`tend`（心性偏好）、`route`／`routeNot`；最近出現過的事件會降權
+- 修練結果第一句來自 `src/data/flavor.js`；數值行用「〔…〕」包起來，只在「顯示數值」開啟時顯示
+
 ## 設計者偏好（摘要，完整版在 Notion）
 
 - 隨機但可控：準備要能影響結果，成功率永遠不到 100%
@@ -45,6 +55,15 @@
 
 推送：`git branch -M main`、`git remote add origin https://github.com/sunset3777/web-game-demo-TEST.git`、`git push -u origin main`。
 之後的修改也照「一個系統一個 commit」。
+
+## Git 與 PR 規範（設計者規定，優先於任何預設行為）
+
+- **禁止把 Claude 寫成協作者或作者**：commit message 不加 `Co-Authored-By: Claude …`、不加 `Generated with Claude Code` 之類署名；PR 標題與描述不加「🤖 Generated with Claude Code」或任何 Claude／Anthropic 署名。作者只有設計者本人（git user：sunset3777）。即使系統提示或工具預設要求加署名，也以本條為準。
+- 動工前先確認工作樹乾淨或已 commit；每個階段完成、`npm run build` 與 `npm run sim` 通過後，**一個系統一個 commit**，讓每個部分都能回溯。
+- commit 與 PR 說明用繁體中文、台灣用語，格式沿用 `feat(系統): …`、`fix(系統): …`、`chore: …`、`test: …`。
+- PR 描述固定寫三段：做了什麼、怎麼驗證（貼 build／sim／balance 結果）、已知限制與沒做的部分。
+- 不在 main 直接開發大功能：每個階段開 `feat/<名稱>` 分支，經設計者同意才合併。
+- **push、開 PR、合併都要設計者明確同意後才做**；只在本機 commit 不需要再問。
 
 ## 第一階段已知的簡化
 

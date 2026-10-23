@@ -1,14 +1,15 @@
 // 遊戲流程控制：串接各系統。React 元件只呼叫這裡的方法，不直接改狀態。
 import { numbers } from "../data/numbers.js";
-import { layoutData } from "../data/layout.js";
 import { abilities } from "../data/abilities.js";
-import { eventsData } from "../data/events.js";
 import { util, state } from "../systems/state.js";
 import { cultivation } from "../systems/cultivation.js";
 import { breakthrough } from "../systems/breakthrough.js";
 import { events } from "../systems/events.js";
 import { opening } from "../systems/opening.js";
 import { legacy } from "../systems/legacy.js";
+import { growth } from "../systems/growth.js";
+import { save } from "../systems/save.js";
+import { travel } from "../systems/travel.js";
 
 // 踏入新境界時的感受（提醒視窗用）
 const REALM_FEEL = {
@@ -23,7 +24,7 @@ export function createGame(onChange) {
     testMode: readTestMode(),
     ui: { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] },
 
-    commit() { if (G.s && G.s.alive) state.save(G.s); onChange(); },
+    commit() { if (G.s && G.s.alive) save.save(G.s); onChange(); },
 
     toggleTestMode() {
       G.testMode = !G.testMode;
@@ -34,15 +35,15 @@ export function createGame(onChange) {
     // ---- 標題 ----
     newLife(name) {
       G.s = state.create((name || "").trim() || opening.randomName());
-      const L = state.loadLegacy();
+      const L = save.loadLegacy();
       G.s.legacyAvailable = (L.pending || []).length > 0;
       G.s.legacyLives = L.lives || [];
       G.ui = { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] };
       G.commit();
     },
-    continueLife() { G.s = state.load(); G.ui.panel = null; onChange(); },
+    continueLife() { G.s = save.load(); G.ui.panel = null; onChange(); },
     toTitle() { G.s = null; onChange(); },
-    wipe() { state.clear(); state.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
+    wipe() { save.clear(); save.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
 
     // ---- 開局 ----
     startMortal() { opening.startMortal(G.s, "full"); G.commit(); },
@@ -53,7 +54,7 @@ export function createGame(onChange) {
     chooseAwakening(i) {
       const s = G.s, opt = s.awakenOpts[i];
       opening.chooseAwakening(s, opt);
-      s.lastText = `你在入定幻境中看見：「${abilities.imagery[opt.tag]}」\n醒來時，你已悟得「${opt.ability}」，並以「${opt.technique}」為主修功法。修仙之路，從今日開始。`;
+      s.lastText = `你在入定幻境中看見：「${abilities.vision(opt.ability, opt.tag)}」\n醒來時，你已悟得「${opt.ability}」，並以「${opt.technique}」為主修功法。修仙之路，從今日開始。`;
       state.log(s, s.lastText);
       if (s.legacyAvailable) state.log(s, "（傳聞這附近藏著一座前人遺府，遊歷時或許能遇上。）");
       s.notice = {
@@ -69,20 +70,9 @@ export function createGame(onChange) {
       if (s.current) return;
       const res = cultivation.run(s, action, full);
       const lines = res.lines;
-      if (action === "遊歷" && s.alive) {
-        const b = state.bonuses(s);
-        let stones = 0; const mats = [];
-        const common = Object.keys(layoutData.materials).filter(m => !["雷擊木", "古劍殘片", "玄水青蓮"].includes(m));
-        for (let i = 0; i < res.seasons; i++) {
-          stones += util.rand(numbers.travel.stonesMin, numbers.travel.stonesMax);
-          if (util.chance(numbers.travel.materialChance + b.material)) mats.push(util.pick(common));
-        }
-        s.stones += stones;
-        mats.forEach(m => { s.materials[m] = (s.materials[m] || 0) + 1; });
-        lines.push(`沿途得靈石 ${stones}${mats.length ? "，採得" + mats.join("、") : ""}。`);
-      }
+      if (action === "遊歷" && s.alive) lines.push(travel.collectRoadsideLoot(s, res.seasons));
       if (s.alive && util.chance(res.eventChance)) {
-        const e = events.pick(s);
+        const e = events.pick(s, action);
         if (e) s.queue.push({ type: "event", id: e.id });
       }
       s.lastText = lines.join("\n");
@@ -105,7 +95,9 @@ export function createGame(onChange) {
         const time = L !== lenBefore
           ? `\n\n你也發覺時間過得不一樣了。從前一次入定不過${({ 1: "一季", 4: "一年", 6: "一年半" })[lenBefore] || "片刻"}，如今一閉眼，便是${span}。\n若有要緊的事得趕上，也可以只坐一季便起身，只是這樣難以把功夫修滿。`
           : "";
-        s.notice = { title: `踏入${r.id}`, text: feel + time };
+        const melt = growth.onRealmUp(s);
+        if (melt.length) lines.push(...melt);
+        s.notice = { title: `踏入${r.id}`, text: feel + (melt.length ? "\n\n" + melt.join("\n") : "") + time };
       }
       G.ui.bt.material = ""; G.ui.panel = null;
       s.lastText = lines.join("\n");
@@ -143,16 +135,14 @@ export function createGame(onChange) {
       const s = G.s, c = s.current;
       if (!c) return;
       if (c.type === "growth") {
-        const g = abilities.growth.find(x => x.name === c.options[i]);
-        s.growth.push(g.name);
-        s.lastText = `靈光一閃，你領悟了「${g.name}」：${g.desc}。`;
+        s.lastText = growth.pick(s, c.options[i]);
       } else if (c.type === "ability") {
         const a = abilities.pool.find(x => x.name === c.options[i]);
         s.abilities.push(a.name);
-        s.lastText = `你走向「${abilities.imagery[a.tag] || a.tag}」的幻象，悟得「${a.name}」：${a.desc}。`;
+        s.lastText = `你走向「${abilities.vision(a.name)}」的幻境，悟得「${a.name}」。\n〔${a.name}：${a.desc}〕`;
         state.note(s, `突破時於幻境中悟得${a.name}。`);
       } else if (c.type === "event") {
-        const e = eventsData.list.find(x => x.id === c.id);
+        const e = events.find(c.id);
         s.lastText = `【${e.title}】` + events.resolve(s, e, i);
       }
       state.log(s, s.lastText);
@@ -186,5 +176,5 @@ export function createGame(onChange) {
 }
 
 function readTestMode() {
-  try { return localStorage.getItem("xx-testmode") !== "0"; } catch (e) { return true; }
+  try { return localStorage.getItem("xx-testmode") === "1"; } catch (e) { return false; }
 }

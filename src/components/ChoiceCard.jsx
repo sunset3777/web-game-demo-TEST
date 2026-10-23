@@ -1,6 +1,6 @@
 import { abilities } from "../data/abilities.js";
-import { eventsData } from "../data/events.js";
 import { events } from "../systems/events.js";
+import { growth } from "../systems/growth.js";
 
 export default function ChoiceCard({ game }) {
   const s = game.s, c = s.current;
@@ -8,14 +8,12 @@ export default function ChoiceCard({ game }) {
     return (
       <div className="choice">
         <h3>靈光一閃</h3>
-        <p className="muted">小境界突破，心有所悟。選一個方向：</p>
+        <p className="muted">境界稍進，心有所感。你想往哪一處去體會？</p>
         <div className="options">
           {c.options.map((n, i) => {
-            const g = abilities.growth.find(x => x.name === n);
             return (
               <button key={i} className="option" onClick={() => game.pick(i)}>
-                <span className="opt-title">{n}<span className={`rar ${g.rarity}`}>{g.rarity}</span></span>
-                <span className="opt-sub">{g.desc}</span>
+                <span className="opt-title">{growth.title(n, growth.count(s, n))}</span>
               </button>
             );
           })}
@@ -33,7 +31,7 @@ export default function ChoiceCard({ game }) {
             const a = abilities.pool.find(x => x.name === n);
             return (
               <button key={i} className="option" onClick={() => game.pick(i)}>
-                <span className="opt-title">{abilities.imagery[a.tag] || a.tag}</span>
+                <span className="opt-title">{abilities.vision(a.name)}</span>
               </button>
             );
           })}
@@ -42,7 +40,7 @@ export default function ChoiceCard({ game }) {
     );
   }
   if (c.type === "event") {
-    const e = eventsData.list.find(x => x.id === c.id);
+    const e = events.find(c.id);
     return (
       <div className="choice">
         <h3>{e.title}</h3>
@@ -58,8 +56,8 @@ export default function ChoiceCard({ game }) {
   if (c.type === "deviation") {
     const opts = [
       ["散功重修", "退回上一個小境界，心魔歸零"],
-      ["硬撐", "保住境界，但重傷並折損兩成剩餘壽元"],
-      ["入魔", "demo 尚未開放魔修，這一世會結束"]
+      ["硬撐", "保住境界，但身受重傷，壽元也折損不少"],
+      ["入魔", s.route === "魔修" ? "放任魔性奔湧，可能就此被吞噬" : s.realmIndex < 2 ? "心魔退去，卻會在心底留下一樣東西" : "不再抵抗，墮入魔道，改修魔功"]
     ];
     return (
       <div className="choice danger-zone">
@@ -68,7 +66,7 @@ export default function ChoiceCard({ game }) {
         <div className="options">
           {opts.map(([k, sub]) => (
             <button key={k} className="option" onClick={() => game.deviate(k)}>
-              <span className="opt-title">{k === "入魔" ? "順勢入魔" : k}</span><span className="opt-sub">{sub}</span>
+              <span className="opt-title">{k === "入魔" ? (s.route === "魔修" ? "放任魔性" : s.realmIndex < 2 ? "與心魔立約" : "順勢入魔") : k}</span><span className="opt-sub">{sub}</span>
             </button>
           ))}
         </div>

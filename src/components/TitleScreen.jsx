@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { state } from "../systems/state.js";
 import { opening } from "../systems/opening.js";
+import { save as saveFile } from "../systems/save.js";
 
 export default function TitleScreen({ game }) {
   const [name, setName] = useState(() => opening.randomName());
-  const save = state.load();
-  const L = state.loadLegacy();
+  const save = saveFile.load();
+  const L = saveFile.loadLegacy();
   const lives = (L.lives || []).slice().reverse();
   return (
     <section className="card title-card">

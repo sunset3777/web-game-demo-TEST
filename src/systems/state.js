@@ -1,13 +1,17 @@
-// 遊戲狀態、亂數工具、加成彙整、存檔
+// 遊戲狀態、亂數工具、加成彙整（存檔讀寫與版本遷移在 save.js）
 import { numbers } from "../data/numbers.js";
 import { layoutData } from "../data/layout.js";
 import { abilities } from "../data/abilities.js";
 import { marks } from "../data/marks.js";
+import { routes } from "./routes.js";
+import { SAVE_VERSION } from "./save.js";
 
 export const util = {
   rand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); },
   chance(p) { return Math.random() < p; },
   pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; },
+  // Fisher-Yates 洗牌（回傳新陣列，不改原陣列）
+  shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; },
   weighted(items, weightOf) {
     const total = items.reduce((t, it) => t + Math.max(0, weightOf(it)), 0);
     if (total <= 0) return null;
@@ -29,12 +33,11 @@ export const util = {
 };
 
 export const state = {
-  SAVE_KEY: "xiuxian-demo-save-v1",
-  LEGACY_KEY: "xiuxian-demo-legacy-v1",
-
+  // 新增欄位時在這裡給預設值，舊存檔載入時由 save.migrate() 自動補齊（見 save.js）
   create(name) {
     const N = numbers;
     return {
+      v: SAVE_VERSION,
       name, alive: true, phase: "opening",
       startAge: 0, seasons: 0,                // seasons＝靈根測試後經過的季數
       seasonIdx: 0,                           // 0 春 1 夏 2 秋 3 冬
@@ -47,6 +50,7 @@ export const state = {
       abilities: [], growth: [], constitutions: [],
       envs: layoutData.startEnvironments.slice(),
       karma: [], notes: [], flags: {}, eventsDone: [],
+      route: "氣修", tend: { act: { 吐納: 0, 周天: 0, 閉關: 0, 遊歷: 0 }, 正邪: 0, 穩躁: 0 }, recentEvents: [],
       legacyAvailable: false,
       queue: [], current: null,              // 待處理的選擇（成長池、事件……）
       log: [], lastText: "",
@@ -64,7 +68,14 @@ export const state = {
   stageReq(s) { return this.realm(s).reqs[s.stageIndex]; },
   isLastStage(s) { return s.stageIndex === this.realm(s).stages.length - 1; },
   inBottleneck(s) { return this.isLastStage(s) && !!this.realm(s).major && s.xiu >= this.stageReq(s); },
-  maxAge(s) { return this.realm(s).life + this.bonuses(s).life; },
+  maxAge(s) { return Math.round(this.realm(s).life * routes.lifeMult(s)) + this.bonuses(s).life; },
+  // 氣血衰退：回傳 { ratio, cult, capCut }
+  aging(s) {
+    const A = numbers.aging, ratio = this.age(s) / this.maxAge(s);
+    const cult = ratio > A.from ? Math.max(A.cultMin, 1 - (ratio - A.from) * A.cultDrop) : 1;
+    const capCut = ratio > A.capFrom ? (ratio - A.capFrom) * A.capDrop : 0;
+    return { ratio, cult, capCut };
+  },
 
   // 彙整所有永久加成（能力、成長、體質、少年印記）
   bonuses(s) {
@@ -99,7 +110,7 @@ export const state = {
 
   rootMult(s) {
     const R = numbers.roots;
-    return s.root ? R[s.root.type].mult : 1;
+    return routes.rootMult(s, s.root ? R[s.root.type].mult : 1);
   },
 
   log(s, text) {
@@ -109,12 +120,5 @@ export const state = {
   },
   note(s, text, kind) {
     s.notes.push({ when: `${Math.floor(this.age(s))} 歲・${numbers.seasons[s.seasonIdx]}`, text, kind: kind || "一般", realm: this.realm(s).id });
-  },
-
-  // ---- 存檔：存在這台電腦的瀏覽器裡（localStorage）----
-  save(s) { try { localStorage.setItem(this.SAVE_KEY, JSON.stringify(s)); } catch (e) {} },
-  load() { try { const t = localStorage.getItem(this.SAVE_KEY); return t ? JSON.parse(t) : null; } catch (e) { return null; } },
-  clear() { try { localStorage.removeItem(this.SAVE_KEY); } catch (e) {} },
-  loadLegacy() { try { const t = localStorage.getItem(this.LEGACY_KEY); return t ? JSON.parse(t) : { lives: [], pending: [] }; } catch (e) { return { lives: [], pending: [] }; } },
-  saveLegacy(L) { try { localStorage.setItem(this.LEGACY_KEY, JSON.stringify(L)); } catch (e) {} }
+  }
 };

@@ -4,6 +4,9 @@ import { abilities } from "../data/abilities.js";
 import { state } from "../systems/state.js";
 import { breakthrough } from "../systems/breakthrough.js";
 import { cultivation } from "../systems/cultivation.js";
+import { growth } from "../systems/growth.js";
+import { routes } from "../systems/routes.js";
+import { routesData } from "../data/routes.js";
 import { layoutData } from "../data/layout.js";
 
 // 測試用：主角狀態總覽（只在「顯示數值」開啟時出現，放在畫面最下方）
@@ -30,7 +33,7 @@ export default function TestStatus({ game }) {
   } else {
     const r = state.realm(s), b = state.bonuses(s);
     row("境界", `${state.stageName(s)}（第 ${s.turns} 回合，修仙 ${s.seasons} 季）`);
-    row("修為", `${Math.round(s.xiu)} / ${state.stageReq(s)}${state.inBottleneck(s) ? "（瓶頸）" : ""}`);
+    row("修為", `${Math.round(s.xiu)} / ${state.stageReq(s)}${state.inBottleneck(s) ? "（瓶頸）" : ""}${s.stageRest > 0 ? `・小境界調息剩 ${s.stageRest} 季` : ""}`);
     if (r.major) {
       const br = breakthrough.rate(s);
       row("感悟", `${Math.round(s.insight)}・突破成功率 ${pct(br.rate)}（上限 ${pct(br.cap)}${br.forced ? "，心魔過高強行衝關" : ""}）・失敗 ${s.fails} 次`);
@@ -46,11 +49,20 @@ export default function TestStatus({ game }) {
       ...Object.entries(b.tagMult).map(([t, v]) => `${t} ×${v.toFixed(2)}`)
     ].join("・"));
     const ab = s.abilities.map(n => abilities.pool.find(x => x.name === n)).filter(Boolean).map(a => `${a.name}：${a.desc}`);
-    const gr = s.growth.map(n => abilities.growth.find(x => x.name === n)).filter(Boolean).map(g => `${g.name}：${g.desc}`);
+    const gr = growth.list(s).map(x => `${x.label}（${x.name}×${x.n}，每重 ${growth.def(x.name).desc}）${growth.atCap(s, x.name) ? "［已達本境界上限］" : ""}`);
+    const store = Object.entries(s.growthStore || {}).map(([k, v]) => `${k}×${v}`);
     row("神通", ab.length ? ab.join("；") : "無");
-    row("體悟", gr.length ? gr.join("；") : "無");
-    row("體質", s.constitutions.length ? s.constitutions.map(c => `${c.name}：${c.desc}`).join("；") : "無");
+    row("體悟", (gr.length ? gr.join("；") : "無") + `・本境界上限 ${growth.cap(s)} 重`);
+    row("積蘊（突破後化開）", store.length ? store.join("、") : "無");
+    row("體質", (s.constitutions.length ? s.constitutions.map(c => `${c.name}（${c.label}・第 ${(c.rung ?? 0) + 1} 階）：${c.desc}`).join("；") : "無")
+      + `・覺醒成功率 ${pct(breakthrough.awakenChance(s, { level: "覺醒" }))}（天人合一 ${pct(breakthrough.awakenChance(s, { level: "天人合一" }))}）`);
     row("主修", s.technique + (s.equipped ? `・佩戴 ${s.equipped}` : ""));
+  }
+  if (s.root) {
+    const rv = routes.view(s), rd = routesData.routes[s.route || "氣修"];
+    row("路線", `${rd.name}：${rd.desc}${Object.keys(rd.mods).length ? `（${JSON.stringify(rd.mods).replace(/"/g, "")}）` : ""}`);
+    row("傾向", `正邪 ${Math.round(rv.正邪)}・穩躁 ${Math.round(rv.穩躁)}・習慣 ${rv.habit || "無"}（${Object.entries(rv.act).map(([k, v]) => `${k} ${v.toFixed(1)}`).join("、")}）・稱號「${routes.title(s)}」`);
+    row("最近事件", (s.recentEvents || []).join("、") || "無");
   }
   row("靈石", s.stones);
   row("材料", mats.length ? mats.join("、") : "無");
@@ -61,10 +73,13 @@ export default function TestStatus({ game }) {
   const hints = [];
   const hint = (k, v) => hints.push([k, v]);
   if (s.awakenOpts && s.root && !s.abilities.length) {
-    s.awakenOpts.forEach(o => hint(abilities.imagery[o.tag], `${o.ability}＋主修${o.technique}${o.fromMark ? "（少年印記）" : ""}`));
+    s.awakenOpts.forEach(o => hint(abilities.vision(o.ability, o.tag), `${o.ability}＋主修${o.technique}${o.fromMark ? "（少年印記）" : ""}`));
+  }
+  if (s.current && s.current.type === "growth") {
+    s.current.options.forEach(n => { const g = growth.def(n); hint(growth.title(n, growth.count(s, n)), `${n}・${g.rarity}・${g.desc}・目前 ${growth.count(s, n)}／${growth.cap(s)} 重${growth.atCap(s, n) ? "（已滿，選了只會積蘊）" : ""}`); });
   }
   if (s.current && s.current.type === "ability") {
-    s.current.options.forEach(n => { const a = abilities.pool.find(x => x.name === n); if (a) hint(abilities.imagery[a.tag] || a.tag, `${a.name}・${a.rarity}・${a.tier}・${a.desc}`); });
+    s.current.options.forEach(n => { const a = abilities.pool.find(x => x.name === n); if (a) hint(abilities.vision(a.name), `${a.name}・${a.rarity}・${a.tier}・${a.desc}`); });
   }
   if (s.root && !s.current && s.abilities.length) {
     const neck = state.inBottleneck(s), L = state.realm(s).longLen;

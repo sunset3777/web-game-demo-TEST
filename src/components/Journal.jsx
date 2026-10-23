@@ -1,3 +1,5 @@
+import { visibleText } from "./text.js";
+
 const TABS = [["log", "日誌"], ["notes", "修仙筆記"], ["karma", "因果"]];
 
 export default function Journal({ game }) {
@@ -10,7 +12,7 @@ export default function Journal({ game }) {
         ))}
       </div>
       <ul>
-        {tab === "log" && s.log.map((l, i) => <li key={i}><span className="when">{l.when}</span><span className="pre">{l.text}</span></li>)}
+        {tab === "log" && s.log.map((l, i) => <li key={i}><span className="when">{l.when}</span><span className="pre">{visibleText(game, l.text)}</span></li>)}
         {tab === "notes" && s.notes.map((n, i) => <li key={i}><span className="when">{n.when}</span>{n.text}<span className="kind">{n.kind}</span></li>)}
         {tab === "karma" && (s.karma.length
           ? s.karma.map((k, i) => (

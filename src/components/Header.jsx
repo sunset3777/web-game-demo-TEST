@@ -7,7 +7,7 @@ export default function Header({ game }) {
         <span className="seal">修</span>
         <div>
           <div className="brand-name">一世修仙</div>
-          <div className="brand-sub">文字版 demo・數值 {numbers.version}</div>
+          <div className="brand-sub">文字版 demo{game.testMode && <span className="test">・數值 {numbers.version}</span>}</div>
         </div>
       </div>
       <div className="top-actions">
