@@ -81,7 +81,12 @@ export function createGame(onChange) {
     },
 
     // ---- 行動 ----
+    // 死亡或退隱後交由 NPC 規則接手，NPC 系統尚未實作（見實作計畫階段 4）。
+    // 在那之前，這一世結束後玩家的操作（行動、突破、買賣、換功法、裝備、走火入魔的抉擇）一律不做任何事，
+    // 與 retire、pick、nextQueue 對已死狀態不動作一致。
+    hasPlayerControlEnded() { return !G.s || !G.s.alive; },
     doAction(action, full) {
+      if (G.hasPlayerControlEnded()) return;
       const s = G.s;
       if (s.current) return;
       const res = cultivation.run(s, action, full);
@@ -100,6 +105,7 @@ export function createGame(onChange) {
     togglePanel(name) { G.ui.panel = G.ui.panel === name ? null : name; onChange(); },
     setBt(key, value) { G.ui.bt[key] = value; onChange(); },
     doBreakthrough() {
+      if (G.hasPlayerControlEnded()) return;
       const s = G.s;
       if (!breakthrough.envUsable(s, G.ui.bt.env)) { s.lastText = "這個季節無法在那裡突破。"; return onChange(); }
       const realmBefore = s.realmIndex, lenBefore = state.realm(s).longLen;
@@ -121,9 +127,9 @@ export function createGame(onChange) {
       G.nextQueue();
       G.commit();
     },
-    buy(item) { const s = G.s; s.lastText = cultivation.buy(s, item); state.log(s, s.lastText); G.commit(); },
-    setTechnique(t) { const s = G.s; s.technique = t; s.lastText = `改以「${t}」為主修功法。`; state.log(s, s.lastText); G.commit(); },
-    equip(a) { G.s.equipped = a || null; G.commit(); },
+    buy(item) { if (G.hasPlayerControlEnded()) return; const s = G.s; s.lastText = cultivation.buy(s, item); state.log(s, s.lastText); G.commit(); },
+    setTechnique(t) { if (G.hasPlayerControlEnded()) return; const s = G.s; s.technique = t; s.lastText = `改以「${t}」為主修功法。`; state.log(s, s.lastText); G.commit(); },
+    equip(a) { if (G.hasPlayerControlEnded()) return; G.s.equipped = a || null; G.commit(); },
     retire() { legacy.die(G.s, "坐化"); G.commit(); },
     setTab(t) { G.ui.tab = t; onChange(); },
     dismissNotice() { if (G.s) G.s.notice = null; G.commit(); },
@@ -167,6 +173,7 @@ export function createGame(onChange) {
       G.commit();
     },
     deviate(choice) {
+      if (G.hasPlayerControlEnded()) return;
       const s = G.s;
       s.lastText = breakthrough.deviation(s, choice);
       state.log(s, s.lastText);

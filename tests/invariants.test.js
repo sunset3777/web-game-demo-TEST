@@ -1,5 +1,5 @@
 // 不變條件測試：在許多固定種子的整世模擬過程中，每一步行動之後都檢查「任何時候都不該違反」的性質。
-// 只描述現狀。已知會違反期望的地方（死亡後仍可行動）寫成「已知問題」測試，目前會失敗，不在這裡修。
+// 也涵蓋死亡或退隱後玩家不能再操作（之後應交由 NPC 規則接手，NPC 系統尚未實作）。
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { numbers } from "../src/data/numbers.js";
@@ -77,21 +77,35 @@ test("死亡後 alive 不會變回 true，phase 維持 end，死因不會被改�
   assert.equal(game.s.cause, causeAtDeath);
 });
 
-test("現況：死亡後再呼叫 doAction，alive 與 phase 不變，但回合、季數與紀錄仍會被推進", () => {
-  const { game } = playOneLife({ seed: 1, openingMode: "quick" });
-  const turnsAtDeath = game.s.turns;
-  const seasonsAtDeath = game.s.seasons;
-  game.doAction("吐納", true);
-  assert.equal(game.s.alive, false);
-  assert.equal(game.s.phase, "end");
-  assert.ok(game.s.turns > turnsAtDeath);
-  assert.ok(game.s.seasons > seasonsAtDeath);
-});
-
-// 已知問題（目前會失敗，修好後才會通過）：本次測試補充發現（審查未列）：controller.doAction 不檢查 alive，死後仍推進回合、季數並寫紀錄。期望：死亡後呼叫 doAction 不改變任何狀態，與 retire／pick 一致
+// 死亡後的行為：玩家操作一律不改變遊戲狀態（測試補充發現，審查未列）
 test("死亡後行動（doAction）不該再改變遊戲狀態", () => {
   const { game } = playOneLife({ seed: 1, openingMode: "quick" });
   const snapshotBefore = JSON.stringify(game.s);
   game.doAction("吐納", true);
+  assert.equal(JSON.stringify(game.s), snapshotBefore);
+});
+
+test("死亡後其他玩家操作（突破、買東西、換功法、裝備、走火入魔抉擇）也不改變遊戲狀態、不丟例外、不寫檔", () => {
+  const { game, storage } = playOneLife({ seed: 1, openingMode: "quick" });
+  const snapshotBefore = JSON.stringify(game.s);
+  const saveBefore = storage.getItem("xiuxian-demo-save-v1");
+  assert.doesNotThrow(() => {
+    game.ui.bt = { material: Object.keys(game.s.materials)[0] || "", env: "洞府" };
+    game.doBreakthrough();
+    game.buy(Object.keys(game.s.materials)[0] || "雷擊木");
+    game.setTechnique("基礎吐納法");
+    game.equip(game.s.abilities[0] || null);
+    game.deviate("散功重修");
+  });
+  assert.equal(JSON.stringify(game.s), snapshotBefore);
+  assert.equal(storage.getItem("xiuxian-demo-save-v1"), saveBefore);
+});
+
+test("坐化（退隱）後呼叫 doBreakthrough 不丟例外，也不改變遊戲狀態", () => {
+  const { game } = playOneLife({ seed: 2, openingMode: "quick", stopWhen: (runningGame) => runningGame.s.turns >= 5 });
+  game.retire();
+  assert.equal(game.s.cause, "坐化");
+  const snapshotBefore = JSON.stringify(game.s);
+  assert.doesNotThrow(() => { game.doBreakthrough(); game.doAction("閉關", true); });
   assert.equal(JSON.stringify(game.s), snapshotBefore);
 });
