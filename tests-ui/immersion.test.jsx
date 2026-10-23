@@ -3,12 +3,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { render } from "@testing-library/react";
 import Header from "../src/components/Header.jsx";
+import PlayScreen from "../src/components/PlayScreen.jsx";
 import StatusPanel from "../src/components/StatusPanel.jsx";
 import EndScreen from "../src/components/EndScreen.jsx";
 import OpeningScreen from "../src/components/OpeningScreen.jsx";
 import { numbers } from "../src/data/numbers.js";
 import {
-  createTestGame, findTestContent, playToCultivation, useSeededRandom
+  createTestGame, findNumberText, findTestContent, playToCultivation, useSeededRandom
 } from "./helpers/gameFixtures.js";
 
 beforeEach(() => { useSeededRandom(7); });
@@ -110,5 +111,32 @@ describe("OpeningScreen 開局畫面（凡人期）", () => {
     const { container } = render(<OpeningScreen game={createMortalGame(true)} />);
     expect(container).toHaveTextContent(/〔還有 \d+ 季〕/);
     expect(findTestContent(container).testBlocks.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("玩家讀得到的數值字樣（不靠 CSS 類別，直接掃可見文字）", () => {
+  function createPlayingGame(testMode) {
+    const gameController = playToCultivation(createTestGame());
+    gameController.testMode = testMode;
+    gameController.s.xiu = 17;
+    gameController.s.demon = numbers.demon.gate + 15;
+    // 日誌裡放一行〔…〕數值，一般模式必須被濾掉
+    gameController.s.log.push({ when: "春", text: "你吐納了一季。\n〔修為 +25〕" });
+    return gameController;
+  }
+
+  test("一般模式：修練整頁沒有「壽元 N」「修為 N」「心魔 N」「N / M」或〔…〕字樣", () => {
+    const { container } = render(<PlayScreen game={createPlayingGame(false)} />);
+    expect(findNumberText(container)).toEqual([]);
+    expect(container).toHaveTextContent("心神不寧");
+  });
+
+  test("顯示數值模式：修練整頁出現壽元、修為／所需、心魔數字與〔…〕行", () => {
+    const { container } = render(<PlayScreen game={createPlayingGame(true)} />);
+    const numberTexts = findNumberText(container);
+    expect(numberTexts.some(text => /^壽元\s*\d+/.test(text))).toBe(true);
+    expect(numberTexts).toContain(`17 / ${numbers.realms[0].reqs[0]}`);
+    expect(numberTexts.some(text => /^心魔\s*\d+/.test(text))).toBe(true);
+    expect(numberTexts).toContain("〔修為 +25〕");
   });
 });

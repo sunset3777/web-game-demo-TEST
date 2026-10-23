@@ -83,3 +83,10 @@ export function findTestContent(container) {
   const bracketLines = (container.textContent.match(/〔[^〕]*〕/g) || []);
   return { testBlocks, bracketLines };
 }
+
+// 玩家實際讀得到的「數值字樣」：壽元／修為／心魔／感悟後面接數字、「x / y」進度、〔…〕行。
+// 不看 CSS 類別，直接掃可見文字；一般模式應該是空陣列，顯示數值模式則要找得到。
+const NUMBER_TEXT_PATTERNS = [/壽元\s*\d+/g, /修為\s*\d+/g, /心魔\s*\d+/g, /感悟\s*\d+/g, /\d+\s*\/\s*\d+/g, /〔[^〕]*〕/g];
+export function findNumberText(container) {
+  return NUMBER_TEXT_PATTERNS.flatMap(pattern => container.textContent.match(pattern) || []);
+}
