@@ -1,3 +1,4 @@
+import { visibleText } from "./text.js";
 import { marks } from "../data/marks.js";
 import { abilities } from "../data/abilities.js";
 import { numbers } from "../data/numbers.js";
@@ -44,9 +45,9 @@ export default function OpeningScreen({ game }) {
       <>
       <section className="card">
         <h2>{Math.floor(state.age(s))} 歲那年的{state.season(s)}天</h2>
-        {m.done === 0 && <p className="story">{m.intro.join("\n")}</p>}
-        {m.lastText && !e && <p className="story" key={m.lastText}>{m.lastText}</p>}
-        {!e && !(m.done === 0 && s.startAge >= 16) && <p className="muted">還有 {left} 季就到測靈的日子了。</p>}
+        {m.done === 0 && <p className="story">{visibleText(game, m.intro.join("\n"))}</p>}
+        {m.lastText && !e && <p className="story" key={m.lastText}>{visibleText(game, m.lastText)}</p>}
+        {!e && !(m.done === 0 && s.startAge >= 16) && <p className="muted">測靈的日子越來越近了。{T && <span className="test">〔還有 {left} 季〕</span>}</p>}
         {e ? (
           <div className="choice">
             <h3>{e.title}</h3>
@@ -80,7 +81,7 @@ export default function OpeningScreen({ game }) {
       <>
       <section className="card">
         <h2>十八歲</h2>
-        {m.lastText && <p className="story">{m.lastText}</p>}
+        {m.lastText && <p className="story">{visibleText(game, m.lastText)}</p>}
         <p className="story">{s.mortalLines.join("\n")}</p>
         <p className="story">十八歲那年的春天，仙門的人來到鎮上。祠堂前擺了一塊灰撲撲的石頭，孩子們排成一列。</p>
         <button className="primary" onClick={game.takeTest}>把手放上測靈石</button>
@@ -101,7 +102,7 @@ export default function OpeningScreen({ game }) {
       <div className="options">
         {s.awakenOpts.map((o, i) => (
           <button key={i} className="option" onClick={() => game.chooseAwakening(i)}>
-            <span className="opt-title">{abilities.imagery[o.tag]}</span>
+            <span className="opt-title">{abilities.vision(o.ability, o.tag)}</span>
           </button>
         ))}
       </div>
