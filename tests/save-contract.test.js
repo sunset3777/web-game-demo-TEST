@@ -212,7 +212,7 @@ test("現況：死亡後存檔不會被清除，標題讀到的仍是死前那�
   assert.notEqual(storage.getItem(save.SAVE_KEY), null);
 });
 
-test("死亡後標題不該再出現「繼續」（存檔應被清掉或標成已死）", { todo: "已知問題：controller.commit 只在 alive 時寫檔，死亡不清舊檔，見審查 4-1" }, () => {
+test("死亡後標題不該再出現「繼續」（存檔應被清掉或標成已死）", { todo: "對應審查 4-1：controller.commit 只在 alive 時寫檔，死亡後不清舊存檔，標題會讀回死前進度。期望：死亡後 save.load() 回傳 null 或 alive 為 false 的存檔" }, () => {
   playOneLife({ seed: 1, openingMode: "quick" });
   const savedAfterDeath = save.load();
   assert.ok(savedAfterDeath === null || savedAfterDeath.alive === false);
@@ -231,7 +231,7 @@ test("現況：傳承檔寫入失敗時，bequeath 仍會清掉舊存檔，傳�
   assert.match(game.flash, /留下了 2 頁筆記/);
 });
 
-test("傳承檔寫入失敗時，不該清掉舊存檔，也不該告訴玩家已留下筆記", { todo: "已知問題：saveLegacy 吞例外，bequeath 無條件 clear，見審查 4-2" }, () => {
+test("傳承檔寫入失敗時，不該清掉舊存檔，也不該告訴玩家已留下筆記", { todo: "對應審查 4-2：saveLegacy 吞掉寫入例外，bequeath 無條件清舊存檔。期望：傳承檔寫入失敗時保留舊存檔，且不提示玩家已留下筆記" }, () => {
   const { game, storage } = playOneLife({ seed: 1, openingMode: "quick" });
   storage.shouldThrowOnWrite = true;
   game.ui.picks = [0, 1];
@@ -253,7 +253,7 @@ test("現況：載入版本號比程式新的存檔，版本號會被改回現�
   assert.deepEqual(loaded.futureOnlyField, { hello: "未來欄位" });
 });
 
-test("載入版本號比程式新的存檔時，不該把版本號降回現版（應保留或拒絕載入）", { todo: "已知問題：migrate 對任何物件都指定 v = SAVE_VERSION，見審查 4-6" }, () => {
+test("載入版本號比程式新的存檔時，不該把版本號降回現版（應保留或拒絕載入）", { todo: "對應審查 4-6：save.migrate 對任何物件都把 v 設成現版。期望：版本比程式新的存檔保留原版本號，或拒絕載入（回傳 null）" }, () => {
   const storage = installMemoryStorage();
   const newerSave = createOldSaveWithoutFields([], { version: SAVE_VERSION + 4 });
   storage.setItem(save.SAVE_KEY, JSON.stringify(newerSave));
