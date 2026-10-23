@@ -13,6 +13,9 @@ export default function TitleScreen({ game }) {
       <h1>一世修仙</h1>
       <p className="lead">從凡人到金丹，一生只有一次。準備越用心，天意越可控；走完這一世，留下的筆記會在下一世等你。</p>
       {game.flash && <p className="flash">{game.flash}</p>}
+      {(saveFile.hasNewerSave() || saveFile.hasNewerLegacy()) && (
+        <p className="flash">這份存檔來自較新版本，這個版本無法讀取，也不會覆蓋它。請用較新的版本繼續，或清除所有存檔與傳承後重新開始。</p>
+      )}
       <div className="field">
         <label htmlFor="name-input">名字</label>
         <div className="row">

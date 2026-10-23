@@ -1,6 +1,6 @@
 // 存檔／傳承契約測試：描述「現在」存檔系統的行為，防止重構或改欄位時悄悄弄壞舊存檔。
-// 標著「已知問題」註解的測試，是審查（docs/設計討論/10_Codex新人審查.md 第 4 節）指出的問題，
-// 寫的是「期望的正確行為」，目前會失敗，npm test 會因此顯示紅燈；問題修好後它們自然通過。
+// 死亡後的存檔、傳承寫入失敗、較新版本存檔三段，對應審查（docs/設計討論/10_Codex新人審查.md 第 4 節）
+// 4-1、4-2、4-6 指出並已修掉的問題，測試寫的是設計者定案後的正確行為。
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { save, SAVE_VERSION } from "../src/systems/save.js";
@@ -287,24 +287,85 @@ test("傳承檔寫入失敗後儲存空間恢復，再按一次就能傳下去�
   assert.equal(legacyFile.pending.length, 2);
 });
 
-// ---- 已知問題 (c)：較新版本存檔被降回現版本 ----
+// ---- 較新版本的存檔（審查 4-6）----
 
-test("現況：載入版本號比程式新的存檔，版本號會被改回現版，其餘未知欄位保留", () => {
+// 放一份「較新版本程式寫下」的存檔與傳承檔進 localStorage，回傳寫進去的原始字串，方便比對沒被動過
+function installNewerVersionFiles({ withSave = true, withLegacy = false } = {}) {
   const storage = installMemoryStorage();
   const newerSave = createOldSaveWithoutFields([], { version: SAVE_VERSION + 4 });
   newerSave.futureOnlyField = { hello: "未來欄位" };
-  storage.setItem(save.SAVE_KEY, JSON.stringify(newerSave));
+  if (withSave) storage.setItem(save.SAVE_KEY, JSON.stringify(newerSave));
+  if (withLegacy) storage.setItem(save.LEGACY_KEY, JSON.stringify({ v: SAVE_VERSION + 4, lives: [{ name: "未來人" }], pending: [{ text: "未來筆記" }] }));
+  return { storage, newerSaveText: storage.getItem(save.SAVE_KEY), newerLegacyText: storage.getItem(save.LEGACY_KEY) };
+}
 
-  const loaded = save.load();
-  assert.equal(loaded.v, SAVE_VERSION);
-  assert.deepEqual(loaded.futureOnlyField, { hello: "未來欄位" });
-});
-
-// 已知問題（目前會失敗，修好後才會通過）：對應審查 4-6：save.migrate 對任何物件都把 v 設成現版。期望：版本比程式新的存檔保留原版本號，或拒絕載入（回傳 null）
+// 較新版本存檔的行為：拒絕載入，不降版（審查 4-6）
 test("載入版本號比程式新的存檔時，不該把版本號降回現版（應保留或拒絕載入）", () => {
   const storage = installMemoryStorage();
   const newerSave = createOldSaveWithoutFields([], { version: SAVE_VERSION + 4 });
   storage.setItem(save.SAVE_KEY, JSON.stringify(newerSave));
   const loaded = save.load();
   assert.ok(loaded === null || loaded.v === SAVE_VERSION + 4);
+});
+
+test("較新版本的存檔：load 回傳 null、hasNewerSave 為 true，localStorage 裡的原檔（版本號與未知欄位）一字不動", () => {
+  const { storage, newerSaveText } = installNewerVersionFiles();
+  assert.equal(save.load(), null);
+  assert.equal(save.hasNewerSave(), true);
+  assert.equal(storage.getItem(save.SAVE_KEY), newerSaveText);
+});
+
+test("較新版本的存檔：migrate 不把版本號降回現版，也不補欄位", () => {
+  const newerSave = { v: SAVE_VERSION + 4, name: "未來", futureOnlyField: 1 };
+  assert.deepEqual(save.migrate(JSON.parse(JSON.stringify(newerSave))), newerSave);
+});
+
+test("較新版本的存檔：save.save 不覆蓋它並回報 false，clear 也不刪它", () => {
+  const { storage, newerSaveText } = installNewerVersionFiles();
+  assert.equal(save.save(state.create("舊版程式的人")), false);
+  save.clear();
+  assert.equal(storage.getItem(save.SAVE_KEY), newerSaveText);
+});
+
+test("save.save 正常寫入時回報 true", () => {
+  installMemoryStorage();
+  assert.equal(save.save(state.create("甲")), true);
+});
+
+test("較新版本的存檔：開始新的一生被擋下，不會蓋掉它，並提示玩家原因", () => {
+  const { storage, newerSaveText } = installNewerVersionFiles();
+  const game = createGame(() => {});
+  game.newLife("想開新局的人");
+  assert.equal(game.s, null);
+  assert.equal(storage.getItem(save.SAVE_KEY), newerSaveText);
+  assert.equal(game.flash, "為了不蓋掉較新版本的存檔，這裡不能開始新的一生。");
+});
+
+test("較新版本的存檔：continueLife 讀不到進度，停在標題（game.s 為 null）", () => {
+  installNewerVersionFiles();
+  const game = createGame(() => {});
+  game.continueLife();
+  assert.equal(game.s, null);
+});
+
+test("較新版本的傳承檔：loadLegacy 當成空傳承、不降版，saveLegacy 不覆蓋並回報 false，開新的一生也被擋下", () => {
+  const { storage, newerLegacyText } = installNewerVersionFiles({ withSave: false, withLegacy: true });
+  assert.deepEqual(save.loadLegacy(), { v: SAVE_VERSION, lives: [], pending: [] });
+  assert.equal(save.hasNewerLegacy(), true);
+  assert.equal(save.saveLegacy({ lives: [], pending: [] }), false);
+  const game = createGame(() => {});
+  game.newLife("想開新局的人");
+  assert.equal(game.s, null);
+  assert.equal(storage.getItem(save.LEGACY_KEY), newerLegacyText);
+  assert.equal(storage.getItem(save.SAVE_KEY), null);
+});
+
+test("較新版本的存檔與傳承檔：玩家明確按「清除所有存檔與傳承」才會刪掉，之後可以重新開始", () => {
+  const { storage } = installNewerVersionFiles({ withSave: true, withLegacy: true });
+  const game = createGame(() => {});
+  game.wipe();
+  assert.equal(storage.getItem(save.SAVE_KEY), null);
+  assert.deepEqual(JSON.parse(storage.getItem(save.LEGACY_KEY)), { lives: [], pending: [], v: SAVE_VERSION });
+  game.newLife("重新開始的人");
+  assert.equal(game.s.name, "重新開始的人");
 });

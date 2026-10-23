@@ -36,6 +36,11 @@ export function createGame(onChange) {
 
     // ---- 標題 ----
     newLife(name) {
+      // 這台電腦上有較新版本留下的存檔或傳承檔：開新的一世遲早會寫檔蓋掉它，所以先擋下並說明
+      if (save.hasNewerSave() || save.hasNewerLegacy()) {
+        G.flash = "為了不蓋掉較新版本的存檔，這裡不能開始新的一生。";
+        return onChange();
+      }
       G.s = state.create((name || "").trim() || opening.randomName());
       const L = save.loadLegacy();
       G.s.legacyAvailable = (L.pending || []).length > 0;
@@ -53,7 +58,8 @@ export function createGame(onChange) {
       onChange();
     },
     toTitle() { G.s = null; onChange(); },
-    wipe() { save.clear(); save.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
+    // 玩家明確要求清除全部：連較新版本的存檔也一起刪掉，這是唯一會刪掉它的地方
+    wipe() { save.clearEverything(); save.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
 
     // ---- 開局 ----
     startMortal() { opening.startMortal(G.s, "full"); G.commit(); },

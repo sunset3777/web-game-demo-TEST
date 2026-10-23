@@ -125,4 +125,30 @@ describe("標題畫面", () => {
     render(<TitleScreen game={createTestGame()} />);
     expect(screen.queryByRole("button", { name: /留下筆記/ })).not.toBeInTheDocument();
   });
+
+  test("存檔來自較新版本時：顯示「這份存檔來自較新版本」，沒有「繼續」；按「開始新的一生」被擋下並說明，存檔不被覆蓋", async () => {
+    const newerSave = createSavedState("未來修士", { v: save.SAVE_VERSION + 4 });
+    localStorage.setItem(save.SAVE_KEY, JSON.stringify(newerSave));
+    const newerSaveText = localStorage.getItem(save.SAVE_KEY);
+
+    render(<App />);
+    expect(screen.getByText(/^這份存檔來自較新版本/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^繼續/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+    expect(screen.getByText("為了不蓋掉較新版本的存檔，這裡不能開始新的一生。")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "一世修仙" })).toBeInTheDocument();
+    expect(localStorage.getItem(save.SAVE_KEY)).toBe(newerSaveText);
+  });
+
+  test("傳承檔來自較新版本時，同樣顯示「這份存檔來自較新版本」", () => {
+    localStorage.setItem(save.LEGACY_KEY, JSON.stringify({ v: save.SAVE_VERSION + 4, lives: [], pending: [] }));
+    render(<TitleScreen game={createTestGame()} />);
+    expect(screen.getByText(/^這份存檔來自較新版本/)).toBeInTheDocument();
+  });
+
+  test("一般存檔不顯示較新版本的提示", () => {
+    writeSave(createSavedState("舊日修士"));
+    render(<TitleScreen game={createTestGame()} />);
+    expect(screen.queryByText(/較新版本/)).not.toBeInTheDocument();
+  });
 });
