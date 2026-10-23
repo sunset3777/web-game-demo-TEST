@@ -9,6 +9,7 @@ import { events } from "../systems/events.js";
 import { opening } from "../systems/opening.js";
 import { legacy } from "../systems/legacy.js";
 import { growth } from "../systems/growth.js";
+import { save } from "../systems/save.js";
 
 // 踏入新境界時的感受（提醒視窗用）
 const REALM_FEEL = {
@@ -23,7 +24,7 @@ export function createGame(onChange) {
     testMode: readTestMode(),
     ui: { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] },
 
-    commit() { if (G.s && G.s.alive) state.save(G.s); onChange(); },
+    commit() { if (G.s && G.s.alive) save.save(G.s); onChange(); },
 
     toggleTestMode() {
       G.testMode = !G.testMode;
@@ -34,15 +35,15 @@ export function createGame(onChange) {
     // ---- 標題 ----
     newLife(name) {
       G.s = state.create((name || "").trim() || opening.randomName());
-      const L = state.loadLegacy();
+      const L = save.loadLegacy();
       G.s.legacyAvailable = (L.pending || []).length > 0;
       G.s.legacyLives = L.lives || [];
       G.ui = { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] };
       G.commit();
     },
-    continueLife() { G.s = state.load(); G.ui.panel = null; onChange(); },
+    continueLife() { G.s = save.load(); G.ui.panel = null; onChange(); },
     toTitle() { G.s = null; onChange(); },
-    wipe() { state.clear(); state.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
+    wipe() { save.clear(); save.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
 
     // ---- 開局 ----
     startMortal() { opening.startMortal(G.s, "full"); G.commit(); },

@@ -5,6 +5,7 @@ import { actionEvents } from "../data/actionEvents.js";
 import { routes } from "./routes.js";
 import { util, state } from "./state.js";
 import { legacy } from "./legacy.js";
+import { save } from "./save.js";
 
 export const events = {
   all() { return eventsData.list.concat(actionEvents.list); },
@@ -71,7 +72,7 @@ export const events = {
       note: text => st.note(s, text),
       die: cause => legacy.die(s, cause),
       learnTechnique: name => { if (!s.techniques.includes(name)) s.techniques.push(name); },
-      legacyPages: () => (st.loadLegacy().pending || []),
+      legacyPages: () => (save.loadLegacy().pending || []),
       takeLegacy: () => legacy.take(s),
       tend: (axis, d) => routes.adjust(s, axis, d),
       setRoute: id => routes.setRoute(s, id),
