@@ -23,6 +23,7 @@ export default function TitleScreen({ game }) {
       <div className="row wrap">
         <button className="primary" onClick={() => game.newLife(name)}>開始新的一生</button>
         {save && save.alive && <button onClick={game.continueLife}>繼續 {save.name}（{state.stageName(save)}）</button>}
+        {save && save.alive === false && save.phase === "end" && <button onClick={game.returnToLifeEnding}>為 {save.name} 留下筆記</button>}
       </div>
       {(L.pending || []).length > 0 && <p className="hint">有 {L.pending.length} 頁前人筆記等待被找到。</p>}
       {lives.length > 0 && (

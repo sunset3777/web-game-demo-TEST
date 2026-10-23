@@ -24,7 +24,9 @@ export function createGame(onChange) {
     testMode: readTestMode(),
     ui: { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] },
 
-    commit() { if (G.s && G.s.alive) save.save(G.s); onChange(); },
+    // 死亡時也照樣寫檔：存檔留下 alive=false 的結局狀態，標題就不會再出現「繼續」讀回死前的進度；
+    // 又因為結局狀態還在，重新整理結局頁後仍能從標題回到結局畫面選筆記。傳承成功後由 legacy.bequeath 清掉存檔。
+    commit() { if (G.s) save.save(G.s); onChange(); },
 
     toggleTestMode() {
       G.testMode = !G.testMode;
@@ -42,6 +44,13 @@ export function createGame(onChange) {
       G.commit();
     },
     continueLife() { G.s = save.load(); G.ui.panel = null; onChange(); },
+    // 這一世已結束、還沒留下筆記就離開了（例如在結局畫面重新整理）：讀回結局狀態，回到選筆記的畫面
+    returnToLifeEnding() {
+      const savedState = save.load();
+      if (!savedState || savedState.alive !== false || savedState.phase !== "end") return;
+      G.s = savedState; G.ui.panel = null; G.ui.picks = [];
+      onChange();
+    },
     toTitle() { G.s = null; onChange(); },
     wipe() { save.clear(); save.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
 

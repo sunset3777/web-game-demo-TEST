@@ -201,22 +201,45 @@ test("localStorage 寫入丟例外時：saveLegacy 吞掉例外，不寫入，�
   assert.equal(storage.getItem(save.LEGACY_KEY), null);
 });
 
-// ---- 已知問題 (a)：死亡後存檔仍可繼續 ----
+// ---- 死亡後的存檔（審查 4-1）----
 
-test("現況：死亡後存檔不會被清除，標題讀到的仍是死前那份「活著」的存檔", () => {
+test("死亡後存檔寫成結局狀態：alive=false、phase=end、死因與遊戲狀態一致，不再是死前那份活著的進度", () => {
   const { game, storage } = playOneLife({ seed: 1, openingMode: "quick" });
   assert.equal(game.s.alive, false);
-  const savedAfterDeath = save.load();
-  assert.notEqual(savedAfterDeath, null);
-  assert.equal(savedAfterDeath.alive, true);
   assert.notEqual(storage.getItem(save.SAVE_KEY), null);
+  const savedAfterDeath = save.load();
+  assert.equal(savedAfterDeath.alive, false);
+  assert.equal(savedAfterDeath.phase, "end");
+  assert.equal(savedAfterDeath.cause, game.s.cause);
+  assert.deepEqual(savedAfterDeath, JSON.parse(JSON.stringify(game.s)));
 });
 
-// 已知問題（目前會失敗，修好後才會通過）：對應審查 4-1：controller.commit 只在 alive 時寫檔，死亡後不清舊存檔，標題會讀回死前進度。期望：死亡後 save.load() 回傳 null 或 alive 為 false 的存檔
+// 死亡後的行為：標題不能再讀回死前的進度（審查 4-1）
 test("死亡後標題不該再出現「繼續」（存檔應被清掉或標成已死）", () => {
   playOneLife({ seed: 1, openingMode: "quick" });
   const savedAfterDeath = save.load();
   assert.ok(savedAfterDeath === null || savedAfterDeath.alive === false);
+});
+
+test("死亡後重新開啟：returnToLifeEnding 讀回結局狀態，仍可選筆記傳承；傳承成功後存檔才被清掉", () => {
+  const { game: finishedGame, storage } = playOneLife({ seed: 1, openingMode: "quick" });
+  const reopenedGame = createGame(() => {});
+  reopenedGame.returnToLifeEnding();
+  assert.equal(reopenedGame.s.alive, false);
+  assert.equal(reopenedGame.s.cause, finishedGame.s.cause);
+  reopenedGame.ui.picks = [0, 1];
+  reopenedGame.bequeath();
+  assert.equal(storage.getItem(save.SAVE_KEY), null);
+  assert.equal(save.loadLegacy().pending.length, 2);
+  assert.match(reopenedGame.flash, /留下了 2 頁筆記/);
+});
+
+test("存檔是活著的進度時，returnToLifeEnding 不做事（不能拿它繞過「繼續」）", () => {
+  installMemoryStorage();
+  save.save(state.create("還活著"));
+  const game = createGame(() => {});
+  game.returnToLifeEnding();
+  assert.equal(game.s, null);
 });
 
 // ---- 已知問題 (b)：傳承寫入失敗仍清舊存檔 ----

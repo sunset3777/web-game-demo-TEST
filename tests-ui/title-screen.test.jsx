@@ -1,4 +1,4 @@
-// 標題畫面：繼續按鈕、前人筆記提示、前世列表，以及「死亡後仍可繼續」的現況
+// 標題畫面：繼續按鈕、前人筆記提示、前世列表，以及死亡後只能回到結局畫面選筆記、不能繼續
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -97,18 +97,7 @@ describe("標題畫面", () => {
     expect(screen.queryByRole("heading", { name: "前世" })).not.toBeInTheDocument();
   });
 
-  test("現況：存檔 alive=true 但這一世實際上已死亡，標題仍顯示「繼續」", () => {
-    useSeededRandom(1);
-    const playedGame = playToCultivation(createTestGame());
-    playedGame.retire(); // 坐化：這一世結束，但 controller 死亡後不會改寫存檔
-    expect(playedGame.s.alive).toBe(false);
-    expect(save.load().alive).toBe(true);
-
-    render(<TitleScreen game={createTestGame()} />);
-    expect(screen.getByRole("button", { name: /^繼續 測試修士/ })).toBeInTheDocument();
-  });
-
-  // 已知問題（目前會失敗，修好後才會通過）：controller.commit 只在 alive 時寫檔，死亡不清舊檔，見審查 4-1
+  // 死亡後的行為：標題不能再讀回死前的進度（審查 4-1）
   test("死亡後標題不該再出現「繼續」（存檔應被清掉或標成已死）", () => {
     useSeededRandom(1);
     const playedGame = playToCultivation(createTestGame());
@@ -116,5 +105,24 @@ describe("標題畫面", () => {
 
     render(<TitleScreen game={createTestGame()} />);
     expect(screen.queryByRole("button", { name: /^繼續/ })).not.toBeInTheDocument();
+  });
+
+  test("真流程：坐化後還沒留下筆記就重新開啟，標題出現「為 姓名 留下筆記」，點下去回到結局畫面選筆記", async () => {
+    useSeededRandom(1);
+    const playedGame = playToCultivation(createTestGame());
+    playedGame.retire();
+    expect(save.load().alive).toBe(false);
+
+    render(<App />);
+    expect(screen.queryByRole("button", { name: /^繼續/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "為 測試修士 留下筆記" }));
+    expect(screen.getByRole("heading", { name: "一世終了" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "留下筆記，進入下一世" })).toBeInTheDocument();
+  });
+
+  test("存檔是活著的進度時，不顯示「留下筆記」按鈕", () => {
+    writeSave(createSavedState("舊日修士"));
+    render(<TitleScreen game={createTestGame()} />);
+    expect(screen.queryByRole("button", { name: /留下筆記/ })).not.toBeInTheDocument();
   });
 });
