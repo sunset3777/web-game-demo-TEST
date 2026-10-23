@@ -1,12 +1,12 @@
-// 修練系統：季節推進、長短行動、修為與小境界、瓶頸感悟、受傷、壽元
+// 修練系統：季節推進、長短行動、修為與小境界、瓶頸感悟、受傷、壽元（遊歷途中的遇險與收穫在 travel.js、秘境時序在 world.js）
 import { numbers } from "../data/numbers.js";
 import { util, state } from "./state.js";
 import { events } from "./events.js";
 import { legacy } from "./legacy.js";
-import { layoutData } from "../data/layout.js";
 import { routes } from "./routes.js";
 import { flavor } from "../data/flavor.js";
 import { world } from "./world.js";
+import { travel } from "./travel.js";
 
 export const cultivation = {
   // 行動一次耗時（季）
@@ -129,19 +129,10 @@ export const cultivation = {
         else if (this.mishap(s, out, "鄰里起了紛爭，你上前勸架，被誤傷了。", "仇家趁你帶傷尋上門來。你沒能撐到天亮。", "仇家尋仇", R.吐納.deathIfInjured)) { done++; break; }
       }
       if (action === "遊歷") {
-        const dl = R.遊歷.deadly[Math.min(s.realmIndex, R.遊歷.deadly.length - 1)];
-        if (U.chance(dl)) { out.push("你在山中撞見一頭氣息遠勝於你的妖王。你甚至來不及轉身。"); legacy.die(s, "遇劫身死"); done++; break; }
-        if (U.chance(R.遊歷.mishap * b.injury * injMul) && this.mishap(s, out, "途中遇上妖獸，你拼死脫身，受了傷。", "途中遇上劫修。你本就帶傷，沒能逃掉。", "遇劫身死")) { done++; break; }
-        if (this.secretOpen(s) && s.secretTaken !== s.secretAt) {
-          const S = N.secret, ri = Math.min(s.realmIndex, 2);
-          s.secretTaken = s.secretAt;
-          if (st.inBottleneck(s)) { s.insight += S.insight[ri]; insightGained += S.insight[ri]; }
-          else { s.xiu += S.xiu[ri]; gained += S.xiu[ri]; this.checkStages(s, out); }
-          const mats = Object.keys(layoutData.materials);
-          let mat = null; if (U.chance(S.material)) { mat = U.pick(mats); s.materials[mat] = (s.materials[mat] || 0) + 1; }
-          out.push(`你趕上了秘境開啟，在裡頭闖了一遭，收穫頗豐${mat ? `，還帶出一份${mat}` : ""}。`);
-        }
-        if (U.chance(R.遊歷.robbery) && s.stones > 0) { const lost = Math.ceil(s.stones / 2); s.stones -= lost; out.push(`途中遭人暗算，被搶走了 ${lost} 塊靈石。`); }
+        // 途中遇險、秘境、被劫：規則在 travel.js
+        const t = travel.runTravelSeason(s, out, b, injMul);
+        gained += t.xiuGained; insightGained += t.insightGained;
+        if (t.died) { done++; break; }
       }
       done++;
       if (this.advanceSeason(s, out)) break;  // 壽盡

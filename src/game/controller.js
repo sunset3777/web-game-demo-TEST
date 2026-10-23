@@ -1,6 +1,5 @@
 // 遊戲流程控制：串接各系統。React 元件只呼叫這裡的方法，不直接改狀態。
 import { numbers } from "../data/numbers.js";
-import { layoutData } from "../data/layout.js";
 import { abilities } from "../data/abilities.js";
 import { util, state } from "../systems/state.js";
 import { cultivation } from "../systems/cultivation.js";
@@ -10,6 +9,7 @@ import { opening } from "../systems/opening.js";
 import { legacy } from "../systems/legacy.js";
 import { growth } from "../systems/growth.js";
 import { save } from "../systems/save.js";
+import { travel } from "../systems/travel.js";
 
 // 踏入新境界時的感受（提醒視窗用）
 const REALM_FEEL = {
@@ -70,18 +70,7 @@ export function createGame(onChange) {
       if (s.current) return;
       const res = cultivation.run(s, action, full);
       const lines = res.lines;
-      if (action === "遊歷" && s.alive) {
-        const b = state.bonuses(s);
-        let stones = 0; const mats = [];
-        const common = Object.keys(layoutData.materials).filter(m => !["雷擊木", "古劍殘片", "玄水青蓮"].includes(m));
-        for (let i = 0; i < res.seasons; i++) {
-          stones += util.rand(numbers.travel.stonesMin, numbers.travel.stonesMax);
-          if (util.chance(numbers.travel.materialChance + b.material)) mats.push(util.pick(common));
-        }
-        s.stones += stones;
-        mats.forEach(m => { s.materials[m] = (s.materials[m] || 0) + 1; });
-        lines.push(`沿途得靈石 ${stones}${mats.length ? "，採得" + mats.join("、") : ""}。`);
-      }
+      if (action === "遊歷" && s.alive) lines.push(travel.collectRoadsideLoot(s, res.seasons));
       if (s.alive && util.chance(res.eventChance)) {
         const e = events.pick(s, action);
         if (e) s.queue.push({ type: "event", id: e.id });
