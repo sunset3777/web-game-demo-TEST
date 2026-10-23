@@ -8,14 +8,18 @@ import { withSeededRandom } from "./seededRandom.js";
 import { installMemoryStorage } from "./memoryStorage.js";
 
 // 凡人期完整開局：每季輪流選行動，遇到小事件一律選第一個
-function playFullMortalPeriod(game, seed) {
+function playFullMortalPeriod(game, seed, afterOpeningStep) {
   game.startMortal();
+  afterOpeningStep?.(game, "開始凡人期");
   let guard = 0;
   while (!game.s.mortal.finished && guard++ < 50) {
-    if (game.s.mortal.pending) game.mortalPick(0);
-    else {
+    if (game.s.mortal.pending) {
+      game.mortalPick(0);
+      afterOpeningStep?.(game, "凡人期:小事件選擇");
+    } else {
       const aimIndex = (seed + game.s.mortal.done) % marks.aims.length;
       game.mortalAct(marks.aims[aimIndex].id);
+      afterOpeningStep?.(game, "凡人期:行動");
     }
   }
 }
@@ -55,17 +59,23 @@ function playOneStep(game, stepNumber) {
 // options.seed：亂數種子；options.openingMode："full"（凡人期完整）或 "quick"（快速開局）
 // options.stopWhen(game)：回傳 true 就停在那裡（不坐化、不傳承），給「玩到一半」的測試用
 // options.afterEachStep(game, stepDescription)：每一步之後呼叫，不變條件測試用它檢查
+// options.afterOpeningStep(game, stepDescription)：開局流程（凡人期每個行動／選擇、選志向、測靈、覺醒）每一步之後呼叫
 // options.shouldBequeath：一世結束後是否把前兩頁筆記傳下去
 export function playOneLife(options) {
-  const { seed, openingMode = "quick", stopWhen = null, afterEachStep = null, shouldBequeath = false, maxSteps = 3000 } = options;
+  const { seed, openingMode = "quick", stopWhen = null, afterEachStep = null, afterOpeningStep = null, shouldBequeath = false, maxSteps = 3000 } = options;
   const storage = installMemoryStorage();
   return withSeededRandom(seed, () => {
     const game = createGame(() => {});
     game.newLife("測試修士" + seed);
-    if (openingMode === "full") playFullMortalPeriod(game, seed);
-    else game.chooseAim(marks.aims[seed % marks.aims.length].id);
+    if (openingMode === "full") playFullMortalPeriod(game, seed, afterOpeningStep);
+    else {
+      game.chooseAim(marks.aims[seed % marks.aims.length].id);
+      afterOpeningStep?.(game, "快速開局:選志向");
+    }
     game.takeTest();
+    afterOpeningStep?.(game, "測靈根");
     game.chooseAwakening(0);
+    afterOpeningStep?.(game, "覺醒");
 
     const stepSummaries = [];
     let stepNumber = 0;

@@ -47,11 +47,24 @@ for (const openingMode of OPENING_MODES) {
   });
 }
 
-test("開局流程每一步之後（凡人期、靈根測試、覺醒）狀態也合理", () => {
-  const lifeResult = playOneLife({ seed: 7, openingMode: "full", stopWhen: () => true });
-  assertBasicInvariants(lifeResult.game.s, "覺醒後");
-  assert.equal(lifeResult.game.s.phase === "end", false);
-});
+for (const openingMode of OPENING_MODES) {
+  test(`${openingMode === "full" ? "凡人期完整開局" : "快速開局"}：開局流程（行動、選擇、測靈、覺醒）每一步之後狀態都合理`, () => {
+    let totalOpeningStepsChecked = 0;
+    for (const seed of [1, 7, 12]) {
+      const lifeResult = playOneLife({
+        seed,
+        openingMode,
+        stopWhen: () => true,
+        afterOpeningStep: (game, stepDescription) => {
+          totalOpeningStepsChecked++;
+          assertBasicInvariants(game.s, `種子 ${seed}、開局第 ${totalOpeningStepsChecked} 步（${stepDescription}）`);
+        }
+      });
+      assert.equal(lifeResult.game.s.phase === "end", false);
+    }
+    assert.ok(totalOpeningStepsChecked >= (openingMode === "full" ? 30 : 9), "開局檢查的步數太少：" + totalOpeningStepsChecked);
+  });
+}
 
 test("死亡後 alive 不會變回 true，phase 維持 end，死因不會被改寫（retire 與 pick 對已死狀態不動作）", () => {
   const { game } = playOneLife({ seed: 3, openingMode: "full" });
@@ -75,7 +88,7 @@ test("現況：死亡後再呼叫 doAction，alive 與 phase 不變，但回合�
   assert.ok(game.s.seasons > seasonsAtDeath);
 });
 
-test("死亡後行動（doAction）不該再改變遊戲狀態", { todo: "本次測試補充發現：controller.doAction 不檢查 alive，死後仍推進時間與寫紀錄（審查未列）" }, () => {
+test("死亡後行動（doAction）不該再改變遊戲狀態", { todo: "本次測試補充發現（審查未列）：controller.doAction 不檢查 alive，死後仍推進回合、季數並寫紀錄。期望：死亡後呼叫 doAction 不改變任何狀態，與 retire／pick 一致" }, () => {
   const { game } = playOneLife({ seed: 1, openingMode: "quick" });
   const snapshotBefore = JSON.stringify(game.s);
   game.doAction("吐納", true);
