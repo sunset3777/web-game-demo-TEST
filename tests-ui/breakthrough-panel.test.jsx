@@ -1,9 +1,10 @@
 // 突破面板：地點是否可選、按鈕呼叫的 controller 方法
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import BreakthroughPanel from "../src/components/BreakthroughPanel.jsx";
-import { createTestGame, playToCultivation, putAtBottleneck, useSeededRandom } from "./helpers/gameFixtures.js";
+import PlayScreen from "../src/components/PlayScreen.jsx";
+import { createTestGame, playToCultivation, putAtBottleneck, renderLiveGame, useSeededRandom } from "./helpers/gameFixtures.js";
 
 beforeEach(() => { useSeededRandom(5); });
 afterEach(() => { vi.restoreAllMocks(); });
@@ -63,5 +64,40 @@ describe("BreakthroughPanel 突破面板", () => {
     const gameController = createBottleneckGame(gameState => { gameState.materials["靈草"] = 2; });
     render(<BreakthroughPanel game={gameController} />);
     expect(screen.getByRole("option", { name: "靈草 ×2" })).toBeInTheDocument();
+  });
+});
+
+describe("BreakthroughPanel 突破面板（真 controller 互動）", () => {
+  function prepareBottleneckWithHerb(gameState) {
+    putAtBottleneck(gameState);
+    gameState.materials["靈草"] = 2;
+  }
+  function readJournalEntries() {
+    return within(screen.getByRole("tablist").parentElement).getAllByRole("listitem");
+  }
+
+  test("選了素材與地點，下拉選單顯示玩家選的值（畫面隨 controller 重繪）", async () => {
+    renderLiveGame(PlayScreen, prepareBottleneckWithHerb);
+    await userEvent.click(screen.getByRole("button", { name: /^突破/ }));
+
+    await userEvent.selectOptions(screen.getByLabelText("素材（會消耗）"), "靈草");
+    expect(screen.getByLabelText("素材（會消耗）")).toHaveValue("靈草");
+    await userEvent.selectOptions(screen.getByLabelText("地點"), "靈泉");
+    expect(screen.getByLabelText("地點")).toHaveValue("靈泉");
+  });
+
+  test("帶著靈草按「開始突破」：面板收起、靈草被消耗、日誌多一筆", async () => {
+    renderLiveGame(PlayScreen, prepareBottleneckWithHerb);
+    const statusPanel = screen.getByRole("complementary");
+    expect(within(statusPanel).getByText("靈草 ×2")).toBeInTheDocument();
+    const journalLengthBefore = readJournalEntries().length;
+
+    await userEvent.click(screen.getByRole("button", { name: /^突破/ }));
+    await userEvent.selectOptions(screen.getByLabelText("素材（會消耗）"), "靈草");
+    await userEvent.click(screen.getByRole("button", { name: "開始突破" }));
+
+    expect(screen.queryByRole("heading", { name: "突破佈局" })).not.toBeInTheDocument();
+    expect(within(statusPanel).queryByText("靈草 ×2")).not.toBeInTheDocument();
+    expect(readJournalEntries()).toHaveLength(journalLengthBefore + 1);
   });
 });

@@ -1,10 +1,11 @@
 // 行動列：按鈕點下去呼叫正確的 controller 方法；突破入口只在瓶頸出現
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ActionBar from "../src/components/ActionBar.jsx";
+import PlayScreen from "../src/components/PlayScreen.jsx";
 import {
-  createTestGame, playToCultivation, putAtBottleneck, putAtFoundationRealm, useSeededRandom
+  createTestGame, playToCultivation, putAtBottleneck, putAtFoundationRealm, renderLiveGame, useSeededRandom
 } from "./helpers/gameFixtures.js";
 
 beforeEach(() => { useSeededRandom(3); });
@@ -67,5 +68,49 @@ describe("ActionBar 行動列", () => {
     render(<ActionBar game={oldGame} />);
     await userEvent.click(screen.getByRole("button", { name: "坐化" }));
     expect(oldGame.retire).toHaveBeenCalledTimes(1);
+  });
+});
+
+// 以下用真的 controller 接到畫面（修練畫面整頁），斷言玩家看得到的變化
+describe("ActionBar 行動列（真 controller 互動）", () => {
+  function readAgeAndSeasonText() {
+    return within(screen.getByRole("complementary")).getByText("年歲").nextElementSibling.textContent;
+  }
+  function readJournalEntries() {
+    return within(screen.getByRole("tablist").parentElement).getAllByRole("listitem");
+  }
+
+  test("點「吐納」，狀態面板的季節往前走，日誌多一筆", async () => {
+    renderLiveGame(PlayScreen);
+    const ageAndSeasonBefore = readAgeAndSeasonText();
+    const journalLengthBefore = readJournalEntries().length;
+
+    await userEvent.click(screen.getByRole("button", { name: /^吐納/ }));
+
+    expect(readAgeAndSeasonText()).not.toBe(ageAndSeasonBefore);
+    expect(readJournalEntries()).toHaveLength(journalLengthBefore + 1);
+  });
+
+  test("點「坊市」開啟坊市面板，再點一次關閉", async () => {
+    renderLiveGame(PlayScreen);
+    expect(screen.queryByRole("heading", { name: /^坊市/ })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "坊市" }));
+    expect(screen.getByRole("heading", { name: /^坊市・/ })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "坊市" }));
+    expect(screen.queryByRole("heading", { name: /^坊市/ })).not.toBeInTheDocument();
+  });
+
+  test("到了瓶頸，點「突破」開啟突破面板，點面板的「取消」關閉，境界不變", async () => {
+    renderLiveGame(PlayScreen, putAtBottleneck);
+    const realmTextBefore = screen.getByRole("complementary").querySelector(".realm").textContent;
+
+    await userEvent.click(screen.getByRole("button", { name: /^突破/ }));
+    expect(screen.getByRole("heading", { name: "突破佈局" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "取消" }));
+    expect(screen.queryByRole("heading", { name: "突破佈局" })).not.toBeInTheDocument();
+    expect(screen.getByRole("complementary").querySelector(".realm").textContent).toBe(realmTextBefore);
   });
 });

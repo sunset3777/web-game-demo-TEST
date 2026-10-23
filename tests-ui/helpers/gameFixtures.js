@@ -2,6 +2,8 @@
 // 選擇「真的 controller + 固定種子」而不是手工 stub：元件會讀很多 gameState 欄位
 // （素材、境界、事件佇列…），手工 stub 容易與真實狀態漂移；真 controller 也能順便
 // 驗證畫面與規則層的接線。需要驗證「有沒有呼叫某方法」時，再用 vi.spyOn 包住該方法。
+import { createElement, useReducer } from "react";
+import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import { createGame } from "../../src/game/controller.js";
 import { marks } from "../../src/data/marks.js";
@@ -27,6 +29,21 @@ export function playToCultivation(gameController, name = "測試修士") {
   gameController.chooseAwakening(0);
   gameController.dismissNotice();
   return gameController;
+}
+
+// 把真的 controller 接到元件上並渲染：controller 改完狀態呼叫 onChange 時元件會真的重繪，
+// 讓測試可以斷言「玩家看得到的變化」。prepare 在進入修練畫面後、渲染前調整 gameState。
+export function renderLiveGame(GameComponent, prepare = () => {}) {
+  let requestRerender = () => {};
+  const gameController = createTestGame(() => requestRerender());
+  playToCultivation(gameController);
+  prepare(gameController.s);
+  function LiveHost() {
+    const [, forceRender] = useReducer(renderCount => renderCount + 1, 0);
+    requestRerender = forceRender;
+    return createElement(GameComponent, { game: gameController });
+  }
+  return { gameController, ...render(createElement(LiveHost)) };
 }
 
 // 把一份 gameState 直接寫進存檔（模擬玩家上次留下的進度）
