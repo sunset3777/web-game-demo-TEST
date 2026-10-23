@@ -1,0 +1,190 @@
+// 遊戲流程控制：串接各系統。React 元件只呼叫這裡的方法，不直接改狀態。
+import { numbers } from "../data/numbers.js";
+import { layoutData } from "../data/layout.js";
+import { abilities } from "../data/abilities.js";
+import { eventsData } from "../data/events.js";
+import { util, state } from "../systems/state.js";
+import { cultivation } from "../systems/cultivation.js";
+import { breakthrough } from "../systems/breakthrough.js";
+import { events } from "../systems/events.js";
+import { opening } from "../systems/opening.js";
+import { legacy } from "../systems/legacy.js";
+
+// 踏入新境界時的感受（提醒視窗用）
+const REALM_FEEL = {
+  "築基": "靈氣在丹田裡沉了下來，凝成一片安穩的根基。\n你吐出一口濁氣，覺得身子輕了，耳目也清明了許多。往後的路，還很長。",
+  "金丹": "丹田中的靈氣越轉越緊，最後凝成一顆圓潤的金丹。\n你睜開眼，洞府裡的每一粒塵埃都看得清清楚楚。凡人百年，於你不過彈指。"
+};
+
+export function createGame(onChange) {
+  const G = {
+    s: null,
+    flash: null,
+    testMode: readTestMode(),
+    ui: { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] },
+
+    commit() { if (G.s && G.s.alive) state.save(G.s); onChange(); },
+
+    toggleTestMode() {
+      G.testMode = !G.testMode;
+      try { localStorage.setItem("xx-testmode", G.testMode ? "1" : "0"); } catch (e) {}
+      onChange();
+    },
+
+    // ---- 標題 ----
+    newLife(name) {
+      G.s = state.create((name || "").trim() || opening.randomName());
+      const L = state.loadLegacy();
+      G.s.legacyAvailable = (L.pending || []).length > 0;
+      G.s.legacyLives = L.lives || [];
+      G.ui = { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] };
+      G.commit();
+    },
+    continueLife() { G.s = state.load(); G.ui.panel = null; onChange(); },
+    toTitle() { G.s = null; onChange(); },
+    wipe() { state.clear(); state.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
+
+    // ---- 開局 ----
+    startMortal() { opening.startMortal(G.s, "full"); G.commit(); },
+    mortalAct(action) { opening.mortalAct(G.s, action); G.commit(); },
+    mortalPick(i) { opening.resolveMortalEvent(G.s, i); G.commit(); },
+    chooseAim(aimId) { G.s.mortalLines = opening.mortal(G.s, aimId); G.commit(); },
+    takeTest() { G.s.rootLines = opening.rollRoot(G.s); G.s.awakenOpts = opening.awakeningOptions(G.s); G.commit(); },
+    chooseAwakening(i) {
+      const s = G.s, opt = s.awakenOpts[i];
+      opening.chooseAwakening(s, opt);
+      s.lastText = `你在入定幻境中看見：「${abilities.imagery[opt.tag]}」\n醒來時，你已悟得「${opt.ability}」，並以「${opt.technique}」為主修功法。修仙之路，從今日開始。`;
+      state.log(s, s.lastText);
+      if (s.legacyAvailable) state.log(s, "（傳聞這附近藏著一座前人遺府，遊歷時或許能遇上。）");
+      s.notice = {
+        title: "老執事的叮囑",
+        text: "臨走前，老執事又叫住你：\n「修行急不得。吐納、運轉周天、閉關、出門遊歷，不論做哪一樣，一坐下去便是一季。\n春去秋來，壽元也就這麼一季一季過去了。想清楚再動身。」"
+      };
+      G.commit();
+    },
+
+    // ---- 行動 ----
+    doAction(action, full) {
+      const s = G.s;
+      if (s.current) return;
+      const res = cultivation.run(s, action, full);
+      const lines = res.lines;
+      if (action === "遊歷" && s.alive) {
+        const b = state.bonuses(s);
+        let stones = 0; const mats = [];
+        const common = Object.keys(layoutData.materials).filter(m => !["雷擊木", "古劍殘片", "玄水青蓮"].includes(m));
+        for (let i = 0; i < res.seasons; i++) {
+          stones += util.rand(numbers.travel.stonesMin, numbers.travel.stonesMax);
+          if (util.chance(numbers.travel.materialChance + b.material)) mats.push(util.pick(common));
+        }
+        s.stones += stones;
+        mats.forEach(m => { s.materials[m] = (s.materials[m] || 0) + 1; });
+        lines.push(`沿途得靈石 ${stones}${mats.length ? "，採得" + mats.join("、") : ""}。`);
+      }
+      if (s.alive && util.chance(res.eventChance)) {
+        const e = events.pick(s);
+        if (e) s.queue.push({ type: "event", id: e.id });
+      }
+      s.lastText = lines.join("\n");
+      state.log(s, s.lastText);
+      G.nextQueue();
+      G.commit();
+    },
+
+    togglePanel(name) { G.ui.panel = G.ui.panel === name ? null : name; onChange(); },
+    setBt(key, value) { G.ui.bt[key] = value; onChange(); },
+    doBreakthrough() {
+      const s = G.s;
+      if (!breakthrough.envUsable(s, G.ui.bt.env)) { s.lastText = "這個季節無法在那裡突破。"; return onChange(); }
+      const realmBefore = s.realmIndex, lenBefore = state.realm(s).longLen;
+      const lines = breakthrough.attempt(s, { material: G.ui.bt.material || null, env: G.ui.bt.env });
+      if (s.alive && s.realmIndex > realmBefore) {
+        const r = state.realm(s), L = r.longLen;
+        const span = { 1: "一季", 2: "半年", 4: "一年", 6: "一年半", 8: "兩年" }[L] || `${L} 季`;
+        const feel = REALM_FEEL[r.id] || "天地在你眼中，似乎換了一副模樣。";
+        const time = L !== lenBefore
+          ? `\n\n你也發覺時間過得不一樣了。從前一次入定不過${({ 1: "一季", 4: "一年", 6: "一年半" })[lenBefore] || "片刻"}，如今一閉眼，便是${span}。\n若有要緊的事得趕上，也可以只坐一季便起身，只是這樣難以把功夫修滿。`
+          : "";
+        s.notice = { title: `踏入${r.id}`, text: feel + time };
+      }
+      G.ui.bt.material = ""; G.ui.panel = null;
+      s.lastText = lines.join("\n");
+      state.log(s, s.lastText);
+      G.nextQueue();
+      G.commit();
+    },
+    buy(item) { const s = G.s; s.lastText = cultivation.buy(s, item); state.log(s, s.lastText); G.commit(); },
+    setTechnique(t) { const s = G.s; s.technique = t; s.lastText = `改以「${t}」為主修功法。`; state.log(s, s.lastText); G.commit(); },
+    equip(a) { G.s.equipped = a || null; G.commit(); },
+    retire() { legacy.die(G.s, "坐化"); G.commit(); },
+    setTab(t) { G.ui.tab = t; onChange(); },
+    dismissNotice() { if (G.s) G.s.notice = null; G.commit(); },
+
+    // ---- 三選一與事件 ----
+    nextQueue() {
+      const s = G.s;
+      if (!s.alive) { s.current = null; return; }
+      while (!s.current && s.queue.length) {
+        const q = s.queue.shift();
+        if (q.type === "growth") {
+          const opts = breakthrough.growthOptions(s);
+          if (opts.length) s.current = { type: "growth", options: opts.map(o => o.name) };
+        } else if (q.type === "ability") {
+          const opts = breakthrough.abilityOptions(s, q.timing, q.judge, q.tags);
+          if (opts.length) s.current = { type: "ability", level: q.judge ? q.judge.level : "一般", options: opts.map(o => o.name) };
+        } else if (q.type === "event") {
+          s.current = { type: "event", id: q.id };
+        } else if (q.type === "qiudeviation") {
+          s.current = { type: "deviation" };
+        }
+      }
+    },
+    pick(i) {
+      const s = G.s, c = s.current;
+      if (!c) return;
+      if (c.type === "growth") {
+        const g = abilities.growth.find(x => x.name === c.options[i]);
+        s.growth.push(g.name);
+        s.lastText = `靈光一閃，你領悟了「${g.name}」：${g.desc}。`;
+      } else if (c.type === "ability") {
+        const a = abilities.pool.find(x => x.name === c.options[i]);
+        s.abilities.push(a.name);
+        s.lastText = `你走向「${abilities.imagery[a.tag] || a.tag}」的幻象，悟得「${a.name}」：${a.desc}。`;
+        state.note(s, `突破時於幻境中悟得${a.name}。`);
+      } else if (c.type === "event") {
+        const e = eventsData.list.find(x => x.id === c.id);
+        s.lastText = `【${e.title}】` + events.resolve(s, e, i);
+      }
+      state.log(s, s.lastText);
+      s.current = null;
+      G.nextQueue();
+      G.commit();
+    },
+    deviate(choice) {
+      const s = G.s;
+      s.lastText = breakthrough.deviation(s, choice);
+      state.log(s, s.lastText);
+      s.current = null;
+      G.nextQueue();
+      G.commit();
+    },
+
+    // ---- 結局與傳承 ----
+    toggleNotePick(i) {
+      const p = G.ui.picks, k = p.indexOf(i);
+      if (k >= 0) p.splice(k, 1); else if (p.length < numbers.legacy.maxPages) p.push(i);
+      onChange();
+    },
+    bequeath() {
+      const n = legacy.bequeath(G.s, G.ui.picks);
+      G.s = null; G.ui.picks = [];
+      G.flash = n ? `留下了 ${n} 頁筆記。下一世遊歷時，或許能在某處洞府找到它們。` : "這一世沒有留下筆記。";
+      onChange();
+    }
+  };
+  return G;
+}
+
+function readTestMode() {
+  try { return localStorage.getItem("xx-testmode") !== "0"; } catch (e) { return true; }
+}
