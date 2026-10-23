@@ -151,4 +151,51 @@ describe("標題畫面", () => {
     render(<TitleScreen game={createTestGame()} />);
     expect(screen.queryByText(/較新版本/)).not.toBeInTheDocument();
   });
+
+  describe("上一世的筆記還沒留下時開始新的一生", () => {
+    function playToUnbequeathedEnding() {
+      useSeededRandom(1);
+      playToCultivation(createTestGame()).retire();
+      writeLegacy({ lives: [{ name: "前人", title: "散修", realm: "煉氣第3層", age: 30, cause: "壽盡", root: "木靈根" }], pending: [] });
+      return localStorage.getItem(save.SAVE_KEY);
+    }
+    const reminderText = "上一世（測試修士）的筆記還沒留下，現在開始新的一生，那些筆記就留不住了。";
+
+    test("按「開始新的一生」先出現提醒，尚未開始新的一世，存檔與前世紀錄都還在", async () => {
+      const endingSaveText = playToUnbequeathedEnding();
+      const legacyText = localStorage.getItem(save.LEGACY_KEY);
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      expect(screen.getByText(reminderText)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "還是開始新的一生" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "一世修仙" })).toBeInTheDocument();
+      expect(localStorage.getItem(save.SAVE_KEY)).toBe(endingSaveText);
+      expect(localStorage.getItem(save.LEGACY_KEY)).toBe(legacyText);
+    });
+
+    test("按「先去留下筆記」回到結局畫面", async () => {
+      playToUnbequeathedEnding();
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      await userEvent.click(screen.getByRole("button", { name: "先去留下筆記" }));
+      expect(screen.getByRole("heading", { name: "一世終了" })).toBeInTheDocument();
+    });
+
+    test("按「還是開始新的一生」才真的開始新一世", async () => {
+      playToUnbequeathedEnding();
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      await userEvent.click(screen.getByRole("button", { name: "還是開始新的一生" }));
+      expect(screen.queryByRole("heading", { name: "一世修仙" })).not.toBeInTheDocument();
+      expect(screen.queryByText(reminderText)).not.toBeInTheDocument();
+      expect(save.load().alive).toBe(true);
+    });
+
+    test("沒有這種存檔時，按「開始新的一生」直接開始，不出現提醒", async () => {
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      expect(screen.queryByText(/筆記還沒留下/)).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "一世修仙" })).not.toBeInTheDocument();
+    });
+  });
 });

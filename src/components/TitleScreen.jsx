@@ -5,6 +5,7 @@ import { save as saveFile } from "../systems/save.js";
 
 export default function TitleScreen({ game }) {
   const [name, setName] = useState(() => opening.randomName());
+  const [isConfirmingNewLife, setIsConfirmingNewLife] = useState(false);
   const save = saveFile.load();
   const L = saveFile.loadLegacy();
   const lives = (L.lives || []).slice().reverse();
@@ -24,10 +25,19 @@ export default function TitleScreen({ game }) {
         </div>
       </div>
       <div className="row wrap">
-        <button className="primary" onClick={() => game.newLife(name)}>開始新的一生</button>
+        <button className="primary" onClick={() => (game.hasUnbequeathedEnding() ? setIsConfirmingNewLife(true) : game.newLife(name))}>開始新的一生</button>
         {save && save.alive && <button onClick={game.continueLife}>繼續 {save.name}（{state.stageName(save)}）</button>}
         {save && save.alive === false && save.phase === "end" && <button onClick={game.returnToLifeEnding}>為 {save.name} 留下筆記</button>}
       </div>
+      {isConfirmingNewLife && save && (
+        <div className="notice-box" role="alertdialog" aria-label="尚未留下筆記">
+          <p className="flash">上一世（{save.name}）的筆記還沒留下，現在開始新的一生，那些筆記就留不住了。</p>
+          <div className="row wrap">
+            <button onClick={() => { setIsConfirmingNewLife(false); game.newLife(name); }}>還是開始新的一生</button>
+            <button className="primary" onClick={game.returnToLifeEnding}>先去留下筆記</button>
+          </div>
+        </div>
+      )}
       {(L.pending || []).length > 0 && <p className="hint">有 {L.pending.length} 頁前人筆記等待被找到。</p>}
       {lives.length > 0 && (
         <>

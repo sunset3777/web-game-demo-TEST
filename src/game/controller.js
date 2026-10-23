@@ -49,6 +49,11 @@ export function createGame(onChange) {
       G.flash = null; // 結局畫面也會顯示 flash，開新的一生時清掉標題上的舊提示，免得之後誤顯示
       G.commit();
     },
+    // 存檔是已結束、還沒留下筆記的一世：標題用它判斷開新的一生前要不要先提醒（唯讀）
+    hasUnbequeathedEnding() {
+      const savedState = save.load();
+      return !!savedState && savedState.alive === false && savedState.phase === "end";
+    },
     continueLife() { G.s = save.load(); G.ui.panel = null; G.flash = null; onChange(); },
     // 這一世已結束、還沒留下筆記就離開了（例如在結局畫面重新整理）：讀回結局狀態，回到選筆記的畫面
     returnToLifeEnding() {
