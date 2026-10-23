@@ -8,6 +8,7 @@ export default function EndScreen({ game }) {
   return (
     <section className="card">
       <h2>一世終了</h2>
+      {game.flash && <p className="flash">{game.flash}</p>}
       <p className="story">{s.lastText ? visibleText(game, s.lastText) + "\n" : ""}{s.name}，{s.root ? s.root.label : ""}，{s.cause}於{state.stageName(s)}，享年 {Math.floor(state.age(s))} 歲。</p>
       <p className="lead">後人稱你為「{legacy.title(s)}」。</p>
       <h3>選擇要留下的筆記（最多 {numbers.legacy.maxPages} 頁）</h3>

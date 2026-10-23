@@ -192,13 +192,18 @@ test("localStorage 寫入丟例外時：save 吞掉例外、不寫入，也不�
   assert.equal(storage.getItem(save.SAVE_KEY), before);
 });
 
-test("localStorage 寫入丟例外時：saveLegacy 吞掉例外，不寫入，呼叫端得不到失敗訊息", () => {
+test("localStorage 寫入丟例外時：saveLegacy 不丟例外、不寫入，並回報 false 讓呼叫端知道失敗", () => {
   const storage = installMemoryStorage();
   storage.shouldThrowOnWrite = true;
   let returnedValue;
   assert.doesNotThrow(() => { returnedValue = save.saveLegacy({ lives: [], pending: [] }); });
-  assert.equal(returnedValue, undefined);
+  assert.equal(returnedValue, false);
   assert.equal(storage.getItem(save.LEGACY_KEY), null);
+});
+
+test("saveLegacy 寫入成功時回報 true", () => {
+  installMemoryStorage();
+  assert.equal(save.saveLegacy({ lives: [], pending: [] }), true);
 });
 
 // ---- 死亡後的存檔（審查 4-1）----
@@ -242,20 +247,22 @@ test("存檔是活著的進度時，returnToLifeEnding 不做事（不能拿它�
   assert.equal(game.s, null);
 });
 
-// ---- 已知問題 (b)：傳承寫入失敗仍清舊存檔 ----
+// ---- 傳承寫入失敗（審查 4-2）----
 
-test("現況：傳承檔寫入失敗時，bequeath 仍會清掉舊存檔，傳承也沒落盤", () => {
+test("傳承檔寫入失敗時：舊存檔原樣保留、傳承沒落盤，game.s 仍是結局狀態，玩家收到存檔失敗的提示", () => {
   const { game, storage } = playOneLife({ seed: 1, openingMode: "quick" });
-  assert.notEqual(storage.getItem(save.SAVE_KEY), null);
+  const saveBefore = storage.getItem(save.SAVE_KEY);
   storage.shouldThrowOnWrite = true;
   game.ui.picks = [0, 1];
   game.bequeath();
-  assert.equal(storage.getItem(save.SAVE_KEY), null);
+  assert.equal(storage.getItem(save.SAVE_KEY), saveBefore);
   assert.equal(storage.getItem(save.LEGACY_KEY), null);
-  assert.match(game.flash, /留下了 2 頁筆記/);
+  assert.equal(game.s.alive, false);
+  assert.deepEqual(game.ui.picks, [0, 1]);
+  assert.equal(game.flash, "存檔失敗，舊存檔仍保留，請稍後再試。");
 });
 
-// 已知問題（目前會失敗，修好後才會通過）：對應審查 4-2：saveLegacy 吞掉寫入例外，bequeath 無條件清舊存檔。期望：傳承檔寫入失敗時保留舊存檔，且不提示玩家已留下筆記
+// 傳承寫入失敗時的行為：不清舊存檔、不謊稱已留下筆記（審查 4-2）
 test("傳承檔寫入失敗時，不該清掉舊存檔，也不該告訴玩家已留下筆記", () => {
   const { game, storage } = playOneLife({ seed: 1, openingMode: "quick" });
   storage.shouldThrowOnWrite = true;
@@ -263,6 +270,21 @@ test("傳承檔寫入失敗時，不該清掉舊存檔，也不該告訴玩家�
   game.bequeath();
   assert.notEqual(storage.getItem(save.SAVE_KEY), null);
   assert.doesNotMatch(game.flash, /留下了/);
+});
+
+test("傳承檔寫入失敗後儲存空間恢復，再按一次就能傳下去，筆記只記一次", () => {
+  const { game, storage } = playOneLife({ seed: 1, openingMode: "quick" });
+  storage.shouldThrowOnWrite = true;
+  game.ui.picks = [0, 1];
+  game.bequeath();
+  storage.shouldThrowOnWrite = false;
+  game.bequeath();
+  assert.equal(storage.getItem(save.SAVE_KEY), null);
+  assert.equal(game.s, null);
+  assert.match(game.flash, /留下了 2 頁筆記/);
+  const legacyFile = save.loadLegacy();
+  assert.equal(legacyFile.lives.length, 1);
+  assert.equal(legacyFile.pending.length, 2);
 });
 
 // ---- 已知問題 (c)：較新版本存檔被降回現版本 ----

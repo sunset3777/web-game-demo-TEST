@@ -51,5 +51,9 @@ export const save = {
   load() { try { const t = localStorage.getItem(this.SAVE_KEY); return t ? this.migrate(JSON.parse(t)) : null; } catch (e) { return null; } },
   clear() { try { localStorage.removeItem(this.SAVE_KEY); } catch (e) {} },
   loadLegacy() { try { const t = localStorage.getItem(this.LEGACY_KEY); return this.migrateLegacy(t ? JSON.parse(t) : null); } catch (e) { return this.migrateLegacy(null); } },
-  saveLegacy(L) { try { L.v = SAVE_VERSION; localStorage.setItem(this.LEGACY_KEY, JSON.stringify(L)); } catch (e) {} }
+  // 回報是否真的寫進去：傳承寫入失敗時呼叫端（legacy.bequeath）要保留舊存檔，不能當成已經傳下去
+  saveLegacy(legacyData) {
+    try { legacyData.v = SAVE_VERSION; localStorage.setItem(this.LEGACY_KEY, JSON.stringify(legacyData)); return true; }
+    catch (e) { return false; }
+  }
 };

@@ -41,14 +41,15 @@ export function createGame(onChange) {
       G.s.legacyAvailable = (L.pending || []).length > 0;
       G.s.legacyLives = L.lives || [];
       G.ui = { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] };
+      G.flash = null; // 結局畫面也會顯示 flash，開新的一生時清掉標題上的舊提示，免得之後誤顯示
       G.commit();
     },
-    continueLife() { G.s = save.load(); G.ui.panel = null; onChange(); },
+    continueLife() { G.s = save.load(); G.ui.panel = null; G.flash = null; onChange(); },
     // 這一世已結束、還沒留下筆記就離開了（例如在結局畫面重新整理）：讀回結局狀態，回到選筆記的畫面
     returnToLifeEnding() {
       const savedState = save.load();
       if (!savedState || savedState.alive !== false || savedState.phase !== "end") return;
-      G.s = savedState; G.ui.panel = null; G.ui.picks = [];
+      G.s = savedState; G.ui.panel = null; G.ui.picks = []; G.flash = null;
       onChange();
     },
     toTitle() { G.s = null; onChange(); },
@@ -175,9 +176,14 @@ export function createGame(onChange) {
       onChange();
     },
     bequeath() {
-      const n = legacy.bequeath(G.s, G.ui.picks);
+      const { isLegacySaved, pageCount } = legacy.bequeath(G.s, G.ui.picks);
+      if (!isLegacySaved) {
+        // 傳承沒寫進去：留在結局畫面，舊存檔與勾選的筆記都還在，玩家可以稍後再按一次
+        G.flash = "存檔失敗，舊存檔仍保留，請稍後再試。";
+        return onChange();
+      }
       G.s = null; G.ui.picks = [];
-      G.flash = n ? `留下了 ${n} 頁筆記。下一世遊歷時，或許能在某處洞府找到它們。` : "這一世沒有留下筆記。";
+      G.flash = pageCount ? `留下了 ${pageCount} 頁筆記。下一世遊歷時，或許能在某處洞府找到它們。` : "這一世沒有留下筆記。";
       onChange();
     }
   };
