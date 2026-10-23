@@ -43,4 +43,22 @@ describe("結局畫面", () => {
     expect(screen.queryByText(/存檔失敗/)).not.toBeInTheDocument();
     expect(localStorage.getItem(save.SAVE_KEY)).toBeNull();
   });
+
+  test("傳承檔來自較新版本：按「留下筆記」顯示「這份存檔來自較新版本」而不是會一直失敗的「請稍後再試」，傳承檔與存檔原字不動", async () => {
+    useSeededRandom(1);
+    playToCultivation(createTestGame()).retire();
+    const newerLegacyText = JSON.stringify({ v: save.SAVE_VERSION + 98, lives: [{ name: "未來" }], pending: [] });
+    localStorage.setItem(save.LEGACY_KEY, newerLegacyText);
+    render(<App />);
+    await userEvent.click(screen.getByRole("button", { name: "為 測試修士 留下筆記" }));
+    await userEvent.click(screen.getAllByRole("checkbox")[0]);
+    const saveBefore = localStorage.getItem(save.SAVE_KEY);
+
+    await userEvent.click(screen.getByRole("button", { name: "留下筆記，進入下一世" }));
+    expect(screen.getByText(/^這份存檔來自較新版本/)).toBeInTheDocument();
+    expect(screen.queryByText(/請稍後再試/)).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "一世終了" })).toBeInTheDocument();
+    expect(localStorage.getItem(save.LEGACY_KEY)).toBe(newerLegacyText);
+    expect(localStorage.getItem(save.SAVE_KEY)).toBe(saveBefore);
+  });
 });

@@ -192,7 +192,10 @@ export function createGame(onChange) {
       const { isLegacySaved, pageCount } = legacy.bequeath(G.s, G.ui.picks);
       if (!isLegacySaved) {
         // 傳承沒寫進去：留在結局畫面，舊存檔與勾選的筆記都還在，玩家可以稍後再按一次
-        G.flash = "存檔失敗，舊存檔仍保留，請稍後再試。";
+        // 原因若是傳承檔來自較新版本，再試也不會成功，要說清楚；其餘（儲存空間滿等）才是稍後可再試
+        G.flash = save.hasNewerLegacy()
+          ? "這份存檔來自較新版本，這個版本無法把筆記寫進去，也不會覆蓋它。請用較新的版本留下筆記。"
+          : "存檔失敗，舊存檔仍保留，請稍後再試。";
         return onChange();
       }
       G.s = null; G.ui.picks = [];
