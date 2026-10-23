@@ -1,4 +1,4 @@
-// 平衡測試：三種玩家（小心／普通／莽撞）各玩 N 輪，看到達金丹的比例與死因：npm run balance
+// 平衡測試：四種玩家（只吐納／小心／普通／莽撞）各玩 N 輪，看到達金丹的比例與死因：npm run balance
 import { createGame } from "../src/game/controller.js";
 import { state, util } from "../src/systems/state.js";
 import { marks } from "../src/data/marks.js";
