@@ -261,8 +261,18 @@ test("同一個種子與開局重跑兩次，結果逐字相同；不同種子�
   assert.notEqual(firstRun.finalStateHash, otherSeedRun.finalStateHash);
 });
 
-test("這批種子合起來涵蓋：長短行動、遊歷、突破成功與失敗、走火、坐化、遇劫身死", () => {
-  const allSummaries = Object.values(EXPECTED_LIVES);
+test("這批種子合起來涵蓋：長短行動、遊歷、突破成功與失敗、走火、坐化、遇劫身死（本次實際執行模擬統計）", () => {
+  const actualSummaries = {};
+  for (const lifeKey of Object.keys(EXPECTED_LIVES)) {
+    const [openingMode, seedText] = lifeKey.split("-");
+    actualSummaries[lifeKey] = playAndSummarize(openingMode, Number(seedText)).summary;
+  }
+  // 與快照比對行動統計與結局：若這裡不一致，代表模擬結果已偏離 EXPECTED_LIVES，涵蓋率以本次實際結果為準
+  for (const [lifeKey, actualSummary] of Object.entries(actualSummaries)) {
+    assert.deepEqual(actualSummary.stepKinds, EXPECTED_LIVES[lifeKey].stepKinds, lifeKey + " 的行動統計與快照不同");
+    assert.equal(actualSummary.cause, EXPECTED_LIVES[lifeKey].cause, lifeKey + " 的結局與快照不同");
+  }
+  const allSummaries = Object.values(actualSummaries);
   const totalOf = (stepKind) => allSummaries.reduce((sum, summary) => sum + (summary.stepKinds[stepKind] || 0), 0);
   assert.ok(totalOf("吐納(長)") > 0 && totalOf("吐納(短)") > 0, "吐納應有長有短");
   assert.ok(totalOf("遊歷(長)") > 0 && totalOf("遊歷(短)") > 0, "遊歷應有長有短");
