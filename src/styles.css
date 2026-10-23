@@ -160,3 +160,4 @@ li.faded { text-decoration: line-through; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+.act-sub.omen-warn { color: #8f2f26; }
