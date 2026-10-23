@@ -6,6 +6,7 @@ import { legacy } from "./legacy.js";
 import { layoutData } from "../data/layout.js";
 import { routes } from "./routes.js";
 import { flavor } from "../data/flavor.js";
+import { world } from "./world.js";
 
 export const cultivation = {
   // 行動一次耗時（季）
@@ -194,16 +195,8 @@ export const cultivation = {
     }
   },
 
-  // 世事變遷：秘境定期開啟，提前傳聞；錯過就沒了
-  worldTick(s, out) {
-    const S = numbers.secret, U = util;
-    if (s.secretAt == null) s.secretAt = s.seasons + U.rand(S.every[0], S.every[1]);
-    const left = s.secretAt - s.seasons;
-    if (left === S.notice) out.push("坊間傳聞：西邊山裡的秘境，過些日子就要開了。");
-    if (left === 0) out.push("西邊山裡霞光沖天，秘境開了。");
-    if (left <= -S.window) { s.secretAt = s.seasons + U.rand(S.every[0], S.every[1]); out.push("秘境的霞光散了，入口重新隱沒在山霧裡。"); }
-  },
-  secretOpen(s) { const left = s.secretAt - s.seasons; return s.secretAt != null && left <= 0 && left > -numbers.secret.window; },
+  // 秘境是否開著：規則在 world.js，這裡保留舊名給 scripts/balance.js 等既有呼叫端
+  secretOpen(s) { return world.secretOpen(s); },
 
   // 推進一季；壽盡時回傳 true
   advanceSeason(s, out) {
@@ -212,7 +205,7 @@ export const cultivation = {
     s.seasons++;
     if (s.stageRest > 0) s.stageRest--;
     events.fadeKarma(s);
-    this.worldTick(s, out);
+    world.worldTick(s, out);
     // 久困瓶頸：心生焦躁
     if (st.inBottleneck(s)) {
       s.neckSeasons = (s.neckSeasons || 0) + 1;
