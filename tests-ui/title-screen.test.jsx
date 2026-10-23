@@ -1,8 +1,10 @@
 // 標題畫面：繼續按鈕、前人筆記提示、前世列表，以及「死亡後仍可繼續」的現況
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import App from "../src/App.jsx";
 import TitleScreen from "../src/components/TitleScreen.jsx";
+import { state } from "../src/systems/state.js";
 import { save } from "../src/systems/save.js";
 import {
   createSavedState, createTestGame, playToCultivation, useSeededRandom, writeLegacy, writeSave
@@ -17,7 +19,7 @@ describe("標題畫面", () => {
     expect(screen.queryByRole("button", { name: /^繼續/ })).not.toBeInTheDocument();
   });
 
-  test("有活著的存檔時，出現「繼續 姓名（境界）」按鈕，點下去會呼叫 continueLife", async () => {
+  test("接線：有活著的存檔時，出現「繼續 姓名（境界）」按鈕，點下去會呼叫 continueLife", async () => {
     writeSave(createSavedState("舊日修士"));
     const gameController = createTestGame();
     const continueSpy = vi.spyOn(gameController, "continueLife").mockImplementation(() => {});
@@ -26,6 +28,34 @@ describe("標題畫面", () => {
     const continueButton = screen.getByRole("button", { name: "繼續 舊日修士（煉氣第1層）" });
     await userEvent.click(continueButton);
     expect(continueSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test("真流程：玩過一段後重新開啟，點「繼續」會回到修練畫面，角色名字、境界與日誌都是存檔裡的進度", async () => {
+    useSeededRandom(21);
+    // 上一次遊玩：真 controller 走到修練畫面並行動兩次，每次行動都會自動存檔
+    const previousSession = playToCultivation(createTestGame(), "續玩修士");
+    previousSession.doAction("吐納", false);
+    if (previousSession.s.current) previousSession.pick(0); // 行動若引來事件，先選掉，存檔才停在行動列
+    previousSession.doAction("周天", false);
+    if (previousSession.s.current) previousSession.pick(0);
+    expect(previousSession.s.current).toBeNull();
+    const savedStageName = state.stageName(previousSession.s);
+    const savedJournalLength = previousSession.s.log.length;
+    expect(savedJournalLength).toBeGreaterThanOrEqual(2);
+
+    // 重新開啟：全新的 App 從標題開始
+    render(<App />);
+    expect(screen.getByRole("heading", { name: "一世修仙" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: `繼續 續玩修士（${savedStageName}）` }));
+
+    expect(screen.queryByRole("button", { name: "開始新的一生" })).not.toBeInTheDocument();
+    const statusPanel = screen.getByRole("complementary");
+    expect(within(statusPanel).getByText("續玩修士")).toBeInTheDocument();
+    expect(statusPanel).toHaveTextContent(savedStageName);
+    expect(statusPanel).toHaveTextContent("神通與體悟");
+    expect(screen.getByRole("button", { name: /^吐納/ })).toBeInTheDocument();
+    const journalCard = screen.getByRole("tablist").parentElement;
+    expect(within(journalCard).getAllByRole("listitem")).toHaveLength(savedJournalLength);
   });
 
   test("存檔已標成死亡（alive=false）時，不顯示「繼續」按鈕", () => {
