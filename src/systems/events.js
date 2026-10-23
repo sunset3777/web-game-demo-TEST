@@ -1,22 +1,41 @@
 // 事件系統：依條件與權重抽遊歷事件、提供事件 api、因果帳的記錄與淡去
 import { numbers } from "../data/numbers.js";
 import { eventsData } from "../data/events.js";
+import { actionEvents } from "../data/actionEvents.js";
+import { routes } from "./routes.js";
 import { util, state } from "./state.js";
 import { legacy } from "./legacy.js";
 
 export const events = {
-  available(s) {
-    return eventsData.list.filter(e => {
+  all() { return eventsData.list.concat(actionEvents.list); },
+  find(id) { return this.all().find(e => e.id === id); },
+
+  // action：這次修練的行動；事件沒寫 actions 的視為遊歷事件
+  available(s, action) {
+    routes.ensure(s);
+    return this.all().filter(e => {
       if (e.once && s.eventsDone.includes(e.id)) return false;
+      if (action && !(e.actions || ["遊歷"]).includes(action)) return false;
+      if (e.route && e.route !== s.route) return false;
+      if (e.routeNot && e.routeNot === s.route) return false;
       try { return e.when(s); } catch (err) { console.warn("事件條件錯誤", e.id, err); return false; }
     });
   },
 
   // 抽一個事件；前人遺府受「說書迷」加成
-  pick(s) {
+  // 權重：基礎 × 心性契合 × 最近出現過的降權
+  pick(s, action) {
     const b = state.bonuses(s);
-    const list = this.available(s);
-    return util.weighted(list, e => (e.weight || 1) * (e.id === "前人遺府" ? 1 + b.legacyFind * 10 : 1));
+    const list = this.available(s, action);
+    const fit = e => {
+      let m = 1;
+      Object.entries(e.tend || {}).forEach(([axis, dir]) => { m *= Math.max(0.2, 1 + dir * (s.tend[axis] || 0) / 50); });
+      return m;
+    };
+    const recent = e => { const k = s.recentEvents.indexOf(e.id); return k < 0 ? 1 : 0.1 + 0.15 * k; };
+    const e = util.weighted(list, e => (e.weight || 1) * fit(e) * recent(e) * (e.id === "前人遺府" ? 1 + b.legacyFind * 10 : 1));
+    if (e) { s.recentEvents.unshift(e.id); s.recentEvents = s.recentEvents.filter((x, i, a) => a.indexOf(x) === i).slice(0, 6); }
+    return e;
   },
 
   text(s, e) { return typeof e.text === "function" ? e.text(s) : e.text; },
@@ -53,7 +72,11 @@ export const events = {
       die: cause => legacy.die(s, cause),
       learnTechnique: name => { if (!s.techniques.includes(name)) s.techniques.push(name); },
       legacyPages: () => (st.loadLegacy().pending || []),
-      takeLegacy: () => legacy.take(s)
+      takeLegacy: () => legacy.take(s),
+      tend: (axis, d) => routes.adjust(s, axis, d),
+      setRoute: id => routes.setRoute(s, id),
+      route: () => s.route,
+      addXiu: n => { s.xiu = Math.max(0, s.xiu + n); }
     };
   },
 

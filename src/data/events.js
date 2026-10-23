@@ -20,6 +20,8 @@
 //   api.learnTechnique(name)
 //   api.legacyPages()  取得前代留下的筆記頁；api.takeLegacy() 取走並生效
 
+import { numbers } from "./numbers.js";
+
 export const eventsData = {
   list: [
     {
@@ -43,13 +45,13 @@ export const eventsData = {
         { label: "請他入內",
           run: (s, api) => { api.resolveKarma("救山道老者", "老者原是隱世高人，以一冊心得相贈");
             api.addInsight(60); api.note("當年山道所救老者竟是隱世高人，贈我心得一冊，瓶頸豁然開朗。");
-            return "道人留下一冊手抄心得便告辭。你讀完後，對下一道關口多了幾分把握（感悟 +60）。"; } }
+            return "道人留下一冊手抄心得便告辭。你讀完後，對下一道關口多了幾分把握。\n〔感悟 +60〕"; } }
       ]
     },
     {
       id: "妖獸襲擊", title: "妖獸襲擊", weight: 2,
       when: s => true,
-      text: s => s.season === "夏" ? "夏季妖獸活躍，一頭獠牙妖狼從草叢撲出！" : "一頭獠牙妖狼從草叢撲出！",
+      text: s => numbers.seasons[s.seasonIdx] === "夏" ? "夏季妖獸活躍，一頭獠牙妖狼從草叢撲出！" : "一頭獠牙妖狼從草叢撲出！",
       choices: [
         { label: "迎戰",
           run: (s, api) => {
@@ -70,7 +72,7 @@ export const eventsData = {
           run: (s, api) => { const m = api.pick(["青木靈髓", "火靈芝", "玄水青蓮"]); api.addMaterial(m, 1); return `你採到了「${m}」。`; } },
         { label: "只取一半，留下根株",
           run: (s, api) => { const m = api.pick(["青木靈髓", "火靈芝"]); api.addMaterial(m, 1); api.addDemon(-5);
-            return `你只取了「${m}」，心境也平和了些（心魔 −5）。`; } }
+            return `你只取了「${m}」，心境也平和了些。\n〔心魔 −5〕`; } }
       ]
     },
     {
@@ -86,7 +88,7 @@ export const eventsData = {
     },
     {
       id: "雷雨夜", title: "雷雨夜", weight: 3, once: true,
-      when: s => s.season === "夏",
+      when: s => numbers.seasons[s.seasonIdx] === "夏",
       text: "夏夜雷雨大作，遠處山巔不斷有雷光落下，空氣中滿是躁動的雷息。",
       choices: [
         { label: "冒雨登上山巔",
@@ -103,8 +105,8 @@ export const eventsData = {
         { label: "深入搜尋",
           run: (s, api) => { api.unlockEnv("古戰場"); api.addDemon(10);
             if (api.chance(0.6)) api.addMaterial("古劍殘片", 1);
-            return "你在殘骸中翻找，殺氣侵入心神（心魔 +10）。此地可作為突破之所（解鎖：古戰場）。"; } },
-        { label: "記下位置後離開", run: (s, api) => { api.unlockEnv("古戰場"); return "你記下了古戰場的位置（解鎖：古戰場）。"; } }
+            return "你在殘骸中翻找，殺氣侵入心神。此地可作為突破之所，你記下了它的位置。\n〔心魔 +10；解鎖：古戰場〕"; } },
+        { label: "記下位置後離開", run: (s, api) => { api.unlockEnv("古戰場"); return "你記下了古戰場的位置，日後或許用得上。\n〔解鎖：古戰場〕"; } }
       ]
     },
     {
@@ -132,8 +134,8 @@ export const eventsData = {
       when: s => true,
       text: "茶館裡兩名修士正在爭論功法，見你駐足，邀你一同坐下。",
       choices: [
-        { label: "加入論道", run: (s, api) => { api.addInsight(15); return "一番論道，各有所得（感悟 +15）。"; } },
-        { label: "只在旁聽", run: (s, api) => { api.addInsight(5); return "你聽了半晌，略有所得（感悟 +5）。"; } }
+        { label: "加入論道", run: (s, api) => { api.addInsight(15); return "一番論道，各有所得。\n〔感悟 +15〕"; } },
+        { label: "只在旁聽", run: (s, api) => { api.addInsight(5); return "你聽了半晌，略有所得。\n〔感悟 +5〕"; } }
       ]
     },
     {
@@ -141,8 +143,8 @@ export const eventsData = {
       when: s => s.demon >= 30,
       text: "夜裡你夢見自己突破失敗、經脈寸斷。醒來時冷汗濕透了衣衫。",
       choices: [
-        { label: "靜坐調息", run: (s, api) => { api.addDemon(-10); return "你靜坐到天明，心緒漸漸平復（心魔 −10）。"; } },
-        { label: "強壓下去，繼續趕路", run: (s, api) => { api.addDemon(5); return "你壓下不安繼續上路，但那個夢揮之不去（心魔 +5）。"; } }
+        { label: "靜坐調息", run: (s, api) => { api.addDemon(-10); return "你靜坐到天明，心緒漸漸平復。\n〔心魔 −10〕"; } },
+        { label: "強壓下去，繼續趕路", run: (s, api) => { api.addDemon(5); return "你壓下不安繼續上路，但那個夢揮之不去。\n〔心魔 +5〕"; } }
       ]
     },
     {
