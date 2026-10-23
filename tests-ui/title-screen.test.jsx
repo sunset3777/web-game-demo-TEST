@@ -108,7 +108,8 @@ describe("標題畫面", () => {
     expect(screen.getByRole("button", { name: /^繼續 測試修士/ })).toBeInTheDocument();
   });
 
-  test("死亡後標題不該再出現「繼續」（存檔應被清掉或標成已死）", { todo: "已知問題：controller.commit 只在 alive 時寫檔，死亡不清舊檔，見審查 4-1" }, () => {
+  // 已知問題（目前會失敗，修好後才會通過）：controller.commit 只在 alive 時寫檔，死亡不清舊檔，見審查 4-1
+  test("死亡後標題不該再出現「繼續」（存檔應被清掉或標成已死）", () => {
     useSeededRandom(1);
     const playedGame = playToCultivation(createTestGame());
     playedGame.retire();
