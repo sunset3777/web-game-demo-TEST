@@ -1,5 +1,5 @@
 // 不變條件測試：在許多固定種子的整世模擬過程中，每一步行動之後都檢查「任何時候都不該違反」的性質。
-// 只描述現狀。已知會違反期望的地方（死亡後仍可行動）用 todo 標出，不在這裡修。
+// 只描述現狀。已知會違反期望的地方（死亡後仍可行動）寫成「已知問題」測試，目前會失敗，不在這裡修。
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { numbers } from "../src/data/numbers.js";
@@ -88,7 +88,8 @@ test("現況：死亡後再呼叫 doAction，alive 與 phase 不變，但回合�
   assert.ok(game.s.seasons > seasonsAtDeath);
 });
 
-test("死亡後行動（doAction）不該再改變遊戲狀態", { todo: "本次測試補充發現（審查未列）：controller.doAction 不檢查 alive，死後仍推進回合、季數並寫紀錄。期望：死亡後呼叫 doAction 不改變任何狀態，與 retire／pick 一致" }, () => {
+// 已知問題（目前會失敗，修好後才會通過）：本次測試補充發現（審查未列）：controller.doAction 不檢查 alive，死後仍推進回合、季數並寫紀錄。期望：死亡後呼叫 doAction 不改變任何狀態，與 retire／pick 一致
+test("死亡後行動（doAction）不該再改變遊戲狀態", () => {
   const { game } = playOneLife({ seed: 1, openingMode: "quick" });
   const snapshotBefore = JSON.stringify(game.s);
   game.doAction("吐納", true);
