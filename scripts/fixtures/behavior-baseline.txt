@@ -167,5 +167,5 @@ legacyNull {"v":1,"lives":[],"pending":[]}
 legacyOld {"lives":[{"name":"x"}],"pending":[],"v":1}
 continue 77200daa94c5b508 1 氣修 {"act":{"吐納":0,"周天":0,"閉關":0,"遊歷":0},"正邪":0,"穩躁":0}
 continueAct 43dc2013b086cd5b 大雪封了山路，你只能在山腳的小鎮之間奔走。|〔遊歷了 2 季：修為 +52〕|你在山中撞見一頭氣息遠勝於你的妖王。你甚至來不及轉身。
-store 714 8d48872e2ef77548
+store 1306 8291f0000b7b23e8
 wipe [["xiuxian-demo-legacy-v1","{\"lives\":[],\"pending\":[],\"v\":1}"]]
