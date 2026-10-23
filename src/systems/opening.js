@@ -24,7 +24,7 @@ export const opening = {
     if (s.startAge >= 16) {
       const pre = U.pick(marks.aims);
       s.mortal.counts[pre.id] = 4;
-      lines.push(`這兩年，你一直${pre.habit}。再 ${playable} 季，就到測靈的日子了。`);
+      lines.push(`這兩年，你一直${pre.habit}。測靈的日子快到了。`, `〔還有 ${playable} 季〕`);
       state.note(s, `十六歲以前，一直${pre.habit}。`, "回憶");
     } else {
       lines.push(`聽大人說，等你十八歲那年，仙門的人會來鎮上測靈。`);
@@ -62,7 +62,7 @@ export const opening = {
   // 凡人期結束：自動帶過剩餘年數、凝成印記
   finishMortal(s) {
     const m = s.mortal, M = marks, U = util;
-    const ranked = Object.entries(m.counts).sort((a, b) => b[1] - a[1] || Math.random() - 0.5);
+    const ranked = U.shuffle(Object.entries(m.counts)).sort((a, b) => b[1] - a[1]);   // 先洗牌再穩定排序：平手時隨機
     const top = ranked.length ? ranked[0][0] : U.pick(M.aims).id;
     if (m.auto > 0) m.counts[top] = (m.counts[top] || 0) + m.auto * 4;
     const aim = M.aims.find(a => a.id === top);
@@ -101,7 +101,7 @@ export const opening = {
   rollRoot(s) {
     const N = numbers, L = layoutData, U = util, R = N.roots;
     const els = L.elements.slice();
-    const shuffled = () => els.slice().sort(() => Math.random() - 0.5);
+    const shuffled = () => U.shuffle(els);
     const r = Math.random();
     let root;
     if (r < R.single.chance) {
@@ -132,7 +132,7 @@ export const opening = {
   awakeningOptions(s) {
     const A = abilities, L = layoutData, U = util;
     const opts = [];
-    const entry = tag => A.pool.find(a => a.tag === tag && a.tier === "入門");
+    const entry = tag => U.pick(A.pool.filter(a => a.tag === tag && a.tier === "入門"));
     if (s.root.type === "fusion") {
       const fa = A.pool.find(a => a.tag === s.root.fusion);
       if (fa) opts.push({ ability: fa.name, technique: s.root.fusion === "雷" ? "引雷訣" : L.techniqueByElement[s.root.elements[0]], tag: s.root.fusion });
@@ -157,7 +157,7 @@ export const opening = {
     s.abilities.push(opt.ability);
     if (!s.techniques.includes(opt.technique)) s.techniques.push(opt.technique);
     s.technique = opt.technique;
-    state.note(s, `入定幻境中見「${abilities.imagery[opt.tag]}」，悟得${opt.ability}，主修${opt.technique}。`, "里程碑");
+    state.note(s, `入定幻境中見「${abilities.vision(opt.ability, opt.tag)}」，悟得${opt.ability}，主修${opt.technique}。`, "里程碑");
     s.phase = "play";
   }
 };
