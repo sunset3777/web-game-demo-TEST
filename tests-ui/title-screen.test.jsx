@@ -1,4 +1,4 @@
-// 標題畫面：繼續按鈕、前人筆記提示、前世列表，以及「死亡後仍可繼續」的現況
+// 標題畫面：繼續按鈕、前人筆記提示、前世列表，以及死亡後只能回到結局畫面選筆記、不能繼續
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -97,18 +97,7 @@ describe("標題畫面", () => {
     expect(screen.queryByRole("heading", { name: "前世" })).not.toBeInTheDocument();
   });
 
-  test("現況：存檔 alive=true 但這一世實際上已死亡，標題仍顯示「繼續」", () => {
-    useSeededRandom(1);
-    const playedGame = playToCultivation(createTestGame());
-    playedGame.retire(); // 坐化：這一世結束，但 controller 死亡後不會改寫存檔
-    expect(playedGame.s.alive).toBe(false);
-    expect(save.load().alive).toBe(true);
-
-    render(<TitleScreen game={createTestGame()} />);
-    expect(screen.getByRole("button", { name: /^繼續 測試修士/ })).toBeInTheDocument();
-  });
-
-  // 已知問題（目前會失敗，修好後才會通過）：controller.commit 只在 alive 時寫檔，死亡不清舊檔，見審查 4-1
+  // 死亡後的行為：標題不能再讀回死前的進度（審查 4-1）
   test("死亡後標題不該再出現「繼續」（存檔應被清掉或標成已死）", () => {
     useSeededRandom(1);
     const playedGame = playToCultivation(createTestGame());
@@ -116,5 +105,97 @@ describe("標題畫面", () => {
 
     render(<TitleScreen game={createTestGame()} />);
     expect(screen.queryByRole("button", { name: /^繼續/ })).not.toBeInTheDocument();
+  });
+
+  test("真流程：坐化後還沒留下筆記就重新開啟，標題出現「為 姓名 留下筆記」，點下去回到結局畫面選筆記", async () => {
+    useSeededRandom(1);
+    const playedGame = playToCultivation(createTestGame());
+    playedGame.retire();
+    expect(save.load().alive).toBe(false);
+
+    render(<App />);
+    expect(screen.queryByRole("button", { name: /^繼續/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "為 測試修士 留下筆記" }));
+    expect(screen.getByRole("heading", { name: "一世終了" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "留下筆記，進入下一世" })).toBeInTheDocument();
+  });
+
+  test("存檔是活著的進度時，不顯示「留下筆記」按鈕", () => {
+    writeSave(createSavedState("舊日修士"));
+    render(<TitleScreen game={createTestGame()} />);
+    expect(screen.queryByRole("button", { name: /留下筆記/ })).not.toBeInTheDocument();
+  });
+
+  test("存檔來自較新版本時：顯示「這份存檔來自較新版本」，沒有「繼續」；按「開始新的一生」被擋下並說明，存檔不被覆蓋", async () => {
+    const newerSave = createSavedState("未來修士", { v: save.SAVE_VERSION + 4 });
+    localStorage.setItem(save.SAVE_KEY, JSON.stringify(newerSave));
+    const newerSaveText = localStorage.getItem(save.SAVE_KEY);
+
+    render(<App />);
+    expect(screen.getByText(/^這份存檔來自較新版本/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^繼續/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+    expect(screen.getByText("為了不蓋掉較新版本的存檔，這裡不能開始新的一生。")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "一世修仙" })).toBeInTheDocument();
+    expect(localStorage.getItem(save.SAVE_KEY)).toBe(newerSaveText);
+  });
+
+  test("傳承檔來自較新版本時，同樣顯示「這份存檔來自較新版本」", () => {
+    localStorage.setItem(save.LEGACY_KEY, JSON.stringify({ v: save.SAVE_VERSION + 4, lives: [], pending: [] }));
+    render(<TitleScreen game={createTestGame()} />);
+    expect(screen.getByText(/^這份存檔來自較新版本/)).toBeInTheDocument();
+  });
+
+  test("一般存檔不顯示較新版本的提示", () => {
+    writeSave(createSavedState("舊日修士"));
+    render(<TitleScreen game={createTestGame()} />);
+    expect(screen.queryByText(/較新版本/)).not.toBeInTheDocument();
+  });
+
+  describe("上一世的筆記還沒留下時開始新的一生", () => {
+    function playToUnbequeathedEnding() {
+      useSeededRandom(1);
+      playToCultivation(createTestGame()).retire();
+      writeLegacy({ lives: [{ name: "前人", title: "散修", realm: "煉氣第3層", age: 30, cause: "壽盡", root: "木靈根" }], pending: [] });
+      return localStorage.getItem(save.SAVE_KEY);
+    }
+    const reminderText = "上一世（測試修士）的筆記還沒留下，現在開始新的一生，那些筆記就留不住了。";
+
+    test("按「開始新的一生」先出現提醒，尚未開始新的一世，存檔與前世紀錄都還在", async () => {
+      const endingSaveText = playToUnbequeathedEnding();
+      const legacyText = localStorage.getItem(save.LEGACY_KEY);
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      expect(screen.getByText(reminderText)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "還是開始新的一生" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "一世修仙" })).toBeInTheDocument();
+      expect(localStorage.getItem(save.SAVE_KEY)).toBe(endingSaveText);
+      expect(localStorage.getItem(save.LEGACY_KEY)).toBe(legacyText);
+    });
+
+    test("按「先去留下筆記」回到結局畫面", async () => {
+      playToUnbequeathedEnding();
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      await userEvent.click(screen.getByRole("button", { name: "先去留下筆記" }));
+      expect(screen.getByRole("heading", { name: "一世終了" })).toBeInTheDocument();
+    });
+
+    test("按「還是開始新的一生」才真的開始新一世", async () => {
+      playToUnbequeathedEnding();
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      await userEvent.click(screen.getByRole("button", { name: "還是開始新的一生" }));
+      expect(screen.queryByRole("heading", { name: "一世修仙" })).not.toBeInTheDocument();
+      expect(screen.queryByText(reminderText)).not.toBeInTheDocument();
+      expect(save.load().alive).toBe(true);
+    });
+
+    test("沒有這種存檔時，按「開始新的一生」直接開始，不出現提醒", async () => {
+      render(<App />);
+      await userEvent.click(screen.getByRole("button", { name: "開始新的一生" }));
+      expect(screen.queryByText(/筆記還沒留下/)).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "一世修仙" })).not.toBeInTheDocument();
+    });
   });
 });

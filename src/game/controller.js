@@ -24,7 +24,9 @@ export function createGame(onChange) {
     testMode: readTestMode(),
     ui: { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] },
 
-    commit() { if (G.s && G.s.alive) save.save(G.s); onChange(); },
+    // 死亡時也照樣寫檔：存檔留下 alive=false 的結局狀態，標題就不會再出現「繼續」讀回死前的進度；
+    // 又因為結局狀態還在，重新整理結局頁後仍能從標題回到結局畫面選筆記。傳承成功後由 legacy.bequeath 清掉存檔。
+    commit() { if (G.s) save.save(G.s); onChange(); },
 
     toggleTestMode() {
       G.testMode = !G.testMode;
@@ -34,16 +36,35 @@ export function createGame(onChange) {
 
     // ---- 標題 ----
     newLife(name) {
+      // 這台電腦上有較新版本留下的存檔或傳承檔：開新的一世遲早會寫檔蓋掉它，所以先擋下並說明
+      if (save.hasNewerSave() || save.hasNewerLegacy()) {
+        G.flash = "為了不蓋掉較新版本的存檔，這裡不能開始新的一生。";
+        return onChange();
+      }
       G.s = state.create((name || "").trim() || opening.randomName());
       const L = save.loadLegacy();
       G.s.legacyAvailable = (L.pending || []).length > 0;
       G.s.legacyLives = L.lives || [];
       G.ui = { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] };
+      G.flash = null; // 結局畫面也會顯示 flash，開新的一生時清掉標題上的舊提示，免得之後誤顯示
       G.commit();
     },
-    continueLife() { G.s = save.load(); G.ui.panel = null; onChange(); },
+    // 存檔是已結束、還沒留下筆記的一世：標題用它判斷開新的一生前要不要先提醒（唯讀）
+    hasUnbequeathedEnding() {
+      const savedState = save.load();
+      return !!savedState && savedState.alive === false && savedState.phase === "end";
+    },
+    continueLife() { G.s = save.load(); G.ui.panel = null; G.flash = null; onChange(); },
+    // 這一世已結束、還沒留下筆記就離開了（例如在結局畫面重新整理）：讀回結局狀態，回到選筆記的畫面
+    returnToLifeEnding() {
+      const savedState = save.load();
+      if (!savedState || savedState.alive !== false || savedState.phase !== "end") return;
+      G.s = savedState; G.ui.panel = null; G.ui.picks = []; G.flash = null;
+      onChange();
+    },
     toTitle() { G.s = null; onChange(); },
-    wipe() { save.clear(); save.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
+    // 玩家明確要求清除全部：連較新版本的存檔也一起刪掉，這是唯一會刪掉它的地方
+    wipe() { save.clearEverything(); save.saveLegacy({ lives: [], pending: [] }); G.s = null; G.flash = "已清除所有存檔與傳承紀錄。"; onChange(); },
 
     // ---- 開局 ----
     startMortal() { opening.startMortal(G.s, "full"); G.commit(); },
@@ -65,7 +86,12 @@ export function createGame(onChange) {
     },
 
     // ---- 行動 ----
+    // 死亡或退隱後交由 NPC 規則接手，NPC 系統尚未實作（見實作計畫階段 4）。
+    // 在那之前，這一世結束後玩家的操作（行動、突破、買賣、換功法、裝備、走火入魔的抉擇）一律不做任何事，
+    // 與 retire、pick、nextQueue 對已死狀態不動作一致。
+    hasPlayerControlEnded() { return !G.s || !G.s.alive; },
     doAction(action, full) {
+      if (G.hasPlayerControlEnded()) return;
       const s = G.s;
       if (s.current) return;
       const res = cultivation.run(s, action, full);
@@ -84,6 +110,7 @@ export function createGame(onChange) {
     togglePanel(name) { G.ui.panel = G.ui.panel === name ? null : name; onChange(); },
     setBt(key, value) { G.ui.bt[key] = value; onChange(); },
     doBreakthrough() {
+      if (G.hasPlayerControlEnded()) return;
       const s = G.s;
       if (!breakthrough.envUsable(s, G.ui.bt.env)) { s.lastText = "這個季節無法在那裡突破。"; return onChange(); }
       const realmBefore = s.realmIndex, lenBefore = state.realm(s).longLen;
@@ -105,9 +132,9 @@ export function createGame(onChange) {
       G.nextQueue();
       G.commit();
     },
-    buy(item) { const s = G.s; s.lastText = cultivation.buy(s, item); state.log(s, s.lastText); G.commit(); },
-    setTechnique(t) { const s = G.s; s.technique = t; s.lastText = `改以「${t}」為主修功法。`; state.log(s, s.lastText); G.commit(); },
-    equip(a) { G.s.equipped = a || null; G.commit(); },
+    buy(item) { if (G.hasPlayerControlEnded()) return; const s = G.s; s.lastText = cultivation.buy(s, item); state.log(s, s.lastText); G.commit(); },
+    setTechnique(t) { if (G.hasPlayerControlEnded()) return; const s = G.s; s.technique = t; s.lastText = `改以「${t}」為主修功法。`; state.log(s, s.lastText); G.commit(); },
+    equip(a) { if (G.hasPlayerControlEnded()) return; G.s.equipped = a || null; G.commit(); },
     retire() { legacy.die(G.s, "坐化"); G.commit(); },
     setTab(t) { G.ui.tab = t; onChange(); },
     dismissNotice() { if (G.s) G.s.notice = null; G.commit(); },
@@ -151,6 +178,7 @@ export function createGame(onChange) {
       G.commit();
     },
     deviate(choice) {
+      if (G.hasPlayerControlEnded()) return;
       const s = G.s;
       s.lastText = breakthrough.deviation(s, choice);
       state.log(s, s.lastText);
@@ -166,9 +194,17 @@ export function createGame(onChange) {
       onChange();
     },
     bequeath() {
-      const n = legacy.bequeath(G.s, G.ui.picks);
+      const { isLegacySaved, pageCount } = legacy.bequeath(G.s, G.ui.picks);
+      if (!isLegacySaved) {
+        // 傳承沒寫進去：留在結局畫面，舊存檔與勾選的筆記都還在，玩家可以稍後再按一次
+        // 原因若是傳承檔來自較新版本，再試也不會成功，要說清楚；其餘（儲存空間滿等）才是稍後可再試
+        G.flash = save.hasNewerLegacy()
+          ? "這份存檔來自較新版本，這個版本無法把筆記寫進去，也不會覆蓋它。請用較新的版本留下筆記。"
+          : "存檔失敗，舊存檔仍保留，請稍後再試。";
+        return onChange();
+      }
       G.s = null; G.ui.picks = [];
-      G.flash = n ? `留下了 ${n} 頁筆記。下一世遊歷時，或許能在某處洞府找到它們。` : "這一世沒有留下筆記。";
+      G.flash = pageCount ? `留下了 ${pageCount} 頁筆記。下一世遊歷時，或許能在某處洞府找到它們。` : "這一世沒有留下筆記。";
       onChange();
     }
   };

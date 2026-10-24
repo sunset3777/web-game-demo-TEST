@@ -39,6 +39,8 @@ p { margin: 0 0 17px; }
 .small { font-size: 13px; }
 .hint, .omen { color: var(--blue-ink); }
 .flash { padding: 9px 13px; background: var(--wash); border-left: 2px solid var(--blue-ink); }
+.notice-box { margin-top: 18px; padding: 14px 16px; background: var(--paper-deep); border-top: 2px solid var(--cinnabar); border-bottom: 1px solid var(--line); }
+.notice-box .flash { margin: 0 0 12px; }
 .num { font-variant-numeric: tabular-nums; }
 button, select, input { min-width: 0; border: 0; border-radius: 0; color: var(--ink); background: transparent; font: inherit; }
 button { cursor: pointer; }

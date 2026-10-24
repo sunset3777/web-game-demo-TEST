@@ -20,7 +20,8 @@ export const legacy = {
     return s.stats.breakFails >= 3 ? "困守煉氣的苦修者" : "煉氣散修";
   },
 
-  // 選定要傳下的筆記頁，寫入傳承檔
+  // 選定要傳下的筆記頁，寫入傳承檔。回傳 { isLegacySaved, pageCount }：
+  // 傳承檔確定寫入成功才清掉舊存檔；寫入失敗時存檔原樣保留，玩家之後還能再傳一次
   bequeath(s, noteIndexes) {
     const st = state, N = numbers;
     const L = save.loadLegacy();
@@ -28,9 +29,10 @@ export const legacy = {
       .map(n => ({ text: n.text, kind: n.kind, realm: n.realm, from: s.name }));
     L.lives.push({ name: s.name, title: this.title(s), realm: st.stageName(s), age: Math.floor(st.age(s)), cause: s.cause, root: s.root ? s.root.label : "" });
     L.pending = (L.pending || []).concat(pages);
-    save.saveLegacy(L);
+    const isLegacySaved = save.saveLegacy(L);
+    if (!isLegacySaved) return { isLegacySaved, pageCount: 0 };
     save.clear();
-    return pages.length;
+    return { isLegacySaved, pageCount: pages.length };
   },
 
   // 前人遺府：取走所有待取的筆記頁，每頁化為感悟
