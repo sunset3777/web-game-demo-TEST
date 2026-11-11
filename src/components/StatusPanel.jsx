@@ -37,7 +37,12 @@ export default function StatusPanel({ game }) {
         <dd>{game.testMode && <span className="test">{Math.round(s.demon)}</span>}{s.demon > numbers.demon.gate && <span className="pill warn">{game.testMode ? `高於 ${numbers.demon.gate}` : "心神不寧"}</span>}
           <Bar value={s.demon} max={numbers.demon.max} tone="demon" /></dd>
         <dt>道傷</dt>
-        <dd>{s.scars ? "●".repeat(s.scars) : "無"}{s.injury > 0 && <span className="pill warn">{game.testMode ? `受傷 ${s.injury} 季` : "帶傷"}</span>}</dd>
+        <dd>{s.scars ? "●".repeat(s.scars) : "無"}</dd>
+        <dt>傷勢</dt>
+        {/* 只准改這個檔，所以紅字用行內樣式借用既有的朱砂色；test 區塊預設顏色會蓋掉紅字，故改成繼承 */}
+        {s.injury > 0
+          ? <dd style={{ color: "var(--cinnabar-deep)" }}>{game.testMode ? <span className="test" style={{ color: "inherit" }}>帶傷（剩 {s.injury} 季）</span> : "傷勢未癒"}</dd>
+          : <dd>無</dd>}
         <dt>靈石</dt><dd className="num">{s.stones}</dd>
         <dt>主修</dt>
         <dd><select aria-label="主修功法" value={s.technique} onChange={e => game.setTechnique(e.target.value)}>
