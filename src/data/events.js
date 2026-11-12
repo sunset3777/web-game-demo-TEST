@@ -19,6 +19,8 @@
 //   api.die(cause)    角色死亡
 //   api.learnTechnique(name)
 //   api.legacyPages()  取得前代留下的筆記頁；api.takeLegacy() 取走並生效
+//   api.injure(seasons?)  受傷，不給季數＝一般受傷
+//   api.mishap(hurtText, deathText, cause)  照修練遇險的現行規則：沒傷就受傷，帶傷可能身死；回傳結果文字
 
 import { numbers } from "./numbers.js";
 
@@ -153,6 +155,36 @@ export const eventsData = {
       text: "一座倒塌的道觀裡，你在香爐灰下找到一卷刻滿雷紋的殘卷。",
       choices: [
         { label: "收下殘卷", run: (s, api) => { api.learnTechnique("引雷訣"); return "你得到功法「引雷訣」（金＋木）。可在狀態欄改為主修。"; } }
+      ]
+    },
+    {
+      // 不會被隨機抽到：遊歷中撞見妖王時由 travel.js 直接排入（11/08 定：妖王改成可讀徵兆、可以躲）
+      id: "妖王徵兆", title: "妖氣逼近", weight: 0,
+      when: s => false,
+      text: s => "林中鳥獸忽然噤聲，一陣腥風撲面而來。遠處有一股遠勝於你的妖氣，正緩緩朝這邊移動。"
+        + (s.injury > 0 ? "\n你身上的傷還隱隱作痛。真要逃，未必跑得掉。" : ""),
+      choices: [
+        { label: "立刻遁走",
+          run: (s, api) => {
+            const K = numbers.risk.遊歷.demonKing;
+            if (s.injury > 0) {
+              if (api.chance(K.fleeFailIfInjured)) {
+                api.injure(K.heavyInjurySeasons);
+                return "你拖著傷轉身就走，還是慢了一步。腥風從背後掃來，你被掀下山坡，筋骨欲裂，好不容易才爬回去。\n〔遁走失敗，重傷〕";
+              }
+              return "你咬牙忍著傷，頭也不回地遁走。身後的妖氣沒有追來。";
+            }
+            if (api.chance(K.fleeHurt)) {
+              api.injure(K.lightInjurySeasons);
+              return "你當機立斷轉身遁走，慌亂中被斷枝劃破了手臂，所幸並無大礙。\n〔輕傷〕";
+            }
+            return "你當機立斷轉身遁走，一口氣奔出數十里才停下。身後的妖氣始終沒有追來。";
+          } },
+        { label: "冒險一探",
+          run: (s, api) => api.mishap(
+            "你按捺不住，循著妖氣摸了過去。林子深處盤著一頭妖王，牠只睜了睜眼，你便被一股巨力掀飛。你拼死脫身，受了傷。",
+            "你本就帶傷，還是硬闖了過去。林子深處盤著一頭妖王，你甚至來不及轉身。",
+            "遇劫身死") }
       ]
     },
     {

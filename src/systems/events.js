@@ -6,6 +6,8 @@ import { routes } from "./routes.js";
 import { util, state } from "./state.js";
 import { legacy } from "./legacy.js";
 import { save } from "./save.js";
+// 互相匯入：cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
+import { cultivation } from "./cultivation.js";
 
 export const events = {
   all() { return eventsData.list.concat(actionEvents.list); },
@@ -59,7 +61,10 @@ export const events = {
       addDemon: n => { const b = st.bonuses(s); s.demon = Math.max(0, Math.min(N.demon.max, s.demon + (n > 0 ? n * b.demonGain : n))); },
       addInsight: n => { if (st.inBottleneck(s)) s.insight += n; else s.insightBank += n; },
       addLife: y => { s.seasons = Math.max(0, s.seasons - y * 4); },
-      injure: () => { s.injury = N.injurySeasons; },
+      // seasons 不給＝一般受傷；妖王徵兆的輕傷、重傷會給不同季數
+      injure: seasons => { s.injury = seasons ?? N.injurySeasons; },
+      // 照修練遇險的現行規則判定：沒傷就受傷，已帶傷有機率身死（含路線修正）。回傳結果文字
+      mishap: (hurtText, deathText, cause) => { const out = []; cultivation.mishap(s, out, hurtText, deathText, cause); return out.join("\n"); },
       unlockEnv: env => { if (!s.envs.includes(env)) s.envs.push(env); },
       setFlag: (k, v) => { s.flags[k] = v === undefined ? true : v; },
       flag: k => s.flags[k],

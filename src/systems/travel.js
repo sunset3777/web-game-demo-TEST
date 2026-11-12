@@ -3,7 +3,6 @@
 import { numbers } from "../data/numbers.js";
 import { layoutData } from "../data/layout.js";
 import { util, state } from "./state.js";
-import { legacy } from "./legacy.js";
 import { world } from "./world.js";
 // 互相匯入：cultivation.run() 呼叫這裡，這裡借用 cultivation 的 mishap／checkStages。
 // 兩邊都只在函式執行時才用到對方，模組載入順序不影響。
@@ -12,12 +11,19 @@ import { cultivation } from "./cultivation.js";
 export const travel = {
   // 遊歷的一季（由 cultivation.run() 在每季修練之後呼叫）。
   // bonuses、injuryMultiplier 沿用 run() 開頭算好的值。
-  // 回傳 { died, xiuGained, insightGained }：died＝這一季身死，run() 要結束這次行動
+  // 回傳 { died, hasSensedDemonKing, xiuGained, insightGained }：
+  //   died＝這一季身死；hasSensedDemonKing＝察覺妖王，這次遊歷就此打住。兩者 run() 都要結束這次行動
   runTravelSeason(s, out, bonuses, injuryMultiplier) {
     const N = numbers, st = state, U = util, R = N.risk, b = bonuses, injMul = injuryMultiplier;
     let xiuGained = 0, insightGained = 0;
     const dl = R.遊歷.deadly[Math.min(s.realmIndex, R.遊歷.deadly.length - 1)];
-    if (U.chance(dl)) { out.push("你在山中撞見一頭氣息遠勝於你的妖王。你甚至來不及轉身。"); legacy.die(s, "遇劫身死"); return { died: true, xiuGained, insightGained }; }
+    // 撞見妖王（11/08 定）：不再一擲骰就身死。先排入「妖王徵兆」事件，讓玩家讀懂危險、選擇遁走或冒險一探；
+    // 這一季的其他遇險、秘境、被劫都不再判定，免得玩家還沒做選擇就又出事
+    if (U.chance(dl)) {
+      out.push("走到半途，你察覺山林裡有些不對勁。");
+      s.queue.push({ type: "event", id: "妖王徵兆" });
+      return { died: false, hasSensedDemonKing: true, xiuGained, insightGained };
+    }
     if (U.chance(R.遊歷.mishap * b.injury * injMul) && cultivation.mishap(s, out, "途中遇上妖獸，你拼死脫身，受了傷。", "途中遇上劫修。你本就帶傷，沒能逃掉。", "遇劫身死")) { return { died: true, xiuGained, insightGained }; }
     if (world.secretOpen(s) && s.secretTaken !== s.secretAt) {
       const S = N.secret, ri = Math.min(s.realmIndex, 2);

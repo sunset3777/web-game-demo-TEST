@@ -71,7 +71,12 @@ export const numbers = {
     閉關: { cost: [3, 8, 20], streakDecay: 0.15, streakMin: 0.55,   // 每季靈石（依境界）；連續閉關效率遞減
             interrupt: 0.03, interruptPerStreak: 0.03, interruptDemon: 10 },  // 被驚擾：心魔 ≥ 門檻時會受傷
     吐納: { trouble: 0.08, deathIfInjured: 0 },     // 俗事纏身：捲入紛爭受傷、被敲詐；在家養傷不會因此喪命
-    遊歷: { mishap: 0.15, robbery: 0.08, deadly: [0.004, 0.0025, 0.0015] },   // deadly：遇上遠勝自己的強敵（依境界，沒傷也可能死）             // 遇險受傷、被劫走靈石
+    遊歷: { mishap: 0.15, robbery: 0.08, deadly: [0.004, 0.0025, 0.0015],   // deadly：撞見遠勝自己的妖王（依境界）；遇險受傷、被劫走靈石
+            // 妖王徵兆（2026-11-08 定）：撞見妖王先出徵兆，可遁走。數值暫定，待寫入數值表
+            demonKing: { fleeHurt: 0.3,              // 沒帶傷遁走：受輕傷的機率（其餘平安脫身）
+                         fleeFailIfInjured: 0.4,     // 帶傷遁走：沒逃掉、受重傷的機率（不會死）
+                         lightInjurySeasons: 2,      // 輕傷持續季數（一般受傷是 injurySeasons）
+                         heavyInjurySeasons: 6 } },  // 重傷持續季數
     forcedFailDeath: 0.25,     // 心魔過高強行衝關失敗 → 身死
     holdOnDeath: 0.30          // 走火入魔選「硬撐」→ 撐不過去
   },

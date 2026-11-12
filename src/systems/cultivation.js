@@ -133,6 +133,7 @@ export const cultivation = {
         const t = travel.runTravelSeason(s, out, b, injMul);
         gained += t.xiuGained; insightGained += t.insightGained;
         if (t.died) { done++; break; }
+        if (t.hasSensedDemonKing) stop = true;   // 這一季照算，之後停下來面對徵兆
       }
       done++;
       if (this.advanceSeason(s, out)) break;  // 壽盡
