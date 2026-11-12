@@ -18,7 +18,7 @@ export default function StatusPanel({ game }) {
     <aside className="status card">
       <div className="who">
         <div className="who-name">{s.name}</div>
-        <div className="muted">{breakthrough.rootTitle(s)}{s.route && s.route !== "氣修" ? `・${routesData.routes[s.route].path}` : ""}・人稱「{routes.title(s)}」{s.comboMark ? `「${s.comboMark}」` : ""}</div>
+        <div className="muted meta-lines"><span>{breakthrough.rootTitle(s)}{s.route && s.route !== "氣修" ? `，${routesData.routes[s.route].path}` : ""}</span><span>人稱「{routes.title(s)}」{s.comboMark ? `「${s.comboMark}」` : ""}</span></div>
       </div>
       <div className="realm">
         {state.stageName(s)}

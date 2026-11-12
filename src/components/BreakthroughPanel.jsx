@@ -30,7 +30,7 @@ export default function BreakthroughPanel({ game }) {
           </select>
         </div>
       </div>
-      <p className="muted small">主修 {s.technique}・靈器 {s.equipped || "無"}・季節 {state.season(s)}・{s.root.label}</p>
+      <p className="muted small meta-lines"><span>主修 {s.technique}，靈器 {s.equipped || "無"}</span><span>季節 {state.season(s)}，{s.root.label}</span></p>
       <p className="omen">{layout.omen(j)}{p.forced ? "　心魔太重，此刻衝關是強行衝關。" : ""}</p>
       <div className="row">
         <button className="primary" onClick={() => {
