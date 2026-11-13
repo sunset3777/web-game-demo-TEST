@@ -7,7 +7,7 @@
 //   once      true＝一輩子只發生一次
 //   when(s)   出現條件，s 是遊戲狀態；回傳 true 才會進入抽選
 //   text(s)   事件敘述（可以是字串或函式）
-//   choices   選項陣列：{ label, show(s)?, run(s, api) → 結果文字 }
+//   choices   選項陣列：{ label, show(s, api)?, run(s, api) → 結果文字 }
 //
 // api 提供的工具：
 //   api.rand(a,b) 整數亂數；api.chance(p) 機率判定；api.pick(arr) 隨機挑一個
@@ -20,11 +20,19 @@
 //   api.learnTechnique(name)
 //   api.legacyPages()  取得前代留下的筆記頁；api.takeLegacy() 取走並生效
 //   api.injure(seasons?)  受傷，不給季數＝一般受傷
-//   api.mishap(hurtText, deathText, cause)  照修練遇險的現行規則：沒傷就受傷，帶傷可能身死；回傳結果文字
+//   api.probeDemonKing({ treatAsHealthy? })  冒險一探妖王：成功／重傷／身死與回報；回傳結果文字
+//   api.demonKingClueCount()  目前算得上的妖王線索條數（本世＋前人筆記，最多 2）
+//   api.demonKingFleeHurtChance(base)  遁走受傷機率扣掉線索效果後的值
 
 import { numbers } from "./numbers.js";
 
 export const eventsData = {
+  // 妖王線索（冒險一探成功時三選一，寫進修仙筆記）
+  demonKingClues: {
+    習性: "妖王現身之前，林中鳥獸必先噤聲，腥風總是從下風處先到。",
+    弱點: "妖王左目有一道舊傷，從牠左側繞行，牠察覺得最慢。",
+    出沒季節: "妖王入冬便蟄伏不出，春夏之交最常下山覓食。"
+  },
   list: [
     {
       id: "山道老者", title: "山道上的老者", weight: 1, once: true,
@@ -168,23 +176,29 @@ export const eventsData = {
           run: (s, api) => {
             const K = numbers.risk.遊歷.demonKing;
             if (s.injury > 0) {
-              if (api.chance(K.fleeFailIfInjured)) {
+              if (api.chance(api.demonKingFleeHurtChance(K.fleeFailIfInjured))) {
                 api.injure(K.heavyInjurySeasons);
                 return "你拖著傷轉身就走，還是慢了一步。腥風從背後掃來，你被掀下山坡，筋骨欲裂，好不容易才爬回去。\n〔遁走失敗，重傷〕";
               }
               return "你咬牙忍著傷，頭也不回地遁走。身後的妖氣沒有追來。";
             }
-            if (api.chance(K.fleeHurt)) {
+            if (api.chance(api.demonKingFleeHurtChance(K.fleeHurt))) {
               api.injure(K.lightInjurySeasons);
               return "你當機立斷轉身遁走，慌亂中被斷枝劃破了手臂，所幸並無大礙。\n〔輕傷〕";
             }
             return "你當機立斷轉身遁走，一口氣奔出數十里才停下。身後的妖氣始終沒有追來。";
           } },
         { label: "冒險一探",
-          run: (s, api) => api.mishap(
-            "你按捺不住，循著妖氣摸了過去。林子深處盤著一頭妖王，牠只睜了睜眼，你便被一股巨力掀飛。你拼死脫身，受了傷。",
-            "你本就帶傷，還是硬闖了過去。林子深處盤著一頭妖王，你甚至來不及轉身。",
-            "遇劫身死") }
+          run: (s, api) => api.probeDemonKing() },
+        // 筆記裡的線索夠多（算滿 2 條）才看得出妖王會往哪裡走
+        { label: "照筆記避開",
+          show: (s, api) => api.demonKingClueCount() >= numbers.risk.遊歷.demonKing.cluesCountedMax,
+          run: (s, api) => {
+            if (api.chance(numbers.risk.遊歷.demonKing.avoidWithNotesHitChance)) {
+              return "你照著筆記上記的，避開了妖王常走的路。沒想到牠今日偏偏換了方向，迎面撞個正著。\n" + api.probeDemonKing({ treatAsHealthy: true });
+            }
+            return "你想起筆記上記的妖王習性，繞開牠常走的山路。一路無事，也一路無獲。";
+          } }
       ]
     },
     {

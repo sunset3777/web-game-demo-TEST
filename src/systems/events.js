@@ -6,8 +6,8 @@ import { routes } from "./routes.js";
 import { util, state } from "./state.js";
 import { legacy } from "./legacy.js";
 import { save } from "./save.js";
-// 互相匯入：cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
-import { cultivation } from "./cultivation.js";
+// 互相匯入：travel 經由 cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
+import { travel } from "./travel.js";
 
 export const events = {
   all() { return eventsData.list.concat(actionEvents.list); },
@@ -42,7 +42,8 @@ export const events = {
   },
 
   text(s, e) { return typeof e.text === "function" ? e.text(s) : e.text; },
-  choices(s, e) { return e.choices.filter(c => !c.show || c.show(s)); },
+  // show 也拿得到 api：像「照筆記避開」要看線索條數，條數的算法在 systems，不寫在資料裡
+  choices(s, e) { return e.choices.filter(c => !c.show || c.show(s, this.api(s))); },
 
   resolve(s, e, choiceIndex) {
     const c = this.choices(s, e)[choiceIndex];
@@ -63,8 +64,10 @@ export const events = {
       addLife: y => { s.seasons = Math.max(0, s.seasons - y * 4); },
       // seasons 不給＝一般受傷；妖王徵兆的輕傷、重傷會給不同季數
       injure: seasons => { s.injury = seasons ?? N.injurySeasons; },
-      // 照修練遇險的現行規則判定：沒傷就受傷，已帶傷有機率身死（含路線修正）。回傳結果文字
-      mishap: (hurtText, deathText, cause) => { const out = []; cultivation.mishap(s, out, hurtText, deathText, cause); return out.join("\n"); },
+      // 妖王徵兆事件用：規則都在 travel.js
+      probeDemonKing: options => travel.probeDemonKing(s, options),
+      demonKingClueCount: () => travel.countDemonKingClues(s),
+      demonKingFleeHurtChance: baseChance => travel.demonKingFleeHurtChance(s, baseChance),
       unlockEnv: env => { if (!s.envs.includes(env)) s.envs.push(env); },
       setFlag: (k, v) => { s.flags[k] = v === undefined ? true : v; },
       flag: k => s.flags[k],

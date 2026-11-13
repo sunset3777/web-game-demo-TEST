@@ -76,7 +76,20 @@ export const numbers = {
             demonKing: { fleeHurt: 0.3,              // 沒帶傷遁走：受輕傷的機率（其餘平安脫身）
                          fleeFailIfInjured: 0.4,     // 帶傷遁走：沒逃掉、受重傷的機率（不會死）
                          lightInjurySeasons: 2,      // 輕傷持續季數（一般受傷是 injurySeasons）
-                         heavyInjurySeasons: 6 } },  // 重傷持續季數
+                         heavyInjurySeasons: 6,      // 重傷持續季數
+                         // 冒險一探（2026-11-13 會議定）：三種結果的機率；身死會再乘路線修正、扣線索，扣掉的部分算進重傷
+                         probeIfHealthy: { success: 0.55, heavyInjury: 0.39, death: 0.06 },
+                         probeIfInjured: { success: 0.30, heavyInjury: 0.50, death: 0.20 },
+                         probeSuccessInsight: 6,     // 一探成功：感悟
+                         demonPillChance: 0.2,       // 一探成功（還在拿線索的前兩次）：額外掉落妖丹的機率
+                         cluesPerLifeMax: 2,         // 一世最多拿到幾條妖王線索；之後一探成功只給感悟
+                         cluesCountedMax: 2,         // 本世＋前人筆記的線索，最多算幾條
+                         clueFleeHurtCut: 0.10,      // 每條線索：遁走受傷（含帶傷遁走失敗）機率 −0.10
+                         clueFleeHurtFloor: 0.10,    //   最低到 0.10
+                         clueDeathCut: 0.02,         // 每條線索：一探身死機率 −0.02
+                         clueDeathFloor: 0.02,       //   最低到 0.02
+                         avoidWithNotesHitChance: 0.1,   // 線索滿 2 條才有「照筆記避開」：還是撞上的機率（當作沒帶傷的一探）
+                         clueWeightByLivesAgo: [1, 0.5] } },  // 前人線索的效力：隔 1 世全效、隔 2 世減半、更早沒有效果
     forcedFailDeath: 0.25,     // 心魔過高強行衝關失敗 → 身死
     holdOnDeath: 0.30          // 走火入魔選「硬撐」→ 撐不過去
   },

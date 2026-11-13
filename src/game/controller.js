@@ -45,6 +45,7 @@ export function createGame(onChange) {
       const L = save.loadLegacy();
       G.s.legacyAvailable = (L.pending || []).length > 0;
       G.s.legacyLives = L.lives || [];
+      legacy.inheritDemonKingClues(G.s, L);
       G.ui = { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] };
       G.flash = null; // 結局畫面也會顯示 flash，開新的一生時清掉標題上的舊提示，免得之後誤顯示
       G.commit();

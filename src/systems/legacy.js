@@ -29,10 +29,34 @@ export const legacy = {
       .map(n => ({ text: n.text, kind: n.kind, realm: n.realm, from: s.name }));
     L.lives.push({ name: s.name, title: this.title(s), realm: st.stageName(s), age: Math.floor(st.age(s)), cause: s.cause, root: s.root ? s.root.label : "" });
     L.pending = (L.pending || []).concat(pages);
+    this.passDownDemonKingClues(s, L);
     const isLegacySaved = save.saveLegacy(L);
     if (!isLegacySaved) return { isLegacySaved, pageCount: 0 };
     save.clear();
     return { isLegacySaved, pageCount: pages.length };
+  },
+
+  // 妖王線索自動傳下去，不佔筆記頁名額（11/13 會議定）。
+  // 傳承檔原本不記世代，這裡用「前世清單的第幾世」當世代編號記在每條線索上，下一世才算得出隔了幾世。
+  // 隔 3 世以上已經沒有效果的線索，在這裡順手清掉。沒有任何線索時不寫這個欄位，傳承檔維持原樣
+  passDownDemonKingClues(s, legacyData) {
+    const lifeNumber = legacyData.lives.length;
+    const ownClues = (s.demonKingClues || []).map(clue => ({ type: clue.type, text: clue.text, life: lifeNumber, from: s.name }));
+    if (!ownClues.length && !legacyData.demonKingClues) return;
+    const usefulLivesAgo = numbers.risk.遊歷.demonKing.clueWeightByLivesAgo.length;
+    legacyData.demonKingClues = (legacyData.demonKingClues || []).filter(clue => lifeNumber + 1 - clue.life <= usefulLivesAgo).concat(ownClues);
+  },
+
+  // 新的一世開始時讀進前人的妖王線索：隔 1 世全效、隔 2 世減半、更早沒有效果
+  inheritDemonKingClues(s, legacyData) {
+    const weights = numbers.risk.遊歷.demonKing.clueWeightByLivesAgo;
+    const thisLifeNumber = (legacyData.lives || []).length + 1;
+    const inherited = (legacyData.demonKingClues || [])
+      .map(clue => ({ type: clue.type, text: clue.text, weight: weights[thisLifeNumber - clue.life - 1] || 0 }))
+      .filter(clue => clue.weight > 0);
+    if (!inherited.length) return;
+    s.inheritedDemonKingClues = inherited;
+    state.note(s, "前人筆記裡記著妖王的事：" + inherited.map(clue => clue.text).join(""), "傳承");
   },
 
   // 前人遺府：取走所有待取的筆記頁，每頁化為感悟
