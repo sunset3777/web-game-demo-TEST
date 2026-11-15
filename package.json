@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "sim": "node scripts/simulate.js",
+    "baseline": "node scripts/baseline.js",
+    "baseline:check": "node scripts/baseline.js --check",
     "balance": "node scripts/balance.js",
     "check:behavior": "node scripts/check-behavior.mjs",
     "test": "node --test tests/*.test.js",
