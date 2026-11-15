@@ -1,0 +1,56 @@
+# 自動測試：開 PR 到 main、或推上 main 時，自動跑建置、測試、模擬與兩套基準比對。
+# 每一步分開、用中文命名，在 GitHub 上一眼就看得出是哪一步失敗。
+name: 自動測試
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# 同一個 PR（或同一個分支）有新的 push 時，取消還在跑的舊執行，只留最新的結果
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 建置與測試
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 取出程式碼
+        uses: actions/checkout@v4
+
+      # package.json 沒有指定 engines、repo 也沒有 .nvmrc，先用 Node 22（長期支援版）
+      - name: 安裝 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安裝套件
+        run: npm ci
+
+      - name: 建置
+        run: npm run build
+
+      - name: 單元測試
+        run: npm test
+
+      - name: 介面測試
+        run: npm run test:ui
+
+      - name: 模擬
+        run: npm run sim
+
+      # 固定種子比對 scripts/fixtures/behavior-baseline.txt：改了遊戲規則就會失敗，要有意識地重錄
+      - name: 行為基準
+        run: npm run check:behavior
+
+      # 固定種子 200 世比對 baseline/基準_v7.json；這支腳本合入 feat/資料統一 後才有，沒有就跳過
+      - name: 200 世基準
+        run: npm run --if-present baseline:check
