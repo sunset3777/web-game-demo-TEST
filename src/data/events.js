@@ -174,16 +174,16 @@ export const eventsData = {
       choices: [
         { label: "立刻遁走",
           run: (s, api) => {
-            const K = numbers.risk.遊歷.demonKing;
+            const demonKingNumbers = numbers.risk.遊歷.demonKing;
             if (s.injury > 0) {
-              if (api.chance(api.demonKingFleeHurtChance(K.fleeFailIfInjured))) {
-                api.injure(K.heavyInjurySeasons);
+              if (api.chance(api.demonKingFleeHurtChance(demonKingNumbers.fleeFailIfInjured))) {
+                api.injure(demonKingNumbers.heavyInjurySeasons);
                 return "你拖著傷轉身就走，還是慢了一步。腥風從背後掃來，你被掀下山坡，筋骨欲裂，好不容易才爬回去。\n〔遁走失敗，重傷〕";
               }
               return "你咬牙忍著傷，頭也不回地遁走。身後的妖氣沒有追來。";
             }
-            if (api.chance(api.demonKingFleeHurtChance(K.fleeHurt))) {
-              api.injure(K.lightInjurySeasons);
+            if (api.chance(api.demonKingFleeHurtChance(demonKingNumbers.fleeHurt))) {
+              api.injure(demonKingNumbers.lightInjurySeasons);
               return "你當機立斷轉身遁走，慌亂中被斷枝劃破了手臂，所幸並無大礙。\n〔輕傷〕";
             }
             return "你當機立斷轉身遁走，一口氣奔出數十里才停下。身後的妖氣始終沒有追來。";
