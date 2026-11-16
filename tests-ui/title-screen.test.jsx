@@ -88,8 +88,10 @@ describe("標題畫面", () => {
     const livesList = screen.getByRole("list");
     const items = livesList.querySelectorAll("li");
     expect(items).toHaveLength(2);
-    expect(items[0]).toHaveTextContent("乙・金丹修士・金丹初期・120 歲・坐化");
-    expect(items[1]).toHaveTextContent("甲・煉氣散修・煉氣第3層・30 歲・壽盡");
+    // Hallmark 規則不用間隔點串字：每一世分兩行，第一行名字與稱號，第二行境界、享年、死因與靈根（逗號分隔）
+    const linesOf = item => [...item.querySelectorAll(".life-line")].map(line => line.textContent.replace(/\s+/g, " ").trim());
+    expect(linesOf(items[0])).toEqual(["乙 金丹修士", "金丹初期，120 歲，坐化，火靈根"]);
+    expect(linesOf(items[1])).toEqual(["甲 煉氣散修", "煉氣第3層，30 歲，壽盡，木靈根"]);
   });
 
   test("沒有前世紀錄時，不顯示「前世」標題", () => {
