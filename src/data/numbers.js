@@ -71,7 +71,25 @@ export const numbers = {
     閉關: { cost: [3, 8, 20], streakDecay: 0.15, streakMin: 0.55,   // 每季靈石（依境界）；連續閉關效率遞減
             interrupt: 0.03, interruptPerStreak: 0.03, interruptDemon: 10 },  // 被驚擾：心魔 ≥ 門檻時會受傷
     吐納: { trouble: 0.08, deathIfInjured: 0 },     // 俗事纏身：捲入紛爭受傷、被敲詐；在家養傷不會因此喪命
-    遊歷: { mishap: 0.15, robbery: 0.08, deadly: [0.004, 0.0025, 0.0015] },   // deadly：遇上遠勝自己的強敵（依境界，沒傷也可能死）             // 遇險受傷、被劫走靈石
+    遊歷: { mishap: 0.15, robbery: 0.08, deadly: [0.004, 0.0025, 0.0015],   // deadly：撞見遠勝自己的妖王（依境界）；遇險受傷、被劫走靈石
+            // 妖王徵兆（2026-11-08 定）：撞見妖王先出徵兆，可遁走。數值暫定，待寫入數值表
+            demonKing: { fleeHurt: 0.3,              // 沒帶傷遁走：受輕傷的機率（其餘平安脫身）
+                         fleeFailIfInjured: 0.4,     // 帶傷遁走：沒逃掉、受重傷的機率（不會死）
+                         lightInjurySeasons: 2,      // 輕傷持續季數（一般受傷是 injurySeasons）
+                         heavyInjurySeasons: 6,      // 重傷持續季數
+                         // 冒險一探（2026-11-13 會議定）：三種結果的機率；身死會再乘路線修正、扣線索，扣掉的部分算進重傷
+                         probeIfHealthy: { success: 0.55, heavyInjury: 0.39, death: 0.06 },
+                         probeIfInjured: { success: 0.30, heavyInjury: 0.50, death: 0.20 },
+                         probeSuccessInsight: 6,     // 一探成功：感悟
+                         demonPillChance: 0.2,       // 一探成功（還在拿線索的前兩次）：額外掉落妖丹的機率
+                         cluesPerLifeMax: 2,         // 一世最多拿到幾條妖王線索；之後一探成功只給感悟
+                         cluesCountedMax: 2,         // 本世＋前人筆記的線索，最多算幾條
+                         clueFleeHurtCut: 0.10,      // 每條線索：遁走受傷（含帶傷遁走失敗）機率 −0.10
+                         clueFleeHurtFloor: 0.10,    //   最低到 0.10
+                         clueDeathCut: 0.02,         // 每條線索：一探身死機率 −0.02
+                         clueDeathFloor: 0.02,       //   最低到 0.02
+                         avoidWithNotesHitChance: 0.1,   // 線索滿 2 條才有「照筆記避開」：還是撞上的機率（當作沒帶傷的一探）
+                         clueWeightByLivesAgo: [1, 0.5] } },  // 前人線索的效力：隔 1 世全效、隔 2 世減半、更早沒有效果
     forcedFailDeath: 0.25,     // 心魔過高強行衝關失敗 → 身死
     holdOnDeath: 0.30          // 走火入魔選「硬撐」→ 撐不過去
   },

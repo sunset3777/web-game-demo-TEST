@@ -45,6 +45,7 @@ export function createGame(onChange) {
       const L = save.loadLegacy();
       G.s.legacyAvailable = (L.pending || []).length > 0;
       G.s.legacyLives = L.lives || [];
+      legacy.inheritDemonKingClues(G.s, L);
       G.ui = { panel: null, bt: { material: "", env: "洞府" }, tab: "log", picks: [] };
       G.flash = null; // 結局畫面也會顯示 flash，開新的一生時清掉標題上的舊提示，免得之後誤顯示
       G.commit();
@@ -97,7 +98,8 @@ export function createGame(onChange) {
       const res = cultivation.run(s, action, full);
       const lines = res.lines;
       if (action === "遊歷" && s.alive) lines.push(travel.collectRoadsideLoot(s, res.seasons));
-      if (s.alive && util.chance(res.eventChance)) {
+      // 撞見妖王的那次行動，玩家要先面對徵兆，不再疊加一件隨機遊歷事件（連擲骰都跳過）
+      if (s.alive && !res.hasSensedDemonKing && util.chance(res.eventChance)) {
         const e = events.pick(s, action);
         if (e) s.queue.push({ type: "event", id: e.id });
       }
