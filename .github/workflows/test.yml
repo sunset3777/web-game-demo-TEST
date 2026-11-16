@@ -1,12 +1,13 @@
-# 自動測試：開 PR 到 main、或推上 main 時，自動跑建置、測試、模擬與兩套基準比對。
+# 自動測試：開 PR 到 main 或 dev、或推上這兩個分支時，自動跑建置、測試、模擬與兩套基準比對。
+# 功能 PR 先合進 dev 試玩，驗過再由 dev 合進 main，所以兩個分支都要測。
 # 每一步分開、用中文命名，在 GitHub 上一眼就看得出是哪一步失敗。
 name: 自動測試
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   push:
-    branches: [main]
+    branches: [main, dev]
 
 # 同一個 PR（或同一個分支）有新的 push 時，取消還在跑的舊執行，只留最新的結果
 concurrency:
