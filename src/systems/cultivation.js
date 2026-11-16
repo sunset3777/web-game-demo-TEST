@@ -82,6 +82,7 @@ export const cultivation = {
     const R = N.risk;
     if (action === "閉關") s.secludeStreak = (s.secludeStreak || 0) + 1; else s.secludeStreak = 0;
     routes.onAction(s, action);
+    let hasSensedDemonKing = false;
     const flavorLine = U.pick(flavor[action][st.season(s)]);
     const injMul = routes.injuryMult(s);
     const streak = action === "閉關" ? this.streakFactor(s) : 1;
@@ -133,7 +134,7 @@ export const cultivation = {
         const t = travel.runTravelSeason(s, out, b, injMul);
         gained += t.xiuGained; insightGained += t.insightGained;
         if (t.died) { done++; break; }
-        if (t.hasSensedDemonKing) stop = true;   // 這一季照算，之後停下來面對徵兆
+        if (t.hasSensedDemonKing) { stop = true; hasSensedDemonKing = true; }   // 這一季照算，之後停下來面對徵兆
       }
       done++;
       if (this.advanceSeason(s, out)) break;  // 壽盡
@@ -151,7 +152,8 @@ export const cultivation = {
     out.unshift(flavorLine);
     if (st.inBottleneck(s) && gained > 0) out.push(`修為已至${st.stageName(s)}的極限，觸到了瓶頸。之後的修練將累積感悟。`);
     s.turns++;
-    return { lines: out, seasons: done, eventChance: 1 - Math.pow(1 - Math.min(0.95, A.event + b.event), Math.max(1, done)) };
+    // hasSensedDemonKing：這次行動撞見妖王、已排入徵兆事件；controller 據此不再擲隨機事件
+    return { lines: out, seasons: done, hasSensedDemonKing, eventChance:1 - Math.pow(1 - Math.min(0.95, A.event + b.event), Math.max(1, done)) };
   },
 
   // 修為滿了就嘗試突破小境界；大境界最後一層停在瓶頸
