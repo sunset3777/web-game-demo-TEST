@@ -24,16 +24,16 @@ function fightLawEnforcers(s, api) {
     api.addKarma("青雲門執法堂", "擊退了青雲門執法堂的追緝", "中");
     return "令牌掉在地上，人已經退走了。";
   }
-  if (result.died) return "禁制一層一層合上。這一回，你沒能走出洞府。";   // TODO(墨淵)：規格沒給輸了身死的句子
-  return "你沒能擋住，帶著傷從洞府後面突圍出去。";                         // TODO(墨淵)：規格沒給輸了受傷的句子
+  if (result.died) return "令牌的光是最後一樣你看清的東西。天亮時，洞府外只剩一灘水跡。";
+  return "你被打回洞府裡，禁制碎了一地。來的人沒有進來，只在門口留下一句：「下次就不是這樣了。」";
 }
 // 和仇家鬥法：大因果的仇家帶幫手；贏了接「仇家勝後」讓玩家決定怎麼收場
 function fightGrudgeHolder(s, api) {
   const grudge = currentGrudge(s);
   const result = api.duel(grudge && grudge.weight === "大" ? "幫手" : "一人", "仇家尋仇");
   if (result.won) { api.queueEventNext("仇家勝後"); return "幾個回合之後，對方倒了下去。"; }   // TODO(墨淵)
-  if (result.died) return "對方等這一天等得太久了。你沒能再站起來。";                         // TODO(墨淵)
-  return "你落了下風，帶著傷才脫身。";                                                         // TODO(墨淵)
+  if (result.died) return "他的刀比你記得的快。最後你看見的，是他蹲下來，把你的眼睛闔上。";
+  return "你倒在山道上，他沒有再補一刀，只蹲下來看了你一會兒：「這樣就夠了。」等你爬起來，他已經不在了。";   // 仇照舊留著
 }
 
 export const actionEvents = {
@@ -238,7 +238,7 @@ export const actionEvents = {
       },
       choices: [
         { label: "回信道謝", run: (s, api) => { api.tend("善惡", 5);
-            return "你回了一封短信道謝。這一回，沒有人來盤查。"; } },   // TODO(墨淵)：規格沒給這句
+            return "你回了一隻紙鶴，只寫了「多謝」兩個字。過了幾天，青雲門的人沒有來。"; } },
         { label: "請他別再插手", run: (s, api) => {
             api.tend("穩躁", -5); api.setFlag("盤查下季", true);   // 盤查照常：下一次行動就會遇上山道照鏡
             return "你把紙鶴摺回去，只寫了一句：「不必。」"; } },
@@ -258,16 +258,17 @@ export const actionEvents = {
         { label: "迎戰", run: (s, api) => { api.tend("穩躁", 5); api.noteRecordOnce("曾被青雲門執法堂追緝"); return fightLawEnforcers(s, api); } },
         { label: "破陣遁走", run: (s, api) => {
             api.tend("穩躁", -5); api.noteRecordOnce("曾被青雲門執法堂追緝");
-            if (!api.tryFlee((s.flags.執法陣仗 || "一人") !== "一人")) return fightLawEnforcers(s, api);
+            if (!api.tryFlee((s.flags.執法陣仗 || "一人") !== "一人")) return "路被截住了。你只能回頭。\n" + fightLawEnforcers(s, api);
             // 「洞府這一季不能用」較難做，改成失去一季閉關的靈石（衡天 11/17 允許的替代）
             api.addStones(-api.seasonStones(1));
-            return "你從洞府後面的山縫鑽出去，天亮時已經在百里之外。"; } },
+            return "你從洞府後面的山縫鑽出去，留下的靈石來不及帶。天亮時，你已經在百里之外。"; } },
         { label: "束手就擒", run: (s, api) => {
             api.tend("正邪", 5); api.noteRecordOnce("曾被青雲門執法堂追緝");
             api.addLife(-0.25);                                   // 關了一整季：多過一季
             api.addStones(-Math.floor(s.stones / 2));
             api.setInspectionCooldown("延後");
-            return "他們把你帶到執法堂，關了一整季。放出來時，你的靈石只剩一半。"; } }
+            // 機制照舊：多過一季壽元、靈石減半、下一次盤查延後
+            return "他們把你帶到執法堂，關了一整季。放出來時，外面已經換了季節。"; } }
       ] },
     // 仇家：遊歷時依未了結的「仇」類中、大因果擲（controller 排入，對象記在 flags.仇家目標）；大因果的仇家帶幫手
     { id: "仇家尋仇", title: "仇家", weight: 0, when: s => false,
@@ -285,7 +286,7 @@ export const actionEvents = {
         { label: "遁走", run: (s, api) => {
             api.tend("穩躁", -5);
             const grudge = currentGrudge(s);
-            if (!api.tryFlee(!!grudge && grudge.weight === "大")) return fightGrudgeHolder(s, api);
+            if (!api.tryFlee(!!grudge && grudge.weight === "大")) return "路被截住了。你只能回頭。\n" + fightGrudgeHolder(s, api);
             return "你一路沒有回頭，跑到天黑才停下。"; } },
         { label: "賠罪了結",
           // 只限中因果；要付 max(5 季閉關靈石, 身上靈石 30%)，不夠就不顯示
@@ -296,7 +297,7 @@ export const actionEvents = {
             return "他收下了，看了你很久：「這件事，到這裡為止。」"; } }
       ] },
     { id: "仇家勝後", title: "仇家", weight: 0, when: s => false,
-      text: "他倒在地上，手裡的刀已經握不住了。",   // TODO(墨淵)：規格沒給勝後的開頭
+      text: "他跪在地上，刀落在一邊，抬頭看你，等你決定。",
       choices: [
         { label: "放他走", run: (s, api) => { api.tend("善惡", 5);
             return "他撐著站起來，什麼也沒說就走了。"; } },
