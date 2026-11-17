@@ -44,7 +44,8 @@ export const events = {
     return e;
   },
 
-  text(s, e) { return typeof e.text === "function" ? e.text(s) : e.text; },
+  // text 也拿得到 api：像盤查、仇家的線索句要問規則「看不看得清」，判定不寫在資料裡
+  text(s, e) { return typeof e.text === "function" ? e.text(s, this.api(s)) : e.text; },
   // show 也拿得到 api：像「照筆記避開」要看線索條數，條數的算法在 systems，不寫在資料裡
   choices(s, e) { return e.choices.filter(c => !c.show || c.show(s, this.api(s))); },
 

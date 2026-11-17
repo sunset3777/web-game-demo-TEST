@@ -82,8 +82,9 @@ export const routes = {
     const duel = numbers.conduct.duel;
     return duel.fleeChance - (hasHelpers ? duel.fleeHelperPenalty : 0);
   },
-  // 線索句只給「神識高」的人看；repo 沒有神識數值，暫以心魔低代替（未驗證是否為最終設計）
-  hasKeenSense(gameState) { return gameState.demon < numbers.conduct.keenSenseDemonBelow; },
+  // 線索句（看得清）只給心性偏穩的人看（玄機 11/17：穩躁 ≤ keenSenseTemperAtMost）。
+  // 之後有神識數值改看神識；卦象做好後「這一季卜過卦」也算看得清（擇一即可）
+  hasKeenSense(gameState) { return this.view(gameState).穩躁 <= numbers.conduct.keenSenseTemperAtMost; },
   // 「幾季閉關的靈石」依境界換算（四捨五入）
   seasonStones(gameState, seasons) {
     const cost = numbers.risk.閉關.cost;

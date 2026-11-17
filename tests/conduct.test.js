@@ -401,3 +401,23 @@ test("執法追緝只做紀錄的那頁筆記不佔名額、不在可勾選清�
   game.ui.picks = [recordIndex]; game.bequeath();
   assert.equal((save.loadLegacy().pending || []).length, 0, "硬勾紀錄頁也不會被當成筆記傳下去");
 });
+
+test("線索句：穩躁 ≤ keenSenseTemperAtMost（偏穩）才看得清，和心魔無關", () => {
+  const gameState = startCultivatingLife().s;
+  const threshold = conduct.keenSenseTemperAtMost;
+  const textOf = eventId => events.text(gameState, events.find(eventId));
+  gameState.demon = 0;
+  // 仇家：中因果一人的線索句
+  gameState.karma = [{ id: "搶散修靈草", text: "趁亂搶走受欺凌散修的靈草", weight: "中", kind: "仇" }];
+  gameState.flags.仇家目標 = "搶散修靈草";
+  setConduct(gameState, { 穩躁: threshold + 1 });
+  assert.doesNotMatch(textOf("仇家尋仇"), /握刀的手在抖/, "心魔再低，不夠穩也看不清");
+  setConduct(gameState, { 穩躁: threshold });
+  assert.match(textOf("仇家尋仇"), /握刀的手在抖/);
+  // 執法追緝：多人有高手時，高手那句也照同一個條件
+  gameState.flags.執法陣仗 = "多人有高手";
+  assert.match(textOf("執法追緝"), /其中一道很輕/);
+  setConduct(gameState, { 穩躁: threshold + 1 }); gameState.demon = 100;
+  assert.doesNotMatch(textOf("執法追緝"), /其中一道很輕/);
+  assert.match(textOf("執法追緝"), /三四道呼吸/, "一人／多人的線索不需要看得清");
+});

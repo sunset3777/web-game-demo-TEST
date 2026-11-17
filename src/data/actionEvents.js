@@ -248,10 +248,10 @@ export const actionEvents = {
       ] },
     { id: "執法追緝", title: "執法追緝", weight: 0, when: s => false,
       // 陣仗（排入時記在 flags.執法陣仗）：一人／多人／多人有高手；線索句與實際鬥法門檻一致，高手那句只有神識高才看得到
-      text: (s) => {
+      text: (s, api) => {
         const squad = s.flags.執法陣仗 || "一人";
         const clue = squad === "一人" ? "門外只有一個人的腳步。" : "門外有三四道呼吸，排得很整齊。"
-          + (squad === "多人有高手" && s.demon < numbers.conduct.keenSenseDemonBelow ? "其中一道很輕，比其他人都穩。" : "");
+          + (squad === "多人有高手" && api.hasKeenSense() ? "其中一道很輕，比其他人都穩。" : "");
         return "夜裡，洞府外的禁制被人一層一層解開。來的人不說話，只亮了一面令牌：青雲門執法堂。\n" + clue;
       },
       choices: [
@@ -271,13 +271,13 @@ export const actionEvents = {
       ] },
     // 仇家：遊歷時依未了結的「仇」類中、大因果擲（controller 排入，對象記在 flags.仇家目標）；大因果的仇家帶幫手
     { id: "仇家尋仇", title: "仇家", weight: 0, when: s => false,
-      text: (s) => {
+      text: (s, api) => {
         const grudge = currentGrudge(s);
         const hasHelpers = grudge && grudge.weight === "大";
         const opening = hasHelpers
           ? "你走到半路，前後的鳥聲同時停了。前面站著一個人，後面也站著一個人。前面那個說：「找你很久了。」"
           : `山道拐角站著一個人，你一時沒認出來。他先開口：「${grudge ? grudge.text : "那件事"}——還記得嗎？」`;
-        if (s.demon >= numbers.conduct.keenSenseDemonBelow) return opening;
+        if (!api.hasKeenSense()) return opening;
         return opening + "\n" + (hasHelpers ? "林子裡還有人，你數不清有幾個。" : "他握刀的手在抖，不是怕，是等太久了。");
       },
       choices: [

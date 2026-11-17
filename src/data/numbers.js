@@ -157,8 +157,9 @@ export const numbers = {
             surviveThreshold: { healthy: 4, injured: 6 },             // 輸了：沒帶傷存活 0.75、帶傷 7/12≈0.58
             maxWinChance: 0.95,
             fleeChance: 0.8, fleeHelperPenalty: 0.1 },                // 遁走沿用現行判定；有幫手時難一級（−10%）
-    // 線索句（神識高才看得到）：repo 還沒有神識數值，暫以「心魔 < keenSenseDemonBelow」代替（衡天 11/17）
-    keenSenseDemonBelow: 20,
+    // 線索句（看得清才看得到）：穩躁 ≤ 這個值（偏穩）的人看得清（玄機 11/17）。
+    // 之後有神識改看神識；卦象做好後「這一季卜過卦」也算（擇一即可）
+    keenSenseTemperAtMost: -20,
     // 仇家：遊歷時擲（機率 0 時不擲）。機率＝未了結的「仇」類中因果數 × 中 ＋ 大因果數 × 大；
     // 善惡 ≤ evilAt 時先 × evilMultiplier，再封頂：一般 chanceCap，偏惡 evilChanceCap（11/17 玄機定案：一律 15%）
     enemy: { chancePerKarma: { "中": 0.01, "大": 0.04 }, chanceCap: 0.15, evilChanceCap: 0.15, evilAt: -30, evilMultiplier: 1.5,
