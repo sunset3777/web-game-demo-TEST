@@ -297,7 +297,7 @@ export const actionEvents = {
             return "他收下了，看了你很久：「這件事，到這裡為止。」"; } }
       ] },
     { id: "仇家勝後", title: "仇家", weight: 0, when: s => false,
-      text: "他跪在地上，刀落在一邊，抬頭看你，等你決定。",
+      text: "他跪在地上，手裡已經沒有刀，抬頭看你，等你決定。",
       choices: [
         { label: "放他走", run: (s, api) => { api.tend("善惡", 5);
             return "他撐著站起來，什麼也沒說就走了。"; } },

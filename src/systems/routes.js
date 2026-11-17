@@ -68,10 +68,9 @@ export const routes = {
     const inspection = numbers.conduct.inspection;
     return this.view(gameState).正邪 <= inspection.recognizedAt ? inspection.storyPassChanceIfRecognizable : inspection.storyPassChance;
   },
-  // 執法追緝的陣仗機率：依正邪落在哪一段
+  // 執法追緝的陣仗機率（目前不依狀態變化；留著 gameState 參數，之後若要依正邪或境界分段只改這裡）
   lawSquadChance(gameState) {
-    const righteousness = this.view(gameState).正邪;
-    return numbers.conduct.inspection.lawSquadChanceByBand.find(band => righteousness > band.above).chances;
+    return numbers.conduct.inspection.lawSquadChance;
   },
   // 最早一筆還沒了結、也還沒淡去的某類因果（可限定輕重）
   oldestOpenKarma(gameState, kind, weights) {
