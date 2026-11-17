@@ -1,8 +1,10 @@
 // 各修練行動專屬的事件，以及路線的入門事件鏈。格式同 events.js，另外多了：
 //   actions   哪些行動會觸發（吐納／周天／閉關／遊歷）；events.js 裡沒寫的預設只在遊歷出現
-//   tend      心性偏好：{ 正邪: 1 } 表示越「正」越容易遇到，{ 正邪: -1 } 表示越「邪」越容易遇到
+//   tend      心性偏好：{ 正邪: 1 } 表示越「正」越容易遇到，{ 正邪: -1 } 表示越「邪」越容易遇到（善惡、穩躁同理）
 //   route     只在這條路線出現；routeNot：這條路線不會出現
-// api 另外提供：api.tend("正邪"|"穩躁", 數值)  api.setRoute(路線)  api.addXiu(數值)  api.route()
+//   weight    可以是數字，或 (s, api) => 數字（例如越邪越常出現的正道盤查）
+// api 另外提供：api.tend("善惡"|"正邪"|"穩躁", 數值)  api.setRoute(路線)  api.addXiu(數值)  api.route()
+//   api.inspectionWeight()  正道盤查的抽中權重　api.settleOldestGrudge()  了結最早一筆中、大因果，回傳它的文字
 import { numbers } from "./numbers.js";
 
 const season = s => numbers.seasons[s.seasonIdx];
@@ -11,22 +13,22 @@ const friend = s => s.flags["青梅竹馬"];
 export const actionEvents = {
   list: [
     // ================= 吐納：人在世間 =================
-    { id: "鄰家求藥", title: "鄰家的孩子", actions: ["吐納"], weight: 2, tend: { 正邪: 1 },
+    { id: "鄰家求藥", title: "鄰家的孩子", actions: ["吐納"], weight: 2, tend: { 善惡: 1 },
       when: s => s.stones >= 3,
       text: "隔壁的孩子燒了三天，大人跪在你門口，求你給點仙家的藥。",
       choices: [
-        { label: "拿出靈石換來的丹藥", run: (s, api) => { api.addStones(-3); api.tend("正邪", 6); api.addKarma("鄰家孩子", "救了鄰家的孩子", "小"); return "孩子的燒退了。那家人逢人便說，鎮上住著一位好心的仙師。"; } },
-        { label: "推說自己也沒有", run: (s, api) => { api.tend("正邪", -3); return "你關上門。夜裡，隔壁的哭聲斷斷續續，一直到天亮。"; } }
+        { label: "拿出靈石換來的丹藥", run: (s, api) => { api.addStones(-3); api.tend("善惡", 6); api.addKarma("鄰家孩子", "救了鄰家的孩子", "小"); return "孩子的燒退了。那家人逢人便說，鎮上住著一位好心的仙師。"; } },
+        { label: "推說自己也沒有", run: (s, api) => { api.tend("善惡", -3); return "你關上門。夜裡，隔壁的哭聲斷斷續續，一直到天亮。"; } }
       ] },
     { id: "市集騙子", title: "市集上的假藥", actions: ["吐納"], weight: 2,
       when: s => true,
       text: "市集上有人吆喝著賣「築基仙丹」，一顆十兩銀子，圍觀的鄉民擠得水洩不通。你一眼就看出那只是糖丸。",
       choices: [
-        { label: "當眾拆穿", run: (s, api) => { api.tend("正邪", 3); api.tend("穩躁", 4);
+        { label: "當眾拆穿", run: (s, api) => { api.tend("善惡", 2); api.tend("正邪", 3); api.tend("穩躁", 4);
             if (api.chance(0.3)) { api.addKarma("假藥販子", "拆穿了市集的假藥販子", "小"); return "鄉民一哄而散。那人臨走前狠狠瞪了你一眼。"; }
             return "鄉民一哄而散，那人灰溜溜地收了攤。"; } },
         { label: "與我無關", run: (s, api) => { api.tend("穩躁", -2); return "你搖搖頭走開了。修行的人，少管閒事。"; } },
-        { label: "找他分一杯羹", run: (s, api) => { api.tend("正邪", -6); api.addStones(4); return "你在旁邊幫腔了幾句，那人散攤後塞給你幾塊碎靈石。"; } }
+        { label: "找他分一杯羹", run: (s, api) => { api.tend("善惡", -6); api.addStones(4); return "你在旁邊幫腔了幾句，那人散攤後塞給你幾塊碎靈石。"; } }
       ] },
     { id: "地痞收錢", title: "上門的地痞", actions: ["吐納"], weight: 1,
       when: s => s.stones >= 4,
@@ -37,11 +39,11 @@ export const actionEvents = {
             if (api.chance(0.25)) { api.injure(); return "你把他們打跑了，但其中一個掏出了刀子，你手臂挨了一下。"; }
             return "三兩下就把他們打得抱頭鼠竄。街坊從窗縫裡偷看，沒人敢出聲。"; } }
       ] },
-    { id: "雨夜借宿", title: "雨夜的旅人", actions: ["吐納"], weight: 1, tend: { 正邪: 1 },
+    { id: "雨夜借宿", title: "雨夜的旅人", actions: ["吐納"], weight: 1, tend: { 善惡: 1 },
       when: s => true,
       text: s => `${season(s)}夜大雨，一個渾身濕透的旅人敲門，想借住一晚。`,
       choices: [
-        { label: "收留他", run: (s, api) => { api.tend("正邪", 4);
+        { label: "收留他", run: (s, api) => { api.tend("善惡", 4);
             if (api.chance(0.3)) { const lost = Math.min(s.stones, api.rand(2, 6)); api.addStones(-lost); return "第二天醒來，旅人不見了，你的錢袋也輕了一些。"; }
             api.addMaterial(api.pick(["青木靈髓", "庚金之精", "妖獸內丹"]), 1); return "天亮時旅人已經走了，桌上留了一樣東西，算是謝禮。"; } },
         { label: "隔著門回絕", run: (s, api) => { api.tend("穩躁", -2); return "腳步聲在雨裡慢慢走遠了。"; } }
@@ -50,8 +52,8 @@ export const actionEvents = {
       when: s => s.realmIndex >= 1,
       text: "鎮上的富戶帶著一箱靈石登門，求你傳他兒子幾手仙法。那孩子一點靈根也沒有。",
       choices: [
-        { label: "收錢，教些粗淺的吐納", run: (s, api) => { api.addStones(15); api.tend("正邪", -3); return "那孩子學了一年，除了氣色好些，什麼也沒學會。富戶倒是很滿意。"; } },
-        { label: "實話實說，婉拒", run: (s, api) => { api.tend("正邪", 3); return "富戶失望地走了。那孩子回頭看了你一眼，眼裡有些不甘。"; } }
+        { label: "收錢，教些粗淺的吐納", run: (s, api) => { api.addStones(15); api.tend("善惡", -3); return "那孩子學了一年，除了氣色好些，什麼也沒學會。富戶倒是很滿意。"; } },
+        { label: "實話實說，婉拒", run: (s, api) => { api.tend("善惡", 3); return "富戶失望地走了。那孩子回頭看了你一眼，眼裡有些不甘。"; } }
       ] },
     { id: "故人老去", title: "故人", actions: ["吐納"], weight: 3, once: true,
       when: s => !!friend(s) && s.realmIndex >= 1,
@@ -102,7 +104,7 @@ export const actionEvents = {
       text: "靜坐到深處，耳邊響起一個很像你自己的聲音：「何必那麼辛苦？你想要的，我都能給你。」",
       choices: [
         { label: "聽它說下去", run: (s, api) => { api.tend("正邪", -4); api.addDemon(6); api.addInsight(15); return "它說了很多，有些話竟然很有道理。你醒來時一身冷汗。"; } },
-        { label: "默誦清心訣", run: (s, api) => { api.tend("穩躁", -2); api.addDemon(-8); return "聲音漸漸遠了。洞府裡只剩下你的呼吸聲。"; } }
+        { label: "默誦清心訣", run: (s, api) => { api.tend("穩躁", -2); api.tend("正邪", 4); api.addDemon(-8); return "聲音漸漸遠了。洞府裡只剩下你的呼吸聲。"; } }
       ] },
     { id: "前塵舊夢", title: "舊夢", actions: ["閉關"], weight: 2,
       when: s => !!s.mark,
@@ -130,21 +132,21 @@ export const actionEvents = {
       when: s => true,
       text: "林子裡，三個宗門弟子圍著一個受傷的散修，要他交出剛採到的靈草。",
       choices: [
-        { label: "出手相救", run: (s, api) => { api.tend("正邪", 6); api.tend("穩躁", 3);
+        { label: "出手相救", run: (s, api) => { api.tend("善惡", 6); api.tend("正邪", 3); api.tend("穩躁", 3);
             if (api.chance(0.4)) { api.injure(); api.addKarma("得罪宗門弟子", "為救散修得罪了宗門弟子", "中"); return "你救下了散修，自己也掛了彩。那幾個弟子撂下狠話走了。"; }
             api.addKarma("救下散修", "林中救下一位散修", "小"); return "那幾個弟子見你不好惹，罵罵咧咧地走了。散修千恩萬謝。"; } },
-        { label: "趁亂把靈草搶走", run: (s, api) => { api.tend("正邪", -8); api.tend("穩躁", 3); api.addMaterial("青木靈髓", 1); return "你搶了靈草就跑，身後兩撥人都在罵你。"; } },
+        { label: "趁亂把靈草搶走", run: (s, api) => { api.tend("善惡", -10); api.tend("穩躁", 3); api.addKarma("搶散修靈草", "趁亂搶走受欺凌散修的靈草", "中"); api.addMaterial("青木靈髓", 1); return "你搶了靈草就跑，身後兩撥人都在罵你。"; } },
         { label: "繞道而行", run: (s, api) => { api.tend("穩躁", -2); return "你繞開了那片林子。"; } }
       ] },
     { id: "黑市", title: "黑市", actions: ["遊歷"], weight: 2, tend: { 正邪: -1 },
       when: s => s.tend && s.tend.正邪 <= -20 && s.stones >= 10,
       text: "你被帶進一處地下黑市。攤上擺著來路不明的丹藥，據說吃了能一夜漲十年功力。",
       choices: [
-        { label: "買一顆", run: (s, api) => { api.addStones(-10); api.tend("正邪", -3); api.addDemon(12); api.addXiu(numbers.realms[s.realmIndex].perSeason * 3); return "藥力像火一樣燒遍全身。功力漲了，心底卻多了點說不清的東西。"; } },
-        { label: "看看就走", run: (s, api) => { api.tend("穩躁", -2); return "你在黑市裡轉了一圈，記下了入口的位置。"; } }
+        { label: "買一顆", run: (s, api) => { api.addStones(-10); api.tend("正邪", -15); api.tend("善惡", -5); api.addDemon(12); api.addXiu(numbers.realms[s.realmIndex].perSeason * 3); return "藥力像火一樣燒遍全身。功力漲了，心底卻多了點說不清的東西。"; } },
+        { label: "看看就走", run: (s, api) => { api.tend("穩躁", -2); api.tend("正邪", 5); return "你在黑市裡轉了一圈，記下了入口的位置。"; } }
       ] },
-    { id: "宗門指點", title: "宗門長老", actions: ["遊歷"], weight: 2, tend: { 正邪: 1 },
-      when: s => s.tend && s.tend.正邪 >= 20,
+    { id: "宗門指點", title: "宗門長老", actions: ["遊歷"], weight: 2, tend: { 善惡: 1 },
+      when: s => s.tend && s.tend.善惡 >= 20,
       text: "一位宗門長老聽說了你行善的事，特地在山腳等你，要指點你幾句。",
       choices: [{ label: "恭敬請教", run: (s, api) => { api.addInsight(25); return "長老說了半個時辰，有幾句話讓你茅塞頓開。"; } }] },
 
@@ -153,25 +155,61 @@ export const actionEvents = {
       when: s => s.route === "氣修" && !s.flags["魔種"] && s.demon >= 40 && s.tend && s.tend.正邪 <= -10,   // 種下魔種：任何境界都可能（累積邪修作派）
       text: "心魔不再只是低語。它清清楚楚地對你說：「你壓著我，只會越來越累。讓我進來，我給你力量。」",
       choices: [
-        { label: "讓它進來", run: (s, api) => { api.setFlag("魔種"); api.tend("正邪", -8); api.addDemon(10); api.note("心魔在我心底種下了一顆種子。"); return "一股冰涼的東西沉進了你的丹田。不痛，甚至有點舒服。"; } },
-        { label: "斬斷雜念", run: (s, api) => { api.tend("穩躁", -3); api.addDemon(-15); return "你咬破舌尖，用疼痛把那個聲音趕了出去。"; } }
+        { label: "讓它進來", run: (s, api) => { api.setFlag("魔種"); api.tend("正邪", -12); api.addDemon(10); api.note("心魔在我心底種下了一顆種子。"); return "一股冰涼的東西沉進了你的丹田。不痛，甚至有點舒服。"; } },
+        { label: "斬斷雜念", run: (s, api) => { api.tend("穩躁", -3); api.tend("正邪", 6); api.addDemon(-15); return "你咬破舌尖，用疼痛把那個聲音趕了出去。"; } }
       ] },
     { id: "魔種萌芽", title: "魔種", actions: ["周天", "閉關", "吐納"], weight: 5, once: true, routeNot: "魔修",
       when: s => s.route === "氣修" && s.flags["魔種"] && s.realmIndex >= 2 && s.tend && s.tend.正邪 <= -30,   // 墮入魔道：金丹以上，且作派夠邪
       text: "結丹之後，心底那顆沉睡多年的種子終於發芽了。這些年你做過的事，它都記得。它在等你做決定：順著它，或者把它連根拔起。",
       choices: [
-        { label: "順著它，改修魔功", run: (s, api) => { api.setRoute("魔修"); api.tend("正邪", -10); api.note("我放棄了正統功法，改修《天魔策》。"); return "黑氣從丹田湧出，流遍全身。你從未覺得自己這麼強過。\n從今往後，心魔不再是敵人。"; } },
+        { label: "順著它，改修魔功", run: (s, api) => { api.setRoute("魔修"); api.tend("正邪", -15); api.note("我放棄了正統功法，改修《天魔策》。"); return "黑氣從丹田湧出，流遍全身。你從未覺得自己這麼強過。\n從今往後，心魔不再是敵人。"; } },
         { label: "以心火焚之", run: (s, api) => { api.setFlag("魔種", false); api.addDemon(-25); api.injure(); api.tend("正邪", 5); return "你點燃心火，硬生生把魔種燒成灰。經脈受了重創，但心裡乾淨了。"; } }
       ] },
     { id: "正道追殺", title: "正道修士", actions: ["遊歷", "吐納"], weight: 3, route: "魔修",
       when: s => true,
       text: "幾個正道修士攔住了你的去路：「魔頭，今日便替天行道！」",
       choices: [
-        { label: "殺出一條路", run: (s, api) => { api.tend("穩躁", 4); api.tend("正邪", -4);
+        { label: "殺出一條路", run: (s, api) => { api.tend("穩躁", 4); api.tend("正邪", -4); api.tend("善惡", -3); api.addKarma("殺傷正道修士", "殺出正道修士的圍堵", "中");
             if (s.injury > 0 && api.chance(0.35)) { api.die("正道圍殺"); return "你本就帶傷，終究沒能殺出去。"; }
             if (api.chance(0.5)) { api.addDemon(8); api.addXiu(numbers.realms[s.realmIndex].perSeason); return "你殺了他們。魔功吸了血氣，又漲了幾分。"; }
             api.injure(); return "你殺出了包圍，自己也受了傷。"; } },
         { label: "丟下靈石，趁亂逃走", run: (s, api) => { api.addStones(-Math.ceil(s.stones / 2)); api.tend("穩躁", -2); return "靈石撒了一地。趁他們分神，你遁入了夜色。"; } }
+      ] },
+
+    // ================= 作派：正道盤查、仇家（2026-11-17） =================
+    // 正道盤查：還沒入魔、但正邪已經偏邪的人才會遇到；越邪越常（權重由規則算，數字在 numbers.js 的 conduct.inspection）
+    // TODO(墨淵)：以下文字都是佔位，等正式文案
+    { id: "正道盤查", title: "正道盤查", actions: ["遊歷", "吐納"], routeNot: "魔修",
+      weight: (s, api) => api.inspectionWeight(),
+      when: s => s.tend && s.tend.正邪 <= numbers.conduct.inspection.startAt,
+      text: "幾名正道修士在路口設卡，說附近有人修習邪術，要逐一盤查過路的修士。",
+      choices: [
+        { label: "讓他們盤查", run: (s, api) => {
+            if (s.flags["魔種"] && api.chance(numbers.conduct.inspection.exposedChanceIfDemonSeed)) {
+              api.injure(); return "為首的修士一掌按在你心口，臉色驟變。你搶先出手才脫了身，自己也受了傷。";
+            }
+            return "他們查了半天，沒查出什麼，揮手讓你過去了。"; } },
+        { label: "找個藉口脫身", run: (s, api) => {
+            if (api.chance(numbers.conduct.inspection.evadeFailChance)) {
+              api.injure(); return "藉口沒能糊弄過去，雙方動起手來。你逃了出來，身上多了幾道傷。";
+            }
+            return "你說得滴水不漏，他們沒再為難你。"; } }
+      ] },
+    // 仇家：不會被隨機抽到；每次行動依未了結的中、大因果擲一次，由 controller 排入（數字在 numbers.js 的 conduct.enemy）
+    // TODO(墨淵)：以下文字都是佔位，等正式文案
+    { id: "仇家尋仇", title: "仇家", weight: 0,
+      when: s => false,
+      text: "有人一路打聽你的下落，終於在這裡堵到了你。來的是你從前結下的仇。",
+      choices: [
+        { label: "迎戰", run: (s, api) => {
+            if (api.chance(numbers.conduct.enemy.fightWinChance)) {
+              const settled = api.settleOldestGrudge();
+              return settled ? `一番纏鬥後，對方敗走。「${settled}」這段恩怨，算是了了。` : "一番纏鬥後，對方敗走。";
+            }
+            api.injure(); return "對方有備而來，你落了下風，帶著傷才脫身。"; } },
+        { label: "避走", run: (s, api) => {
+            api.addStones(-Math.ceil(s.stones * numbers.conduct.enemy.fleeStoneLossRatio));
+            return "你丟下一包靈石擋住對方，趁機離開。這筆帳，他還會再來找你算。"; } }
       ] },
 
     // ================= 路線入門：劍修 =================

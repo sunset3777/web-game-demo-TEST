@@ -36,7 +36,9 @@ export const events = {
       return m;
     };
     const recent = e => { const k = s.recentEvents.indexOf(e.id); return k < 0 ? 1 : 0.1 + 0.15 * k; };
-    const e = util.weighted(list, e => (e.weight || 1) * fit(e) * recent(e) * (e.id === "前人遺府" ? 1 + b.legacyFind * 10 : 1));
+    // weight 可以是函式（例如越邪越常出現的正道盤查），由規則依當下狀態算
+    const baseWeightOf = e => typeof e.weight === "function" ? e.weight(s, this.api(s)) : (e.weight || 1);
+    const e = util.weighted(list, e => baseWeightOf(e) * fit(e) * recent(e) * (e.id === "前人遺府" ? 1 + b.legacyFind * 10 : 1));
     if (e) { s.recentEvents.unshift(e.id); s.recentEvents = s.recentEvents.filter((x, i, a) => a.indexOf(x) === i).slice(0, 6); }
     return e;
   },
@@ -68,6 +70,14 @@ export const events = {
       probeDemonKing: options => travel.probeDemonKing(s, options),
       demonKingClueCount: () => travel.countDemonKingClues(s),
       demonKingFleeHurtChance: baseChance => travel.demonKingFleeHurtChance(s, baseChance),
+      // 作派：正道盤查的權重；仇家被擊退時了結最早一筆還沒了結的中、大因果
+      inspectionWeight: () => routes.inspectionWeight(s),
+      settleOldestGrudge: () => {
+        const grudge = s.karma.find(entry => !entry.done && !entry.faded && (entry.weight === "中" || entry.weight === "大"));
+        if (!grudge) return null;
+        grudge.done = true; grudge.ending = "仇家上門，被你擊退";
+        return grudge.text;
+      },
       unlockEnv: env => { if (!s.envs.includes(env)) s.envs.push(env); },
       setFlag: (k, v) => { s.flags[k] = v === undefined ? true : v; },
       flag: k => s.flags[k],

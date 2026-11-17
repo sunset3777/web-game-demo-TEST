@@ -117,6 +117,25 @@ export const numbers = {
   // 因果淡去時間（季）；大因果不淡去
   karma: { fade: { "小": 8, "中": 60, "大": Infinity }, maxOpen: 6 },
 
+  // 作派（2026-11-17 定，玄機審、衡天之後微調）：一世一組善惡、正邪、穩躁（−100～100），其他系統只讀這三軸。
+  // 正值＝善／正／躁，負值＝惡／邪／穩。下一世從 0 開始
+  conduct: {
+    // 修練行動對穩躁的影響：減半，且行動最多只把穩躁推到 ±40，再往外要靠事件選項
+    actionStepScale: 0.5,
+    actionStepLimit: 40,
+    describeAt: 25,                    // 一世結束寫進筆記時，三軸過 ±25 才有「寬厚／刻薄」這類描述
+    // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
+    // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
+    inspection: { startAt: -30, baseWeight: 2, weightPerPoint: 0.1,
+                  exposedChanceIfDemonSeed: 0.5,   // 配合盤查時，身上有魔種被看穿的機率（看穿就受傷）
+                  evadeFailChance: 0.4 },          // 找藉口脫身失敗的機率（失敗就受傷）
+    // 仇家：每次行動擲一次（機率 0 時不擲）。機率＝未了結的中因果數 × 中 ＋ 大因果數 × 大，上限 chanceCap；
+    // 善惡 ≤ evilAt 時再 × evilMultiplier
+    enemy: { chancePerKarma: { "中": 0.01, "大": 0.04 }, chanceCap: 0.15, evilAt: -30, evilMultiplier: 1.5,
+             fightWinChance: 0.5,                  // 迎戰得勝的機率（得勝了結一筆因果，落敗受傷）
+             fleeStoneLossRatio: 1 / 3 }           // 避走時丟下的靈石比例
+  },
+
   // 傳承
   legacy: { maxPages: 3, pageInsight: 20 }
 };

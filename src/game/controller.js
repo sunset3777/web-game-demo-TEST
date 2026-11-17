@@ -10,6 +10,7 @@ import { legacy } from "../systems/legacy.js";
 import { growth } from "../systems/growth.js";
 import { save } from "../systems/save.js";
 import { travel } from "../systems/travel.js";
+import { routes } from "../systems/routes.js";
 
 // 踏入新境界時的感受（提醒視窗用）
 const REALM_FEEL = {
@@ -102,6 +103,11 @@ export function createGame(onChange) {
       if (s.alive && !res.hasSensedDemonKing && util.chance(res.eventChance)) {
         const e = events.pick(s, action);
         if (e) s.queue.push({ type: "event", id: e.id });
+      }
+      // 仇家：依未了結的中、大因果擲一次；機率是 0（沒有結仇）時不擲，免得沒結仇的人生也多耗一次亂數
+      const enemyChance = routes.enemyChance(s);
+      if (s.alive && !res.hasSensedDemonKing && enemyChance > 0 && util.chance(enemyChance)) {
+        s.queue.push({ type: "event", id: "仇家尋仇" });
       }
       s.lastText = lines.join("\n");
       state.log(s, s.lastText);
