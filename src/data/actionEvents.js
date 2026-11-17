@@ -24,7 +24,7 @@ export const actionEvents = {
       when: s => true,
       text: "市集上有人吆喝著賣「築基仙丹」，一顆十兩銀子，圍觀的鄉民擠得水洩不通。你一眼就看出那只是糖丸。",
       choices: [
-        { label: "當眾拆穿", run: (s, api) => { api.tend("善惡", 2); api.tend("正邪", 3); api.tend("穩躁", 4);
+        { label: "當眾拆穿", run: (s, api) => { api.tend("善惡", 2); api.tend("正邪", numbers.conduct.choiceShift.當眾拆穿正邪); api.tend("穩躁", 4);
             if (api.chance(0.3)) { api.addKarma("假藥販子", "拆穿了市集的假藥販子", "小"); return "鄉民一哄而散。那人臨走前狠狠瞪了你一眼。"; }
             return "鄉民一哄而散，那人灰溜溜地收了攤。"; } },
         { label: "與我無關", run: (s, api) => { api.tend("穩躁", -2); return "你搖搖頭走開了。修行的人，少管閒事。"; } },
@@ -132,7 +132,7 @@ export const actionEvents = {
       when: s => true,
       text: "林子裡，三個宗門弟子圍著一個受傷的散修，要他交出剛採到的靈草。",
       choices: [
-        { label: "出手相救", run: (s, api) => { api.tend("善惡", 6); api.tend("正邪", 3); api.tend("穩躁", 3);
+        { label: "出手相救", run: (s, api) => { api.tend("善惡", 6); api.tend("正邪", numbers.conduct.choiceShift.出手相救正邪); api.tend("穩躁", 3);
             if (api.chance(0.4)) { api.injure(); api.addKarma("得罪宗門弟子", "為救散修得罪了宗門弟子", "中"); return "你救下了散修，自己也掛了彩。那幾個弟子撂下狠話走了。"; }
             api.addKarma("救下散修", "林中救下一位散修", "小"); return "那幾個弟子見你不好惹，罵罵咧咧地走了。散修千恩萬謝。"; } },
         { label: "趁亂把靈草搶走", run: (s, api) => { api.tend("善惡", -10); api.tend("穩躁", 3); api.addKarma("搶散修靈草", "趁亂搶走受欺凌散修的靈草", "中"); api.addMaterial("青木靈髓", 1); return "你搶了靈草就跑，身後兩撥人都在罵你。"; } },

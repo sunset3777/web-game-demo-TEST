@@ -125,7 +125,9 @@ export const numbers = {
     actionStepLimit: 40,
     describeAt: 25,
     sectGuidanceMaxPerLife: 2,
-    darkPathOpensAtGoodEvil: -30,      // 黑市、魔音入耳：正邪還沒到門檻，但善惡 ≤ 這個值也會出現（魔種萌芽仍只看正邪）         // 宗門指點一世最多出現幾次（玄機 11/17 定）                    // 一世結束寫進筆記時，三軸過 ±25 才有「寬厚／刻薄」這類描述
+    darkPathOpensAtGoodEvil: -30,
+    // 兩個「選擇走正道」選項的正邪幅度：玄機（甲）拆穿 6／相救 4，衡天（乙）拆穿 4／相救 6，協調中，先照甲
+    choiceShift: { 當眾拆穿正邪: 6, 出手相救正邪: 4 },      // 黑市、魔音入耳：正邪還沒到門檻，但善惡 ≤ 這個值也會出現（魔種萌芽仍只看正邪）         // 宗門指點一世最多出現幾次（玄機 11/17 定）                    // 一世結束寫進筆記時，三軸過 ±25 才有「寬厚／刻薄」這類描述
     // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
     // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
     inspection: { startAt: -30, baseWeight: 2, weightPerPoint: 0.1,

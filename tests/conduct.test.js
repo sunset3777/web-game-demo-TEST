@@ -200,3 +200,14 @@ test("黑市、魔音入耳：正邪到門檻或善惡夠低（≤ -30）都會�
   setConduct(gameState, { 善惡: 0, 正邪: -30 });
   assert.equal(events.find("魔種萌芽").when(gameState), true);
 });
+
+test("當眾拆穿、出手相救的正邪幅度照 numbers.js 的 conduct.choiceShift", () => {
+  const gameState = startCultivatingLife().s;
+  const shiftOf = (eventId, optionLabel) => {
+    setConduct(gameState, { 善惡: 0, 正邪: 0, 穩躁: 0 });
+    withSeededRandom(1, () => chooseOption(gameState, eventId, optionLabel));
+    return { 善惡: gameState.tend.善惡, 正邪: gameState.tend.正邪 };
+  };
+  assert.deepEqual(shiftOf("市集騙子", "當眾拆穿"), { 善惡: 2, 正邪: conduct.choiceShift.當眾拆穿正邪 });
+  assert.deepEqual(shiftOf("被欺凌的散修", "出手相救"), { 善惡: 6, 正邪: conduct.choiceShift.出手相救正邪 });
+});
