@@ -117,21 +117,54 @@ test("正道盤查：正邪 ≤ -30 才出現、越邪權重越高，已入魔�
   assert.equal(isInspectionAvailable(), false);
 });
 
-test("仇家機率：只算未了結的中、大因果，封頂後偏惡再加乘", () => {
+test("仇家機率：只算未了結的「仇」類中、大因果；偏惡先加乘再封頂", () => {
   const gameState = startCultivatingLife().s;
   const enemy = conduct.enemy;
+  const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} ≠ ${expected}`);
   setConduct(gameState, { 善惡: 0 });
   gameState.karma = [];
   assert.equal(routes.enemyChance(gameState), 0);
   gameState.karma = [
-    { id: "a", weight: "中" }, { id: "b", weight: "中" }, { id: "c", weight: "小" },
-    { id: "d", weight: "中", done: true }, { id: "e", weight: "中", faded: true }
+    { id: "a", weight: "中", kind: "仇" }, { id: "b", weight: "中", kind: "仇" }, { id: "c", weight: "小", kind: "仇" },
+    { id: "d", weight: "中", kind: "仇", done: true }, { id: "e", weight: "中", kind: "仇", faded: true },
+    { id: "f", weight: "中", kind: "恩" }, { id: "g", weight: "大", kind: "欠" }
   ];
-  assert.ok(Math.abs(routes.enemyChance(gameState) - 2 * enemy.chancePerKarma["中"]) < 1e-12);
-  gameState.karma = Array.from({ length: 10 }, (_, i) => ({ id: "big" + i, weight: "大" }));
+  near(routes.enemyChance(gameState), 2 * enemy.chancePerKarma["中"]);
+  // 行善結下的恩、欠別人的人情都不會招來仇家
+  gameState.karma = [{ id: "救山道老者", weight: "中" }, { id: "救小荷", weight: "中" }];
+  assert.equal(routes.enemyChance(gameState), 0, "沒有種類欄位的舊因果照對照表判斷，救人是恩");
+  // 一般封頂
+  gameState.karma = Array.from({ length: 10 }, (_, i) => ({ id: "big" + i, weight: "大", kind: "仇" }));
   assert.equal(routes.enemyChance(gameState), enemy.chanceCap);
+  // 偏惡：先乘再封頂（較高的上限）
   setConduct(gameState, { 善惡: enemy.evilAt });
-  assert.ok(Math.abs(routes.enemyChance(gameState) - enemy.chanceCap * enemy.evilMultiplier) < 1e-12);
+  assert.equal(routes.enemyChance(gameState), enemy.evilChanceCap);
+  gameState.karma = [{ id: "a", weight: "中", kind: "仇" }];
+  near(routes.enemyChance(gameState), enemy.chancePerKarma["中"] * enemy.evilMultiplier);
+});
+
+test("新記下的因果帶種類；舊存檔的因果載入時照對照表補上恩／仇／欠", async () => {
+  const { save } = await import("../src/systems/save.js");
+  const { karmaData } = await import("../src/data/karma.js");
+  const gameState = startCultivatingLife().s;
+  gameState.karma = [];
+  events.addKarma(gameState, "搶散修靈草", "搶靈草", "中");
+  events.addKarma(gameState, "救山道老者", "救老者", "中");
+  assert.deepEqual(gameState.karma.map(entry => entry.kind), ["仇", "恩"]);
+  // 舊存檔：沒有 kind 欄位
+  const oldSave = JSON.parse(JSON.stringify(gameState));
+  oldSave.karma = [
+    { id: "搶散修靈草", text: "搶靈草", weight: "中", born: 0, done: false },
+    { id: "救小荷", text: "救小荷", weight: "中", born: 0, done: false },
+    { id: "測試用欠人情", text: "欠了人情", weight: "中", born: 0, done: false },
+    { id: "沒在表上的舊因果", text: "？", weight: "小", born: 0, done: false },
+    { id: "已有種類", text: "不動", weight: "小", kind: "仇", born: 0, done: false }
+  ];
+  karmaData.kindById["測試用欠人情"] = "欠";   // 只在這個測試裡加，驗證三類都會補
+  try {
+    const loaded = save.migrate(oldSave);
+    assert.deepEqual(loaded.karma.map(entry => entry.kind), ["仇", "恩", "欠", karmaData.defaultKind, "仇"]);
+  } finally { delete karmaData.kindById["測試用欠人情"]; }
 });
 
 test("仇家迎戰得勝會了結最早一筆中、大因果", () => {

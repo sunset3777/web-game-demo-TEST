@@ -1,6 +1,7 @@
 // 路線與傾向系統：記錄行事與心性傾向、提供各路線對數值的修正、切換路線、稱號
 import { numbers } from "../data/numbers.js";
 import { routesData } from "../data/routes.js";
+import { karmaData } from "../data/karma.js";
 
 const R = routesData;
 
@@ -49,14 +50,15 @@ export const routes = {
     if (righteousness > inspection.startAt) return 0;
     return inspection.baseWeight + (inspection.startAt - righteousness) * inspection.weightPerPoint;
   },
-  // 這次行動有仇家找上門的機率：只算還沒了結、也還沒淡去的中、大因果
+  // 這次行動有仇家找上門的機率：只算還沒了結、也還沒淡去的「仇」類中、大因果（行善結下的「恩」不會招來仇家）。
+  // 偏惡（善惡 ≤ evilAt）的人先乘 evilMultiplier，再用比較高的上限封頂（11/17 玄機定：先加乘再封頂）
   enemyChance(gameState) {
     const enemy = numbers.conduct.enemy;
-    const openKarma = (gameState.karma || []).filter(entry => !entry.done && !entry.faded);
-    const baseChance = openKarma.reduce((sum, entry) => sum + (enemy.chancePerKarma[entry.weight] || 0), 0);
-    // 規格寫「上限 15%，善惡 ≤ -30 時再 ×1.5」：先封頂再加乘，所以偏惡的人最高可到 22.5%（未驗證是否為設計本意）
-    const cappedChance = Math.min(enemy.chanceCap, baseChance);
-    return this.view(gameState).善惡 <= enemy.evilAt ? cappedChance * enemy.evilMultiplier : cappedChance;
+    const kindOf = entry => entry.kind || karmaData.kindById[entry.id] || karmaData.defaultKind;
+    const openGrudges = (gameState.karma || []).filter(entry => !entry.done && !entry.faded && kindOf(entry) === "仇");
+    const baseChance = openGrudges.reduce((sum, entry) => sum + (enemy.chancePerKarma[entry.weight] || 0), 0);
+    const isEvil = this.view(gameState).善惡 <= enemy.evilAt;
+    return isEvil ? Math.min(enemy.evilChanceCap, baseChance * enemy.evilMultiplier) : Math.min(enemy.chanceCap, baseChance);
   },
 
   // 一世結束時寫進筆記的作派描述（文字為佔位，TODO(墨淵)：換成正式文案）

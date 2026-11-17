@@ -6,6 +6,7 @@ import { routes } from "./routes.js";
 import { util, state } from "./state.js";
 import { legacy } from "./legacy.js";
 import { save } from "./save.js";
+import { karmaData } from "../data/karma.js";
 // 互相匯入：travel 經由 cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
 import { travel } from "./travel.js";
 
@@ -70,10 +71,11 @@ export const events = {
       probeDemonKing: options => travel.probeDemonKing(s, options),
       demonKingClueCount: () => travel.countDemonKingClues(s),
       demonKingFleeHurtChance: baseChance => travel.demonKingFleeHurtChance(s, baseChance),
-      // 作派：正道盤查的權重；仇家被擊退時了結最早一筆還沒了結的中、大因果
+      // 作派：正道盤查的權重；仇家被擊退時了結最早一筆還沒了結的「仇」類中、大因果
       inspectionWeight: () => routes.inspectionWeight(s),
       settleOldestGrudge: () => {
-        const grudge = s.karma.find(entry => !entry.done && !entry.faded && (entry.weight === "中" || entry.weight === "大"));
+        const isGrudge = entry => (entry.kind || karmaData.kindById[entry.id] || karmaData.defaultKind) === "仇";
+        const grudge = s.karma.find(entry => !entry.done && !entry.faded && isGrudge(entry) && (entry.weight === "中" || entry.weight === "大"));
         if (!grudge) return null;
         grudge.done = true; grudge.ending = "仇家上門，被你擊退";
         return grudge.text;
@@ -102,7 +104,8 @@ export const events = {
   addKarma(s, id, text, weight) {
     const N = numbers;
     if (s.karma.some(k => k.id === id && !k.done)) return;
-    s.karma.push({ id, text, weight, born: s.seasons, done: false });
+    // 種類（恩／仇）照 data/karma.js 的對照表，沒列到的算「恩」
+    s.karma.push({ id, text, weight, kind: karmaData.kindById[id] || karmaData.defaultKind, born: s.seasons, done: false });
     const open = s.karma.filter(k => !k.done && !k.faded);
     if (open.length > N.karma.maxOpen) { const old = open.find(k => k.weight !== "大"); if (old) old.faded = true; }
     if (!s.flags.karmaTaught) { s.flags.karmaTaught = true; state.log(s, "這件事記進了修仙筆記的「因果」頁。有些因果，日後會回來找你。"); }
