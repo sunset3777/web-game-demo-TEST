@@ -1,171 +1,171 @@
-sim 0 坐化 金丹圓滿 89 100 0 7 12 213e50a04e545d4c
-legacy 0 934d84100bf44f27
-sim 1 坐化 金丹圓滿 155 184 0 8 15 22b195f725beb43d
-legacy 1 63a0289da9246270
-sim 2 走火 築基圓滿 68 99 1 13 22 ac4df613a42cd5ea
-legacy 2 a02f18771b8f91ee
-sim 3 遇劫身死 築基圓滿 43 70 0 7 7 b9f3b4dad17ddd25
-legacy 3 d9bb2a49f6b0499d
-sim 4 走火 煉氣第10層 36 74 1 7 9 d9ddfb42cac4660d
-legacy 4 6104d8ee728b2d8c
-sim 5 走火 煉氣第10層 32 59 1 7 10 76e3a0ac91b12fa8
-legacy 5 8a68100fc19b29c9
-sim 6 走火 煉氣第10層 32 58 1 2 6 b460532c561bbcb1
-legacy 6 1f591ca1a95217b8
-sim 7 走火 築基圓滿 76 118 2 11 18 39a9de98959dced6
-legacy 7 70ee220c4688a17e
-sim 8 走火 築基圓滿 56 74 0 12 17 b64d0c6441b1a312
-legacy 8 8c4f220919ff8d30
-sim 9 走火 築基圓滿 66 96 0 4 8 4911ee015d8f511b
-legacy 9 7a7a9a1289b0406d
-sim 10 走火 煉氣第10層 35 70 0 10 9 6b795a1415fd529a
-legacy 10 ce6c8ccc2f19ea6b
-sim 11 遇劫身死 煉氣第3層 20 10 0 4 8 6ab74a42e6862058
-legacy 11 d60a9dda19dc5d6c
-bal 小心 0 走火 築基圓滿 101 133 氣修 ff99f2bb1d434f84 a4630ea8a722ad83
-bal 小心 1 金丹圓滿 金丹圓滿 112 128 氣修 80705bc17e2c25a1 379222ad628d88f6
-bal 小心 2 金丹圓滿 金丹圓滿 109 131 氣修 c9dabb169e0b5522 ca66d0f827bfe1f1
-bal 小心 3 衝關身死 煉氣第10層 41 95 氣修 8de35a92985f5345 5d46217290f2e2f8
-bal 小心 4 衝關身死 築基圓滿 98 124 氣修 d66fa5c8ae5784b3 a3d55c287d520615
-bal 小心 5 衝關身死 築基圓滿 92 144 氣修 719ff3ad12c90c03 ee64c8bb06b1638c
-bal 小心 6 衝關身死 築基圓滿 65 97 氣修 1831a35c14cbbdea 2715354fd3c42c3e
-bal 小心 7 衝關身死 煉氣第10層 53 141 氣修 6030ae46c11f9e36 b1feed0ddfcbb4da
-bal 小心 8 金丹圓滿 金丹圓滿 138 157 氣修 478f0b91a1dbdbf6 f5beac80f5b54f1f
-bal 小心 9 金丹圓滿 金丹圓滿 162 196 氣修 90cb408970fa31ab f9231ddf6e8ebbff
-bal 普通 0 衝關身死 築基圓滿 61 77 氣修 86ac8bcb5e5aabe6 d5880e6fd0e48943
-bal 普通 1 衝關身死 煉氣第10層 37 78 氣修 49fb2c1bf5fea304 d23f7f331276aa40
-bal 普通 2 經脈逆衝 金丹初期 75 89 氣修 dd2d831e5593b3db 8c87de7d831cf0f9
-bal 普通 3 遇劫身死 金丹後期 87 102 氣修 48c2b9cd88a2fb30 93ecbbb676d2c765
-bal 普通 4 金丹圓滿 金丹圓滿 159 175 氣修 f4ca7fca88745754 360b1d915231127e
-bal 普通 5 金丹圓滿 金丹圓滿 88 93 氣修 a036bba75e6e1ed8 c2400e6cf0cbc27d
-bal 普通 6 金丹圓滿 金丹圓滿 145 160 魔修 8568e557f9e8f5e6 72e4e349b3b3545f
-bal 普通 7 衝關身死 煉氣第10層 28 43 氣修 62bb6d4e4b9d98d6 dcd05898d060a3ba
-bal 普通 8 遇劫身死 金丹圓滿 128 143 劍修 411201f1e0909b8c 7ac90c4f7e7d5c89
-bal 普通 9 壽盡 築基圓滿 140 132 氣修 7f1b0e2ccfae1675 fbd34a01891eb766
-bal 莽撞 0 衝關身死 煉氣第10層 26 35 氣修 d2a6e1d6c9df0570 b33f992a465029ea
-bal 莽撞 1 經脈逆衝 築基中期 36 56 氣修 82b908353fc2b7cb 7807f307d876ee9b
-bal 莽撞 2 衝關身死 煉氣第10層 26 33 氣修 a6c85c6ff7d90482 f7f50b80c6c43f04
-bal 莽撞 3 經脈逆衝 煉氣第3層 19 7 氣修 bd07c14dfea552e7 02e0ae6cc97042c0
-bal 莽撞 4 經脈逆衝 煉氣第7層 23 23 氣修 1bef03a584851d50 62ffd6518ddd2be5
-bal 莽撞 5 經脈逆衝 築基初期 33 44 氣修 693ebe9a9e27eddc d7cbe6da6d9918ac
-bal 莽撞 6 經脈逆衝 築基圓滿 64 85 氣修 18ed572816893113 d8e5219626d5de48
-bal 莽撞 7 衝關身死 煉氣第10層 26 34 氣修 b88720dea712adde 227035fd91dc2444
-bal 莽撞 8 經脈逆衝 煉氣第5層 21 13 氣修 de0ed35322507f28 c8a9ecc3f994d57f
-bal 莽撞 9 經脈逆衝 煉氣第1層 18 3 氣修 4b3d4ab9b6325373 879e6592049366d3
-sim 0 遇劫身死 築基後期 46 75 0 7 8 123425dd46639ad1
-legacy 0 ac9372deef0c3703
-sim 1 走火 築基圓滿 92 136 1 12 13 70f8dbe957a26fb1
-legacy 1 247d10b26d01c8dc
-sim 2 走火 築基圓滿 73 108 0 8 17 05a2cead862523e7
-legacy 2 14691e6c28363b87
-sim 3 經脈逆衝 煉氣第4層 21 14 0 0 4 9cb4d7eef4438022
-legacy 3 3815d5d5323dc38c
-sim 4 遇劫身死 築基後期 56 89 0 8 10 2e0e443750ae6827
-legacy 4 607137d9dd213f76
-sim 5 走火 煉氣第10層 40 89 1 7 12 3a45140f00c70123
-legacy 5 1ebb59dd615bd709
-sim 6 坐化 金丹圓滿 92 101 0 9 14 edb05b63c651d593
-legacy 6 bab1b43de4bdcc47
-sim 7 走火 築基圓滿 71 102 1 10 15 08915c1401bfc915
-legacy 7 d92ae2d0cf4ae23d
-sim 8 坐化 金丹圓滿 96 112 0 11 21 c59b21630444a85f
-legacy 8 fda8897cada38970
-sim 9 走火 煉氣第10層 37 79 1 4 7 5a19c2cda662d574
-legacy 9 a0850ee98e9caeec
-sim 10 遇劫身死 築基圓滿 66 100 0 13 13 3b751f4433677723
-legacy 10 06fedaeb512dc9fb
-sim 11 走火 煉氣第10層 28 44 1 4 9 d606d74543a30ed4
-legacy 11 73857e3c47a0667e
-bal 小心 0 金丹圓滿 金丹圓滿 95 115 氣修 d8987c4135e316ea c10f0ca6b824ac39
-bal 小心 1 走火 金丹初期 68 91 氣修 20a6ff64d2d2fabc 38c13c083d466d67
-bal 小心 2 金丹圓滿 金丹圓滿 165 233 氣修 7c52581f7dbf317b 31f7607adc3cd11f
-bal 小心 3 金丹圓滿 金丹圓滿 94 103 氣修 ff13546aa2ff28d0 5f6e225d3f109d27
-bal 小心 4 金丹圓滿 金丹圓滿 115 135 氣修 c013b79536c68f2e a33bbc279b5bad1b
-bal 小心 5 金丹圓滿 金丹圓滿 145 181 劍修 a3eae8fcc0565d6c d78f185d318f5cfd
-bal 小心 6 衝關身死 煉氣第10層 40 89 氣修 a70ac54584d7debd 18ec8b33a57b124e
-bal 小心 7 衝關身死 煉氣第10層 101 334 體修 2c907dac66a10357 f5b54abc0aafef67
-bal 小心 8 金丹圓滿 金丹圓滿 143 181 氣修 dda69457ee9d7200 cb8539464a713947
-bal 小心 9 遇劫身死 築基中期 40 68 劍修 83771f2a8d718b4a f1b21db8c82bc762
-bal 普通 0 遇劫身死 煉氣第5層 21 15 氣修 b8649420fb5d1bd5 2586bcb6b9db0e8f
-bal 普通 1 遇劫身死 煉氣第9層 24 28 氣修 94658f1892346e29 c4fc128e30fbbb9a
-bal 普通 2 金丹圓滿 金丹圓滿 85 87 氣修 d8f230d823f2f3fc 040db2f7c7863963
-bal 普通 3 經脈逆衝 築基後期 44 62 氣修 8063ad4caca0ea21 972b6f12ae018e7b
-bal 普通 4 經脈逆衝 煉氣第10層 46 66 氣修 7a52eeb3d894edda a497df7862addb93
-bal 普通 5 遇劫身死 金丹後期 95 109 氣修 e92f0755bcce9987 1fbcc02153c54e6c
-bal 普通 6 經脈逆衝 築基初期 33 42 氣修 d66a6b5fc60878bc c89c59c54916cdaa
-bal 普通 7 經脈逆衝 金丹後期 124 150 體修 fa8093211d7c59da 039c3aafc1e254f2
-bal 普通 8 金丹圓滿 金丹圓滿 106 115 劍修 c30cb6e13154bb40 f54757a4a3e24e77
-bal 普通 9 衝關身死 煉氣第10層 26 34 氣修 8283edeec428acfa aaecdb00a73479f8
-bal 莽撞 0 衝關身死 煉氣第10層 32 56 氣修 1694496cd714a148 4b407b08ad918b8c
-bal 莽撞 1 衝關身死 煉氣第10層 44 36 體修 90bc3bac7b699e35 6a909b13254c57d2
-bal 莽撞 2 衝關身死 煉氣第10層 24 25 氣修 faadc0b970b1c6b0 79ad9c960befb8b3
-bal 莽撞 3 衝關身死 煉氣第10層 58 38 體修 dc4823db7b2b78ac 768d8fcea9e06dac
-bal 莽撞 4 遇劫身死 築基初期 30 45 氣修 7b611e803401cde1 e7af41e57b1d039a
-bal 莽撞 5 遇劫身死 煉氣第10層 26 33 氣修 91e76fc2d3eae2ab df37e596a7d65ad7
-bal 莽撞 6 衝關身死 煉氣第10層 30 50 氣修 1190b867094fb5dc ae0bdff04bab4533
-bal 莽撞 7 衝關身死 煉氣第10層 30 50 氣修 ad52df5436cfc56b 193bb221ca7a6aee
-bal 莽撞 8 經脈逆衝 築基初期 29 34 氣修 d7ff86879f06d7d2 2ed59e249823067c
-bal 莽撞 9 衝關身死 煉氣第10層 40 40 氣修 1f93bcec39d05a82 7fda6cb7184acacf
-sim 0 遇劫身死 築基圓滿 49 64 0 5 7 137f7700972461af
-legacy 0 7aad4e26d83c5149
-sim 1 走火 煉氣第10層 35 69 1 9 11 225b165a55d39a6f
-legacy 1 a52f39532a22be40
-sim 2 走火 築基圓滿 77 113 0 9 16 2ad82017c88b6db1
-legacy 2 b56a36a8260aa1fb
-sim 3 走火 築基圓滿 64 78 1 6 12 de4d3d489ada3cca
-legacy 3 99e9cf6204213f9f
-sim 4 走火 煉氣第10層 32 60 1 6 9 958c1f6557af2d9e
-legacy 4 535655f9c7636212
-sim 5 坐化 金丹圓滿 104 134 0 11 17 af2617e9ba59afd9
-legacy 5 af7bed9b3af75643
-sim 6 走火 煉氣第10層 26 35 1 0 6 d7555da5a4af441c
-legacy 6 6008b77cbd2fe1a9
-sim 7 走火 煉氣第10層 38 82 1 5 10 68628c3dca51f5f1
-legacy 7 aa53f5127d889c63
-sim 8 走火 煉氣第10層 38 84 1 6 11 15661ea61b73005d
-legacy 8 a2220a1236e41311
-sim 9 遇劫身死 築基圓滿 71 111 0 6 10 55be7b1e535b871d
-legacy 9 7aaa4007f84d5cdd
-sim 10 走火 煉氣第10層 36 73 1 5 9 06d170cb217fced3
-legacy 10 7873f1c06b029b0f
-sim 11 遇劫身死 築基初期 29 47 0 5 11 c8ba183913adb480
-legacy 11 4421800de38dc3e1
-bal 小心 0 衝關身死 築基圓滿 62 111 氣修 c34b105512fe8f52 a6f11c703f445b73
-bal 小心 1 金丹圓滿 金丹圓滿 118 141 氣修 36d42335a5753774 5fb1feb15288963a
-bal 小心 2 金丹圓滿 金丹圓滿 138 163 氣修 a05c4e86a1eca329 b714be7b1b4779c5
-bal 小心 3 金丹圓滿 金丹圓滿 136 171 氣修 80cb1e4f3b4c69e6 410a0986aaf07a2d
-bal 小心 4 金丹圓滿 金丹圓滿 120 131 氣修 4b491790df6aa835 7b946939a0e4d0f5
-bal 小心 5 衝關身死 煉氣第10層 32 57 氣修 f4821f49ca804f20 d31c58e9213d9358
-bal 小心 6 衝關身死 築基圓滿 123 157 氣修 34e0a7bcedc907d2 3e3ebfdd37c944c3
-bal 小心 7 衝關身死 築基圓滿 98 130 氣修 9f0dbf87c35909ad ea79298a66c10023
-bal 小心 8 衝關身死 煉氣第10層 30 48 氣修 d82b9cf89572b67c 5e65225ec28ab3e3
-bal 小心 9 衝關身死 煉氣第10層 37 79 氣修 73aa618dcf9edfdc a4f94f47bee330e6
-bal 普通 0 衝關身死 煉氣第10層 32 59 氣修 9b593c22eb76ec10 272913248278ddb7
-bal 普通 1 金丹圓滿 金丹圓滿 127 150 氣修 6ef9317d421a608a afab1b7fb3a9b086
-bal 普通 2 衝關身死 築基圓滿 53 66 氣修 e46db8f6e83dcd3a b284bae34f987711
-bal 普通 3 經脈逆衝 築基後期 38 50 氣修 f1a71182cb0dd603 4ac08c3f3cd30d29
-bal 普通 4 衝關身死 煉氣第10層 35 71 氣修 efb3a417091e7eb7 77f07636d242fe9b
-bal 普通 5 衝關身死 煉氣第10層 31 52 氣修 9559df0130485d72 bd7a5e7e17bf8e17
-bal 普通 6 衝關身死 築基圓滿 62 74 氣修 9992507067b6c057 29cbff27692f39bc
-bal 普通 7 金丹圓滿 金丹圓滿 83 84 體修 2200bf0a79967df2 0887d98dac4df24e
-bal 普通 8 衝關身死 築基圓滿 58 87 氣修 b2e74dfd3bc37d10 734030b476847f9d
-bal 普通 9 金丹圓滿 金丹圓滿 192 125 氣修 218bb56af4f8170b df8e599b0502f63d
-bal 莽撞 0 走火 煉氣第5層 21 14 氣修 b9d171e613553c3c 6abfa1d46077e289
-bal 莽撞 1 經脈逆衝 煉氣第4層 20 9 氣修 a5c4a8114e3ba9cf 939bdb2d0bdaf8d3
-bal 莽撞 2 經脈逆衝 築基中期 34 48 氣修 e6f12110b758ea48 f09b19889d35ac54
-bal 莽撞 3 衝關身死 煉氣第10層 26 34 氣修 bee8bfd5112503e7 08330eba5b3404e5
-bal 莽撞 4 經脈逆衝 築基初期 26 31 氣修 300eb11bf228ef3d 4a741e050fb1463c
-bal 莽撞 5 經脈逆衝 煉氣第8層 25 29 氣修 5e1ff93f90d1842a c4c869a9e7317e95
-bal 莽撞 6 經脈逆衝 築基圓滿 43 53 氣修 298c39490aada963 f8ba4635fb0aa05a
-bal 莽撞 7 遇劫身死 煉氣第5層 21 13 氣修 a5286a45325d2112 7ca3120d5d4427bd
-bal 莽撞 8 經脈逆衝 築基後期 36 39 氣修 6a771d05903b6721 c615fd9059ec39da
-bal 莽撞 9 經脈逆衝 築基中期 39 55 氣修 3408a9568527ff6a 4d3417c4db0ddbee
-migrate0 {"name":"舊檔","alive":true,"phase":"play","startAge":14,"seasons":23,"seasonIdx":3,"realmIndex":1,"stageIndex":2,"xiu":120.5,"insight":0,"insightBank":0,"demon":12,"scars":1,"fails":1,"injury":0,"root":{"type":"dual","label":"雙靈根","elements":["火","木"]},"technique":"基礎吐納法","techniques":["基礎吐納法"],"materials":{"雷擊木":1},"artifacts":[],"stones":33,"abilities":[],"growth":[],"constitutions":[],"envs":["洞府"],"karma":[],"notes":[],"flags":{},"eventsDone":[],"queue":[],"current":null,"log":[],"turns":40,"secretAt":30,"v":1,"demoEnd":false,"aim":null,"mark":null,"equipped":null,"route":"氣修","tend":{"act":{"吐納":0,"周天":0,"閉關":0,"遊歷":0},"正邪":0,"穩躁":0},"recentEvents":[],"legacyAvailable":false,"lastText":"","stats":{"breakFails":0}}
-migrate1 {"v":1,"name":"一版","alive":true,"phase":"play","seasons":5,"tend":{"正邪":3,"act":{"吐納":0,"周天":0,"閉關":0,"遊歷":0},"穩躁":0},"stats":{"breakFails":0},"startAge":0,"seasonIdx":0,"realmIndex":0,"stageIndex":0,"xiu":0,"insight":0,"insightBank":0,"demon":0,"scars":0,"fails":0,"injury":0,"demoEnd":false,"root":null,"aim":null,"mark":null,"technique":"基礎吐納法","techniques":["基礎吐納法"],"materials":{},"artifacts":[],"equipped":null,"stones":10,"abilities":[],"growth":[],"constitutions":[],"envs":["洞府","古木林","靈泉"],"karma":[],"notes":[],"flags":{},"eventsDone":[],"route":"氣修","recentEvents":[],"legacyAvailable":false,"queue":[],"current":null,"log":[],"lastText":"","turns":0}
+sim 0 走火 築基圓滿 58 74 1 4 10 9b0e018fd98705ab
+legacy 0 ae66c6d8ceabdbf9
+sim 1 坐化 金丹圓滿 151 165 0 19 18 c2b15d87e3316903
+legacy 1 4aba091595b8b04a
+sim 2 走火 築基圓滿 67 99 0 13 19 bf03c8ac811d3b04
+legacy 2 c4baa58713f2924d
+sim 3 走火 煉氣第10層 36 74 1 5 9 136503797ea01e03
+legacy 3 6b4818198a28088a
+sim 4 走火 煉氣第10層 34 67 1 8 10 ea3000aaa19fb18f
+legacy 4 c9035d7d707c7d65
+sim 5 走火 煉氣第10層 27 40 1 4 11 d8256d6dee62032f
+legacy 5 8434bb81839973fb
+sim 6 走火 煉氣第10層 27 39 1 1 6 5a0b396c7f3ad21c
+legacy 6 bb6688b0d02649f5
+sim 7 坐化 金丹圓滿 119 136 1 12 20 5a2d1d425b3d8301
+legacy 7 2d5f07c337aebc17
+sim 8 走火 築基圓滿 58 86 0 7 12 1a9d42d7a23a3057
+legacy 8 689b3aa5c23c6f64
+sim 9 走火 煉氣第10層 37 80 1 3 6 0fbc7cee8eaf6f48
+legacy 9 d59844c722a38d40
+sim 10 走火 築基圓滿 78 115 1 15 16 6065a351b28f8d13
+legacy 10 6be8ac8137221c4e
+sim 11 坐化 金丹圓滿 94 98 0 12 18 61f8dfcaaddc1e2b
+legacy 11 1e46d96e0a462811
+bal 小心 0 衝關身死 煉氣第10層 40 88 氣修 003243a9626a69ab 2c2bd15a343647aa
+bal 小心 1 衝關身死 築基圓滿 98 140 氣修 9df803b6857a46ad eb22f66860ad5f44
+bal 小心 2 衝關身死 煉氣第10層 34 64 氣修 af99ad7ec3153009 9de4e9e29b3498af
+bal 小心 3 金丹圓滿 金丹圓滿 137 172 氣修 56060f95895f0c7b 05af6ddda4485757
+bal 小心 4 金丹圓滿 金丹圓滿 122 145 氣修 536bf483998ead97 b2d551f2129478e8
+bal 小心 5 金丹圓滿 金丹圓滿 134 168 氣修 ec8cdd82edfd81dd 5707f246c27dfcdd
+bal 小心 6 金丹圓滿 金丹圓滿 125 159 氣修 b8e50abc69a402f7 e9c74702393db490
+bal 小心 7 衝關身死 築基圓滿 56 81 體修 5ed5b8a857e9ec92 3bbfed5f2dcef86d
+bal 小心 8 金丹圓滿 金丹圓滿 126 148 氣修 24901a710b72038f f64922c80306795a
+bal 小心 9 金丹圓滿 金丹圓滿 127 147 劍修 d59fb51cdfa80180 04a4f33bbf2ab4a5
+bal 普通 0 衝關身死 煉氣第10層 33 62 氣修 7bdac2704c5e58ae c2bb37fb73632945
+bal 普通 1 金丹圓滿 金丹圓滿 139 171 體修 de2f89d044b6e70d 7a4a4698bbbf6e99
+bal 普通 2 衝關身死 煉氣第10層 29 47 氣修 f00fc76653abde42 95d0c4c9c2088356
+bal 普通 3 衝關身死 煉氣第10層 28 43 氣修 aae4819900d11d10 48fc7e5102d9c28f
+bal 普通 4 衝關身死 築基圓滿 71 77 氣修 545a7283185f70af c942cc4b6048ae05
+bal 普通 5 經脈逆衝 煉氣第10層 27 40 氣修 8742f3e0eca8f45f 57e904221d857b56
+bal 普通 6 衝關身死 築基圓滿 59 82 氣修 5fdfcc59ef5a48f9 bd234bd322fff127
+bal 普通 7 金丹圓滿 金丹圓滿 111 143 劍修 2ed427b83efefd93 5fe4d3ec0f49cc7d
+bal 普通 8 衝關身死 築基圓滿 55 70 氣修 fa69139cea11dcc7 af3c446d3961cc75
+bal 普通 9 金丹圓滿 金丹圓滿 103 114 氣修 4ca6a3b6484064fa cf4f3bfda20a4e91
+bal 莽撞 0 走火 煉氣第10層 28 43 氣修 47755da0255b89f3 08e0f36e1cab6e0f
+bal 莽撞 1 衝關身死 煉氣第10層 27 39 氣修 e534b867fc3c8816 57f1f3f81415467c
+bal 莽撞 2 經脈逆衝 築基圓滿 67 88 氣修 9cd8b960402e0662 b8240a7f0c640691
+bal 莽撞 3 經脈逆衝 築基初期 30 47 氣修 79dd46b19cf02b00 4481df9afca863bf
+bal 莽撞 4 走火 煉氣第10層 27 36 氣修 d8d066c10ee23b70 82f163f72f24e04d
+bal 莽撞 5 衝關身死 煉氣第10層 30 49 氣修 ca321fac587d7328 9163c32a818e785c
+bal 莽撞 6 經脈逆衝 築基後期 44 65 氣修 662bd17e4a4482c5 71305d4190cd8473
+bal 莽撞 7 走火 煉氣第10層 25 28 氣修 d6f43beaf68e03c7 412458937c0624cc
+bal 莽撞 8 經脈逆衝 築基初期 32 40 氣修 18fc9cac1b859cd6 5e8ab1e4680a5dad
+bal 莽撞 9 遇劫身死 煉氣第10層 32 58 氣修 8cd7261679c94236 abf461f2e9f132ad
+sim 0 走火 煉氣第10層 33 63 1 4 7 7ec4aa73f045e5c1
+legacy 0 ddf1bae037fe95ae
+sim 1 走火 煉氣第10層 36 73 1 9 13 882e0946d1a08c93
+legacy 1 ead7b065d73c13ec
+sim 2 走火 煉氣第10層 31 55 1 6 10 8fe66cde56d82de0
+legacy 2 35d8415bf2b79a0c
+sim 3 走火 煉氣第10層 36 75 0 3 6 d27e3ddf08b9da89
+legacy 3 37c9377af480d479
+sim 4 走火 築基圓滿 69 90 1 8 14 dd5aefb1cdf28936
+legacy 4 56ec6d20aece77ad
+sim 5 走火 築基圓滿 67 97 0 14 15 1bbfbbf5911a4510
+legacy 5 64833ebfaf259199
+sim 6 遇劫身死 煉氣第7層 23 21 0 0 6 bca8197bd66fe135
+legacy 6 8b818e797f7bc3af
+sim 7 坐化 金丹圓滿 131 147 0 14 15 0cda8c1dc077b907
+legacy 7 87ca186cb6ba146f
+sim 8 遇劫身死 金丹初期 80 123 0 18 19 57de5f60210154e7
+legacy 8 37fb2154bcf88449
+sim 9 走火 築基圓滿 57 77 0 10 11 43bee1a33b99212c
+legacy 9 71d1bf15251f8849
+sim 10 走火 築基圓滿 75 103 0 13 16 a1c737a332eda280
+legacy 10 9ebaa0b89a3c754e
+sim 11 走火 煉氣第10層 35 69 1 8 12 989250952345de80
+legacy 11 ae971e0b2e98ba51
+bal 小心 0 衝關身死 煉氣第10層 35 71 氣修 d398ddfaedbf4e25 22b633307e1db647
+bal 小心 1 金丹圓滿 金丹圓滿 120 164 氣修 f9f73d71e8346d4c 4d16115b2aec6660
+bal 小心 2 衝關身死 築基圓滿 136 166 氣修 d063e9ea6a9064de efb737375a4a9d6b
+bal 小心 3 衝關身死 煉氣第10層 28 41 氣修 48eeece82aaaf617 63a1a9a72950eb9b
+bal 小心 4 金丹圓滿 金丹圓滿 106 121 氣修 95af944927b1370b efb4c9854ba2cfd7
+bal 小心 5 衝關身死 煉氣第10層 34 64 劍修 d404a4d74066f733 4471b99623694478
+bal 小心 6 衝關身死 煉氣第10層 29 44 氣修 f0138e52dca0f905 85b4a16d770ee015
+bal 小心 7 金丹圓滿 金丹圓滿 120 171 魔修 284efa21b02d8df4 aec79766124b03b7
+bal 小心 8 金丹圓滿 金丹圓滿 99 122 氣修 e636f2e0cc7dd9d8 75105c253e44b677
+bal 小心 9 衝關身死 煉氣第10層 29 47 氣修 3f4c7ac58f75fb56 6bce6440f61aeaad
+bal 普通 0 金丹圓滿 金丹圓滿 113 139 劍修 d96b9c7484161869 f1d511b6c539000a
+bal 普通 1 經脈逆衝 築基後期 37 36 氣修 1a20440338686978 e175f6d6f939d7c8
+bal 普通 2 金丹圓滿 金丹圓滿 120 133 氣修 d11c198723747c59 2cc1a94caeeefac4
+bal 普通 3 衝關身死 築基圓滿 52 74 氣修 f2d00f898af61b3a c29ff7c117f80866
+bal 普通 4 衝關身死 煉氣第10層 25 29 氣修 027d2baca39b24d3 a49d0871394b66bf
+bal 普通 5 衝關身死 煉氣第10層 29 47 氣修 966fcfae4bcd4308 006f62b5e9eedc12
+bal 普通 6 金丹圓滿 金丹圓滿 108 164 氣修 d316ab2189604c6d 49358f424d7d3b38
+bal 普通 7 金丹圓滿 金丹圓滿 126 141 氣修 3084368a7aae4e86 94d75305039ae8ab
+bal 普通 8 經脈逆衝 金丹中期 133 187 氣修 2894d1adddc09592 6ba1daee8e7f471b
+bal 普通 9 走火 築基圓滿 44 53 劍修 6b2799724dc56e44 eee9ba3fe6b62277
+bal 莽撞 0 衝關身死 煉氣第10層 30 48 氣修 1625f853910eac0b 5c9e0c243731c8ec
+bal 莽撞 1 走火 築基後期 43 61 氣修 a2356fd50d3a61b6 a0cb7835b18bb3fb
+bal 莽撞 2 經脈逆衝 煉氣第9層 22 17 氣修 2721e2048a9ed473 d973674a597efd17
+bal 莽撞 3 衝關身死 築基圓滿 60 83 氣修 ec00b601e6c56e2e 493d3d8a29996300
+bal 莽撞 4 衝關身死 煉氣第10層 29 46 氣修 a01adeaa1da2d8d6 53eb3ddd67da8a08
+bal 莽撞 5 經脈逆衝 煉氣第7層 22 18 氣修 8a5c0719a00a7ba8 0098ddd4dba3f495
+bal 莽撞 6 走火 煉氣第10層 52 45 氣修 bcfaecc0507453d7 a99f3442b855ed53
+bal 莽撞 7 走火 築基中期 35 45 氣修 84da26553de2b4fe d0a23ec9477d0dcf
+bal 莽撞 8 經脈逆衝 築基圓滿 48 64 氣修 4b0c8c89c4df0018 6c374df8015c2062
+bal 莽撞 9 衝關身死 煉氣第10層 29 47 氣修 fec2b44ea4d38656 aebaa5aae3c45040
+sim 0 走火 煉氣第10層 30 51 0 1 5 18bc5699eb59fb54
+legacy 0 41759db1c276cb47
+sim 1 走火 築基圓滿 63 90 0 11 14 b9833328265de4cd
+legacy 1 da99d008116fa171
+sim 2 走火 煉氣第10層 28 44 0 4 8 0bf91a2caf3e157c
+legacy 2 c59560d4065801e2
+sim 3 走火 築基圓滿 77 99 0 6 11 4663e691a3bc9d7e
+legacy 3 2f783c6684cdb8df
+sim 4 走火 煉氣第10層 33 61 1 6 11 084649c4b5bab48c
+legacy 4 0f8866232a0be278
+sim 5 走火 築基圓滿 73 106 1 14 18 eb7c0afe514d3773
+legacy 5 c70e0f6b15a2c7b8
+sim 6 坐化 金丹圓滿 102 118 0 10 14 456cb33dd74cc8d6
+legacy 6 4cb2a0c974dc1cf1
+sim 7 走火 築基圓滿 66 91 1 11 18 f0e0e9d936b0fb64
+legacy 7 e7f014273884a977
+sim 8 走火 築基圓滿 79 119 0 11 15 e2926a0a9e3af7ea
+legacy 8 e708e4d7e8500960
+sim 9 走火 煉氣第10層 33 62 1 6 8 11c5a19733c0fcb6
+legacy 9 da2ef84005a1298e
+sim 10 走火 煉氣第10層 34 67 1 10 13 a49f12940f44bb59
+legacy 10 93c80ff961891362
+sim 11 走火 築基圓滿 65 93 1 15 20 62b5d49226f8392e
+legacy 11 51b365572788af95
+bal 小心 0 金丹圓滿 金丹圓滿 124 165 氣修 43d04ffbd97b520f 21e7c432bb601609
+bal 小心 1 金丹圓滿 金丹圓滿 96 118 體修 3d5df1eb70e786b8 49cd640153ac040e
+bal 小心 2 壽盡 築基後期 140 168 氣修 a7e0f7dcb866c7dc aa1d139c7842dd4e
+bal 小心 3 衝關身死 煉氣第10層 35 69 氣修 09ad1ef59f9bb44d 46cef7a7e7d45358
+bal 小心 4 金丹圓滿 金丹圓滿 117 144 魔修 64ad3bbed8875a63 f8ed3e4b8b50554f
+bal 小心 5 金丹圓滿 金丹圓滿 145 219 氣修 5e9b362352500128 09320b77281f7dfc
+bal 小心 6 金丹圓滿 金丹圓滿 126 158 氣修 1348a840cd01a7d7 6351b822e0663114
+bal 小心 7 衝關身死 煉氣第10層 34 66 氣修 b4e2a9cbda40efa3 5ce4f22c1d909935
+bal 小心 8 金丹圓滿 金丹圓滿 121 146 氣修 95a7d4c34af04f65 b16c3cf3f822da44
+bal 小心 9 仇家尋仇 煉氣第10層 28 42 氣修 c889d8e4997a1c39 752d325076965da2
+bal 普通 0 經脈逆衝 築基圓滿 87 112 氣修 f13c2ec5440e6e7e eb550429e8c8d9b3
+bal 普通 1 金丹圓滿 金丹圓滿 108 118 體修 70f54f32acb7e670 af787376f5290610
+bal 普通 2 金丹圓滿 金丹圓滿 83 88 氣修 22a7d1f3fe1f66f9 02f5818aee27d3de
+bal 普通 3 壽盡 築基圓滿 140 154 氣修 eb6348f58358ebae f91a15b08dfb282c
+bal 普通 4 經脈逆衝 築基初期 37 61 氣修 706258ae60a0e230 c681110d493d7483
+bal 普通 5 金丹圓滿 金丹圓滿 115 127 劍修 4dcb848ade64a845 f3ab838762232182
+bal 普通 6 金丹圓滿 金丹圓滿 117 137 劍修 1c12e3c533f2f7c5 2405de93c3378415
+bal 普通 7 衝關身死 築基圓滿 75 103 氣修 19645d281eb41395 2e8d663737ee84d6
+bal 普通 8 遇劫身死 金丹初期 88 80 魔修 3b19550857b03688 46e393d3b61075d6
+bal 普通 9 經脈逆衝 金丹圓滿 115 127 氣修 4aa7d04065a8e2e9 f2a4d70981a1b10c
+bal 莽撞 0 經脈逆衝 築基後期 37 50 氣修 6321f88a2aad7ff1 aeac347e4e1a3450
+bal 莽撞 1 經脈逆衝 築基後期 38 54 氣修 e1e58491a9be9597 044dddaf35e3f18f
+bal 莽撞 2 遇劫身死 煉氣第9層 46 72 氣修 a927cad8fd485657 e6041011f0e4e7e4
+bal 莽撞 3 衝關身死 煉氣第10層 26 34 氣修 93c6f80f26365dc3 3edca3bc8710171a
+bal 莽撞 4 經脈逆衝 煉氣第10層 32 57 氣修 528b6515addb60ac c6989b5e63b13fa6
+bal 莽撞 5 經脈逆衝 築基圓滿 39 47 氣修 d30ed6c3f298bd49 f1280ee8a2739823
+bal 莽撞 6 經脈逆衝 築基初期 26 35 氣修 e694de8d15c9b87f 1353182726b03077
+bal 莽撞 7 經脈逆衝 築基後期 39 47 氣修 74b055d69cc46996 f67f776f95419ee1
+bal 莽撞 8 衝關身死 煉氣第10層 31 53 氣修 98ba5677abb36af5 4bb63746fed182a4
+bal 莽撞 9 衝關身死 煉氣第10層 30 49 氣修 fdd05f81b7f3c45c fda465108e635675
+migrate0 {"name":"舊檔","alive":true,"phase":"play","startAge":14,"seasons":23,"seasonIdx":3,"realmIndex":1,"stageIndex":2,"xiu":120.5,"insight":0,"insightBank":0,"demon":12,"scars":1,"fails":1,"injury":0,"root":{"type":"dual","label":"雙靈根","elements":["火","木"]},"technique":"基礎吐納法","techniques":["基礎吐納法"],"materials":{"雷擊木":1},"artifacts":[],"stones":33,"abilities":[],"growth":[],"constitutions":[],"envs":["洞府"],"karma":[],"notes":[],"flags":{},"eventsDone":[],"queue":[],"current":null,"log":[],"turns":40,"secretAt":30,"v":1,"demoEnd":false,"aim":null,"mark":null,"equipped":null,"route":"氣修","tend":{"act":{"吐納":0,"周天":0,"閉關":0,"遊歷":0},"善惡":0,"正邪":0,"穩躁":0},"recentEvents":[],"legacyAvailable":false,"lastText":"","stats":{"breakFails":0}}
+migrate1 {"v":1,"name":"一版","alive":true,"phase":"play","seasons":5,"tend":{"正邪":3,"act":{"吐納":0,"周天":0,"閉關":0,"遊歷":0},"善惡":0,"穩躁":0},"stats":{"breakFails":0},"startAge":0,"seasonIdx":0,"realmIndex":0,"stageIndex":0,"xiu":0,"insight":0,"insightBank":0,"demon":0,"scars":0,"fails":0,"injury":0,"demoEnd":false,"root":null,"aim":null,"mark":null,"technique":"基礎吐納法","techniques":["基礎吐納法"],"materials":{},"artifacts":[],"equipped":null,"stones":10,"abilities":[],"growth":[],"constitutions":[],"envs":["洞府","古木林","靈泉"],"karma":[],"notes":[],"flags":{},"eventsDone":[],"route":"氣修","recentEvents":[],"legacyAvailable":false,"queue":[],"current":null,"log":[],"lastText":"","turns":0}
 migrateBad null [1,2]
 legacyNull {"v":1,"lives":[],"pending":[]}
 legacyOld {"lives":[{"name":"x"}],"pending":[],"v":1}
-continue 77200daa94c5b508 1 氣修 {"act":{"吐納":0,"周天":0,"閉關":0,"遊歷":0},"正邪":0,"穩躁":0}
-continueAct 51012138c85ea64e 大雪封了山路，你只能在山腳的小鎮之間奔走。|〔遊歷了 2 季：修為 +52〕|走到半途，你察覺山林裡有些不對勁。|沿途得靈石 17，採得庚金之精。
-store 1267 47ad8e673d81462c
+continue 3405a80f3f062f8a 1 氣修 {"act":{"吐納":0,"周天":0,"閉關":0,"遊歷":0},"善惡":0,"正邪":0,"穩躁":0}
+continueAct 61b0d218827c771c 大雪封了山路，你只能在山腳的小鎮之間奔走。|〔遊歷了 2 季：修為 +52〕|走到半途，你察覺山林裡有些不對勁。|沿途得靈石 17，採得庚金之精。
+store 1278 f4c76a3b30547c7d
 wipe [["xiuxian-demo-legacy-v1","{\"lives\":[],\"pending\":[],\"v\":1}"]]
