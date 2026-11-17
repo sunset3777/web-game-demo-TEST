@@ -11,6 +11,7 @@ import { growth } from "../systems/growth.js";
 import { save } from "../systems/save.js";
 import { travel } from "../systems/travel.js";
 import { routes } from "../systems/routes.js";
+import { eventsData } from "../data/events.js";
 
 // 踏入新境界時的感受（提醒視窗用）
 const REALM_FEEL = {
@@ -102,17 +103,42 @@ export function createGame(onChange) {
       // 撞見妖王的那次行動，玩家要先面對徵兆，不再疊加一件隨機遊歷事件（連擲骰都跳過）
       if (s.alive && !res.hasSensedDemonKing && util.chance(res.eventChance)) {
         const e = events.pick(s, action);
-        if (e) s.queue.push({ type: "event", id: e.id });
+        if (e) {
+          s.queue.push({ type: "event", id: e.id });
+          // 風聲：正邪偏邪、還沒到盤查時，遊歷事件前面夾一句旁人的反應
+          const rumorRange = numbers.conduct.rumorRange, righteousness = routes.view(s).正邪;
+          if (action === "遊歷" && righteousness <= rumorRange.to && righteousness >= rumorRange.from) lines.push(util.pick(eventsData.rumors));
+        }
       }
-      // 仇家：依未了結的中、大因果擲一次；機率是 0（沒有結仇）時不擲，免得沒結仇的人生也多耗一次亂數
-      const enemyChance = routes.enemyChance(s);
-      if (s.alive && !res.hasSensedDemonKing && enemyChance > 0 && util.chance(enemyChance)) {
-        s.queue.push({ type: "event", id: "仇家尋仇" });
-      }
+      if (s.alive && !res.hasSensedDemonKing) G.queueConductEvents(action, res.seasons);
       s.lastText = lines.join("\n");
       state.log(s, s.lastText);
       G.nextQueue();
       G.commit();
+    },
+
+    // 作派帶出的事件（盤查、仇家）。機率是 0 時都不擲，免得與作派無關的人生多耗亂數
+    queueConductEvents(action, seasonsSpent) {
+      const s = G.s;
+      // 故人傳話裡選了「請他別再插手」：盤查照常，下一次行動就遇上山道照鏡
+      if (s.flags.盤查下季) { s.flags.盤查下季 = false; G.queueInspection("正道盤查"); }
+      else if (action === "遊歷") {
+        // 正道盤查：每遊歷一季擲一次的機率，換算成這次遊歷的總機率
+        const perSeason = routes.inspectionChancePerSeason(s);
+        if (perSeason > 0 && util.chance(1 - Math.pow(1 - perSeason, Math.max(1, seasonsSpent)))) G.queueInspection(routes.chooseInspectionVariant(s));
+      }
+      // 仇家：遊歷時依未了結的「仇」類中、大因果擲；找上門的是最早那一筆
+      const enemyChance = action === "遊歷" ? routes.enemyChance(s) : 0;
+      if (enemyChance > 0 && util.chance(enemyChance)) {
+        const grudge = routes.oldestOpenKarma(s, "仇", ["中", "大"]);
+        if (grudge) { s.flags.仇家目標 = grudge.id; s.queue.push({ type: "event", id: "仇家尋仇" }); }
+      }
+    },
+    queueInspection(variant) {
+      const s = G.s;
+      if (variant === "故人傳話") s.flags.傳話恩 = routes.oldestOpenKarma(s, "恩").id;
+      routes.setInspectionCooldown(s, "平常");
+      s.queue.push({ type: "event", id: variant });
     },
 
     togglePanel(name) { G.ui.panel = G.ui.panel === name ? null : name; onChange(); },
@@ -160,6 +186,11 @@ export function createGame(onChange) {
           const opts = breakthrough.abilityOptions(s, q.timing, q.judge, q.tags);
           if (opts.length) s.current = { type: "ability", level: q.judge ? q.judge.level : "一般", options: opts.map(o => o.name) };
         } else if (q.type === "event") {
+          // 執法追緝每次都重新決定陣仗（不論是盤查直接排入，還是照鏡被認出轉來的）
+          if (q.id === "執法追緝") {
+            const lawSquadChance = numbers.conduct.inspection.lawSquadChance;
+            s.flags.執法陣仗 = util.weighted(Object.keys(lawSquadChance), squad => lawSquadChance[squad]);
+          }
           s.current = { type: "event", id: q.id };
         } else if (q.type === "qiudeviation") {
           s.current = { type: "deviation" };

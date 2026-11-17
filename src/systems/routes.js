@@ -44,11 +44,50 @@ export const routes = {
   view(s) { this.ensure(s); return { 善惡: s.tend.善惡, 正邪: s.tend.正邪, 穩躁: s.tend.穩躁, habit: this.habit(s), act: s.tend.act }; },
 
   // ---- 作派帶出的事件機率 ----
-  // 正道盤查的抽中權重：正邪還沒低到門檻就是 0（不會出現），越邪權重越高
-  inspectionWeight(gameState) {
+  // 正道盤查：每遊歷一季的機率。還沒邪到門檻、已經入魔（改由正道追殺處理）、或還在冷卻中都是 0
+  inspectionChancePerSeason(gameState) {
     const inspection = numbers.conduct.inspection, righteousness = this.view(gameState).正邪;
-    if (righteousness > inspection.startAt) return 0;
-    return inspection.baseWeight + (inspection.startAt - righteousness) * inspection.weightPerPoint;
+    if (righteousness > inspection.startAt || gameState.route === "魔修") return 0;
+    if (gameState.seasons < (gameState.flags.盤查冷卻至 || 0)) return 0;
+    const extraSteps = Math.floor((inspection.startAt - righteousness) / 10);
+    return Math.min(inspection.maxChancePerSeason, inspection.baseChancePerSeason + extraSteps * inspection.extraChancePer10);
+  },
+  // 盤查出現後的冷卻：平常／提早／延後（選項可以改寫）
+  setInspectionCooldown(gameState, timing = "平常") {
+    const inspection = numbers.conduct.inspection;
+    const length = { 平常: inspection.cooldownSeasons, 提早: inspection.earlyCooldownSeasons, 延後: inspection.lateCooldownSeasons }[timing];
+    gameState.flags.盤查冷卻至 = gameState.seasons + length;
+  },
+  // 這次盤查是哪一種：正邪 ≤ pursuitAt 直接執法追緝；因果帳有「恩」時故人傳話優先；其餘山道照鏡
+  chooseInspectionVariant(gameState) {
+    if (this.view(gameState).正邪 <= numbers.conduct.inspection.pursuitAt) return "執法追緝";
+    return this.oldestOpenKarma(gameState, "恩") ? "故人傳話" : "正道盤查";
+  },
+  // 最早一筆還沒了結、也還沒淡去的某類因果（可限定輕重）
+  oldestOpenKarma(gameState, kind, weights) {
+    const kindOf = entry => entry.kind || karmaData.kindById[entry.id] || karmaData.defaultKind;
+    return (gameState.karma || []).find(entry => !entry.done && !entry.faded && kindOf(entry) === kind && (!weights || weights.includes(entry.weight))) || null;
+  },
+
+  // ---- 鬥法與遁走（d20／d12 換算成機率，數字在 numbers.js 的 conduct.duel） ----
+  duelWinChance(opponent, isInjured) {
+    const duel = numbers.conduct.duel, threshold = duel.winThreshold[opponent][isInjured ? "injured" : "healthy"];
+    return Math.min(duel.maxWinChance, (21 - threshold) / 20);
+  },
+  duelSurviveChance(isInjured) {
+    const duel = numbers.conduct.duel;
+    return (13 - duel.surviveThreshold[isInjured ? "injured" : "healthy"]) / 12;
+  },
+  fleeChance(hasHelpers) {
+    const duel = numbers.conduct.duel;
+    return duel.fleeChance - (hasHelpers ? duel.fleeHelperPenalty : 0);
+  },
+  // 線索句只給「神識高」的人看；repo 沒有神識數值，暫以心魔低代替（未驗證是否為最終設計）
+  hasKeenSense(gameState) { return gameState.demon < numbers.conduct.keenSenseDemonBelow; },
+  // 「幾季閉關的靈石」依境界換算（四捨五入）
+  seasonStones(gameState, seasons) {
+    const cost = numbers.risk.閉關.cost;
+    return Math.round(cost[Math.min(gameState.realmIndex, cost.length - 1)] * seasons);
   },
   // 這次行動有仇家找上門的機率：只算還沒了結、也還沒淡去的「仇」類中、大因果（行善結下的「恩」不會招來仇家）。
   // 偏惡（善惡 ≤ evilAt）的人先乘 evilMultiplier，再用比較高的上限封頂（11/17 玄機定：先加乘再封頂）

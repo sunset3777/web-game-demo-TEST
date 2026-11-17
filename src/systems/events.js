@@ -71,19 +71,29 @@ export const events = {
       probeDemonKing: options => travel.probeDemonKing(s, options),
       demonKingClueCount: () => travel.countDemonKingClues(s),
       demonKingFleeHurtChance: baseChance => travel.demonKingFleeHurtChance(s, baseChance),
-      // 作派：正道盤查的權重；仇家被擊退時了結最早一筆還沒了結的「仇」類中、大因果
-      inspectionWeight: () => routes.inspectionWeight(s),
-      settleOldestGrudge: () => {
-        const isGrudge = entry => (entry.kind || karmaData.kindById[entry.id] || karmaData.defaultKind) === "仇";
-        const grudge = s.karma.find(entry => !entry.done && !entry.faded && isGrudge(entry) && (entry.weight === "中" || entry.weight === "大"));
-        if (!grudge) return null;
-        grudge.done = true; grudge.ending = "仇家上門，被你擊退";
-        return grudge.text;
+      // ---- 作派：盤查、仇家用（規則都在 routes.js） ----
+      // 排在下一個要處理的事件（例如照鏡被認出，馬上轉執法追緝）
+      queueEventNext: id => { s.queue.unshift({ type: "event", id }); },
+      setInspectionCooldown: timing => routes.setInspectionCooldown(s, timing),
+      seasonStones: seasons => routes.seasonStones(s, seasons),
+      oldestOpenKarma: (kind, weights) => routes.oldestOpenKarma(s, kind, weights),
+      settleKarma: (id, ending) => { const entry = s.karma.find(k => k.id === id && !k.done); if (entry) { entry.done = true; entry.ending = ending; } },
+      hasKeenSense: () => routes.hasKeenSense(s),
+      // 鬥法：照對手陣仗擲勝負；輸了再擲生死，活下來照現行受傷。回傳 { won, died }
+      duel: (opponent, deathCause) => {
+        const isInjured = s.injury > 0;
+        if (util.chance(routes.duelWinChance(opponent, isInjured))) return { won: true, died: false };
+        if (util.chance(routes.duelSurviveChance(isInjured))) { s.injury = Math.max(s.injury, N.injurySeasons); return { won: false, died: false }; }
+        legacy.die(s, deathCause);
+        return { won: false, died: true };
       },
+      tryFlee: hasHelpers => util.chance(routes.fleeChance(hasHelpers)),
+      // 只做紀錄、不佔筆記名額的一頁（例如被執法堂追緝過）；同一句一世只寫一次
+      noteRecordOnce: text => { if (!s.notes.some(note => note.kind === "紀錄" && note.text === text)) st.note(s, text, "紀錄"); },
       unlockEnv: env => { if (!s.envs.includes(env)) s.envs.push(env); },
       setFlag: (k, v) => { s.flags[k] = v === undefined ? true : v; },
       flag: k => s.flags[k],
-      addKarma: (id, text, weight) => this.addKarma(s, id, text, weight),
+      addKarma: (id, text, weight, kind) => this.addKarma(s, id, text, weight, kind),
       hasKarma: id => s.karma.some(k => k.id === id),
       resolveKarma: (id, ending) => {
         const k = s.karma.find(x => x.id === id);
@@ -101,11 +111,12 @@ export const events = {
     };
   },
 
-  addKarma(s, id, text, weight) {
+  // kind 不給時照 data/karma.js 的對照表；動態產生的因果（例如「某某的同門」）由呼叫端直接給種類
+  addKarma(s, id, text, weight, kind) {
     const N = numbers;
     if (s.karma.some(k => k.id === id && !k.done)) return;
     // 種類（恩／仇）照 data/karma.js 的對照表，沒列到的算「恩」
-    s.karma.push({ id, text, weight, kind: karmaData.kindById[id] || karmaData.defaultKind, born: s.seasons, done: false });
+    s.karma.push({ id, text, weight, kind: kind || karmaData.kindById[id] || karmaData.defaultKind, born: s.seasons, done: false });
     const open = s.karma.filter(k => !k.done && !k.faded);
     if (open.length > N.karma.maxOpen) { const old = open.find(k => k.weight !== "大"); if (old) old.faded = true; }
     if (!s.flags.karmaTaught) { s.flags.karmaTaught = true; state.log(s, "這件事記進了修仙筆記的「因果」頁。有些因果，日後會回來找你。"); }

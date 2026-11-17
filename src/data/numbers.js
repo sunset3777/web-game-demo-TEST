@@ -138,15 +138,31 @@ export const numbers = {
                   raidRewardSeasons: 4, lookoutRewardSeasons: 1.5,      // 截道：動手成了 4 季、望風 1.5 季
                   fightBaseWinChance: 0.55, fightWinPerRealm: 0.2,      // 鬥法：沿用妖獸襲擊「迎戰」的判定
                   fleeChance: 0.8 },                                     // 遁走：沿用妖獸襲擊「以遁術脫身」
-    // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
-    inspection: { startAt: -30, baseWeight: 2, weightPerPoint: 0.1,
-                  exposedChanceIfDemonSeed: 0.5,   // 配合盤查時，身上有魔種被看穿的機率（看穿就受傷）
-                  evadeFailChance: 0.4 },          // 找藉口脫身失敗的機率（失敗就受傷）
-    // 仇家：每次行動擲一次（機率 0 時不擲）。機率＝未了結的「仇」類中因果數 × 中 ＋ 大因果數 × 大；
+    // 風聲：正邪落在這段（還沒到盤查）時，遊歷事件前面夾一句旁人的反應（不是事件，只是文字）
+    rumorRange: { from: -29, to: -15 },
+    // 正道盤查（衡天 11/17）：正邪 ≤ startAt 起，每遊歷一季 baseChancePerSeason，每再邪 10 點 + extraChancePer10，最多 maxChancePerSeason。
+    // 出現後進入冷卻：平常 cooldownSeasons；選項說「提早」用 earlyCooldownSeasons、「延後」用 lateCooldownSeasons。
+    inspection: { startAt: -30, baseChancePerSeason: 0.02, extraChancePer10: 0.01, maxChancePerSeason: 0.06,
+                  cooldownSeasons: 12, earlyCooldownSeasons: 4, lateCooldownSeasons: 40,
+                  recognizedAt: -45,          // 山道照鏡：正邪 ≤ 這個值，鏡子整個黑了，轉執法追緝
+                  pursuitAt: -60,             // 正邪 ≤ 這個值，盤查直接是執法追緝
+                  bribeSeasons: 3,            // 香火錢：3 季閉關靈石的量；不夠就不顯示這個選項
+                  storyPassChance: 0.5,       // TODO(衡天)：編來歷的交涉（原為 d10，demo 沒有交涉判定）暫定五成
+                  lawSquadChance: { 一人: 0.5, 多人: 0.35, 多人有高手: 0.15 } },   // TODO(衡天)：執法追緝來的陣仗，暫定
+    // 鬥法與遁走（衡天 11/17）：原設計用 d20 門檻（擲 1 必敗）與 d12 生死，demo 沒有擲骰畫面，換算成機率：
+    //   勝率＝(21 − 門檻) / 20，上限 maxWinChance；輸了的存活率＝(13 − 門檻) / 12，活下來照現行受傷
+    duel: { winThreshold: { 一人: { healthy: 5, injured: 13 },          // 仇家一人／執法一人：勝率 0.80／0.40
+                            幫手: { healthy: 8, injured: 16 },          // 仇家帶幫手（大因果）／執法多人：0.65／0.25
+                            高手: { healthy: 10, injured: 18 } },       // 執法多人且有高手：0.55／0.15
+            surviveThreshold: { healthy: 4, injured: 6 },             // 輸了：沒帶傷存活 0.75、帶傷 7/12≈0.58
+            maxWinChance: 0.95,
+            fleeChance: 0.8, fleeHelperPenalty: 0.1 },                // 遁走沿用現行判定；有幫手時難一級（−10%）
+    // 線索句（神識高才看得到）：repo 還沒有神識數值，暫以「心魔 < keenSenseDemonBelow」代替（衡天 11/17）
+    keenSenseDemonBelow: 20,
+    // 仇家：遊歷時擲（機率 0 時不擲）。機率＝未了結的「仇」類中因果數 × 中 ＋ 大因果數 × 大；
     // 善惡 ≤ evilAt 時先 × evilMultiplier，再封頂：一般 chanceCap，偏惡 evilChanceCap（11/17 玄機定案：一律 15%）
     enemy: { chancePerKarma: { "中": 0.01, "大": 0.04 }, chanceCap: 0.15, evilChanceCap: 0.15, evilAt: -30, evilMultiplier: 1.5,
-             fightWinChance: 0.5,                  // 迎戰得勝的機率（得勝了結一筆因果，落敗受傷）
-             fleeStoneLossRatio: 1 / 3 }           // 避走時丟下的靈石比例
+             apologyMinSeasons: 5, apologyStoneShare: 0.3 }   // 賠罪：max(5 季閉關靈石, 身上靈石 30%)；不夠就不顯示
   },
 
   // 傳承

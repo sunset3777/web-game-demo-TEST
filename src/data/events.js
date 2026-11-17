@@ -30,6 +30,13 @@ import { numbers } from "./numbers.js";
 const seasonStones = (s, seasons) => Math.round(numbers.risk.閉關.cost[Math.min(s.realmIndex, numbers.risk.閉關.cost.length - 1)] * seasons);
 
 export const eventsData = {
+  // 風聲（墨淵 11/17）：正邪偏邪、還沒到盤查時，遊歷事件前面隨機夾一句（不是事件）
+  rumors: [
+    "坊市的掌櫃收了你的靈石，卻多看了你一眼。",
+    "茶棚裡有人說近來山裡有人以血煉器，說完就不再開口。",
+    "你路過青雲門的山門，守門弟子把手按在了劍上。",
+    "同行的散修說：「道友身上的氣，有些重。」"
+  ],
   // 妖王線索（冒險一探成功時三選一，寫進修仙筆記）
   demonKingClues: {
     習性: "妖王現身之前，林中鳥獸必先噤聲，腥風總是從下風處先到。",

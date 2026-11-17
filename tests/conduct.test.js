@@ -101,22 +101,6 @@ test("明確作惡、走邪的選項幅度落在 10～15，拒絕魔道的選項
   assert.equal(deltaOf("魔種萌芽", "順著它，改修魔功", { 正邪: -30 }).正邪, -15);
 });
 
-test("正道盤查：正邪 ≤ -30 才出現、越邪權重越高，已入魔的不會遇到", () => {
-  const gameState = startCultivatingLife().s;
-  const isInspectionAvailable = () => events.available(gameState, "遊歷").some(event => event.id === "正道盤查");
-  setConduct(gameState, { 正邪: conduct.inspection.startAt + 1 });
-  assert.equal(isInspectionAvailable(), false);
-  assert.equal(routes.inspectionWeight(gameState), 0);
-  setConduct(gameState, { 正邪: conduct.inspection.startAt });
-  assert.equal(isInspectionAvailable(), true);
-  const weightAtThreshold = routes.inspectionWeight(gameState);
-  setConduct(gameState, { 正邪: -100 });
-  assert.ok(routes.inspectionWeight(gameState) > weightAtThreshold, "越邪權重要越高");
-  assert.equal(routes.inspectionWeight(gameState), conduct.inspection.baseWeight + (conduct.inspection.startAt + 100) * conduct.inspection.weightPerPoint);
-  gameState.route = "魔修";
-  assert.equal(isInspectionAvailable(), false);
-});
-
 test("仇家機率：只算未了結的「仇」類中、大因果；偏惡先加乘再封頂", () => {
   const gameState = startCultivatingLife().s;
   const enemy = conduct.enemy;
@@ -165,16 +149,6 @@ test("新記下的因果帶種類；舊存檔的因果載入時照對照表補�
     const loaded = save.migrate(oldSave);
     assert.deepEqual(loaded.karma.map(entry => entry.kind), ["仇", "恩", "欠", karmaData.defaultKind, "仇"]);
   } finally { delete karmaData.kindById["測試用欠人情"]; }
-});
-
-test("仇家迎戰得勝會了結最早一筆中、大因果", () => {
-  const gameState = startCultivatingLife().s;
-  gameState.karma = [{ id: "小事", text: "小事", weight: "小" }, { id: "搶散修靈草", text: "搶靈草", weight: "中" }];
-  const originalChance = conduct.enemy.fightWinChance;
-  conduct.enemy.fightWinChance = 1;   // 只測「得勝時了結因果」這件事
-  try { chooseOption(gameState, "仇家尋仇", "迎戰"); } finally { conduct.enemy.fightWinChance = originalChance; }
-  assert.equal(gameState.karma.find(entry => entry.id === "搶散修靈草").done, true);
-  assert.notEqual(gameState.karma.find(entry => entry.id === "小事").done, true);
 });
 
 test("宗門指點改看善惡 ≥ 20", () => {
@@ -305,4 +279,125 @@ test("妖獸不記因果：斬妖狼不再寫進因果帳", () => {
   gameState.karma = []; gameState.realmIndex = 2;   // 境界高，迎戰必勝（0.55 + 2 × 0.2 ≥ 0.95）
   withSeededRandom(1, () => chooseOption(gameState, "妖獸襲擊", "迎戰"));
   assert.equal(gameState.karma.length, 0);
+});
+
+test("正道盤查：正邪 ≤ -30 起每遊歷一季 2%，每再邪 10 點 +1%、最多 6%；已入魔或冷卻中不會出現", () => {
+  const gameState = startCultivatingLife().s;
+  const inspection = conduct.inspection;
+  const chanceAt = righteousness => { setConduct(gameState, { 正邪: righteousness }); return routes.inspectionChancePerSeason(gameState); };
+  const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} ≠ ${expected}`);
+  gameState.flags.盤查冷卻至 = 0;
+  assert.equal(chanceAt(inspection.startAt + 1), 0);
+  near(chanceAt(-30), 0.02);
+  near(chanceAt(-39), 0.02);
+  near(chanceAt(-40), 0.03);
+  near(chanceAt(-70), 0.06);
+  near(chanceAt(-100), inspection.maxChancePerSeason);
+  // 冷卻：平常 12 季、提早 4 季、延後 40 季
+  for (const [timing, length] of [["平常", 12], ["提早", 4], ["延後", 40]]) {
+    routes.setInspectionCooldown(gameState, timing);
+    assert.equal(gameState.flags.盤查冷卻至 - gameState.seasons, length, timing);
+    assert.equal(chanceAt(-50), 0, `${timing}冷卻中不會出現`);
+    gameState.seasons += length;
+    assert.ok(chanceAt(-50) > 0, `${timing}冷卻過了就會出現`);
+  }
+  gameState.route = "魔修";
+  assert.equal(chanceAt(-80), 0, "已入魔的改由正道追殺處理");
+});
+
+test("盤查三種的選擇：一般山道照鏡；有恩時故人傳話優先；正邪 ≤ -60 執法追緝；照鏡在 -45 以下被認出轉執法", () => {
+  const gameState = startCultivatingLife().s;
+  gameState.karma = [];
+  setConduct(gameState, { 正邪: -30 });
+  assert.equal(routes.chooseInspectionVariant(gameState), "正道盤查");
+  gameState.karma = [{ id: "救山道老者", text: "於山道救一老者", weight: "中", kind: "恩" }];
+  assert.equal(routes.chooseInspectionVariant(gameState), "故人傳話");
+  setConduct(gameState, { 正邪: conduct.inspection.pursuitAt });
+  assert.equal(routes.chooseInspectionVariant(gameState), "執法追緝", "邪到 -60 以下，有恩也沒用");
+  // 照鏡：-44 放行，-45 被認出、排入執法追緝
+  for (const [righteousness, isRecognized] of [[-44, false], [-45, true]]) {
+    setConduct(gameState, { 正邪: righteousness }); gameState.queue = [];
+    chooseOption(gameState, "正道盤查", "站著讓他照");
+    assert.equal(gameState.queue.some(item => item.id === "執法追緝"), isRecognized, `正邪 ${righteousness}`);
+  }
+  // 故人傳話：燒紙鶴會把那筆恩劃掉；請他別插手會讓下一次行動遇上照鏡
+  gameState.karma = [{ id: "救山道老者", text: "於山道救一老者", weight: "中", kind: "恩" }];
+  gameState.flags.傳話恩 = "救山道老者";
+  assert.match(events.text(gameState, events.find("故人傳話")), /於山道救一老者/);
+  chooseOption(gameState, "故人傳話", "請他別再插手");
+  assert.equal(gameState.flags.盤查下季, true);
+  chooseOption(gameState, "故人傳話", "把紙鶴燒了");
+  assert.equal(gameState.karma[0].done, true);
+});
+
+test("盤查選項的顯示條件：香火錢要付得起 3 季閉關靈石", () => {
+  const gameState = startCultivatingLife().s;
+  const labels = () => events.choices(gameState, events.find("正道盤查")).map(option => option.label);
+  const price = routes.seasonStones(gameState, conduct.inspection.bribeSeasons);
+  gameState.stones = price - 1;
+  assert.ok(!labels().includes("遞上一袋靈石，說是香火錢"));
+  gameState.stones = price;
+  assert.ok(labels().includes("遞上一袋靈石，說是香火錢"));
+  chooseOption(gameState, "正道盤查", "遞上一袋靈石，說是香火錢");
+  assert.equal(gameState.stones, 0);
+});
+
+test("鬥法與遁走：d20／d12 門檻換算成機率", () => {
+  const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} ≠ ${expected}`);
+  near(routes.duelWinChance("一人", false), (21 - 5) / 20);    // 0.80
+  near(routes.duelWinChance("一人", true), (21 - 13) / 20);    // 0.40
+  near(routes.duelWinChance("幫手", false), (21 - 8) / 20);    // 0.65
+  near(routes.duelWinChance("幫手", true), (21 - 16) / 20);    // 0.25
+  near(routes.duelWinChance("高手", false), (21 - 10) / 20);   // 0.55
+  near(routes.duelWinChance("高手", true), (21 - 18) / 20);    // 0.15
+  near(routes.duelSurviveChance(false), (13 - 4) / 12);        // 0.75
+  near(routes.duelSurviveChance(true), (13 - 6) / 12);         // 0.583…
+  // 擲 1 必敗：勝率上限 0.95
+  const original = conduct.duel.winThreshold.一人.healthy;
+  conduct.duel.winThreshold.一人.healthy = 0;
+  try { assert.equal(routes.duelWinChance("一人", false), conduct.duel.maxWinChance); }
+  finally { conduct.duel.winThreshold.一人.healthy = original; }
+  near(routes.fleeChance(false), conduct.duel.fleeChance);
+  near(routes.fleeChance(true), conduct.duel.fleeChance - conduct.duel.fleeHelperPenalty);
+});
+
+test("仇家：賠罪只限中因果且付得起；斬草除根了結舊仇、他的同門記一筆新的中因果・仇", () => {
+  const gameState = startCultivatingLife().s;
+  const labels = () => events.choices(gameState, events.find("仇家尋仇")).map(option => option.label);
+  gameState.karma = [{ id: "搶散修靈草", text: "趁亂搶走受欺凌散修的靈草", weight: "中", kind: "仇" },
+                     { id: "大仇", text: "一樁大仇", weight: "大", kind: "仇" }];
+  const price = Math.max(routes.seasonStones(gameState, conduct.enemy.apologyMinSeasons), Math.ceil(1000 * conduct.enemy.apologyStoneShare));
+  gameState.stones = 1000;
+  gameState.flags.仇家目標 = "大仇";
+  assert.ok(!labels().includes("賠罪了結"), "大因果不能賠罪");
+  gameState.flags.仇家目標 = "搶散修靈草";
+  assert.ok(labels().includes("賠罪了結"));
+  gameState.stones = 10;
+  assert.ok(!labels().includes("賠罪了結"), "付不起就不顯示");
+  gameState.stones = 1000;
+  chooseOption(gameState, "仇家尋仇", "賠罪了結");
+  assert.equal(gameState.stones, 1000 - price);
+  assert.equal(gameState.karma.find(entry => entry.id === "搶散修靈草").done, true);
+  // 斬草除根
+  gameState.flags.仇家目標 = "大仇";
+  chooseOption(gameState, "仇家勝後", "斬草除根");
+  assert.equal(gameState.karma.find(entry => entry.id === "大仇").done, true);
+  const newGrudge = gameState.karma.find(entry => entry.id === "大仇的同門");
+  assert.ok(newGrudge, "要多一筆同門的仇");
+  assert.deepEqual([newGrudge.weight, newGrudge.kind, newGrudge.done], ["中", "仇", false]);
+});
+
+test("執法追緝只做紀錄的那頁筆記不佔名額、不在可勾選清單", async () => {
+  const { save } = await import("../src/systems/save.js");
+  const game = startCultivatingLife();
+  const gameState = game.s;
+  gameState.flags.執法陣仗 = "一人"; setConduct(gameState, { 正邪: -70 });
+  withSeededRandom(2, () => chooseOption(gameState, "執法追緝", "束手就擒"));
+  const recordIndex = gameState.notes.findIndex(note => note.kind === "紀錄");
+  assert.ok(recordIndex >= 0);
+  assert.equal(gameState.notes[recordIndex].text, "曾被青雲門執法堂追緝");
+  assert.equal(legacy.isUnpickableNote(gameState.notes[recordIndex]), true);
+  legacy.die(gameState, "坐化");
+  game.ui.picks = [recordIndex]; game.bequeath();
+  assert.equal((save.loadLegacy().pending || []).length, 0, "硬勾紀錄頁也不會被當成筆記傳下去");
 });

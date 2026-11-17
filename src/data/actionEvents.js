@@ -4,11 +4,37 @@
 //   route     只在這條路線出現；routeNot：這條路線不會出現
 //   weight    可以是數字，或 (s, api) => 數字（例如越邪越常出現的正道盤查）
 // api 另外提供：api.tend("善惡"|"正邪"|"穩躁", 數值)  api.setRoute(路線)  api.addXiu(數值)  api.route()
-//   api.inspectionWeight()  正道盤查的抽中權重　api.settleOldestGrudge()  了結最早一筆中、大因果，回傳它的文字
+//   作派用：api.queueEventNext(id)  api.setInspectionCooldown(平常|提早|延後)  api.seasonStones(季數)
+//     api.duel(對手陣仗, 死因) → { won, died }  api.tryFlee(有無幫手)  api.settleKarma(id, 結局)  api.noteRecordOnce(文字)
 import { numbers } from "./numbers.js";
 
 const season = s => numbers.seasons[s.seasonIdx];
 const friend = s => s.flags["青梅竹馬"];
+
+// ---- 作派：盤查與仇家共用的小工具（規則判定透過 api 交給 routes.js） ----
+// 這次找上門的仇：controller 排入仇家事件時，把那筆因果的 id 記在 flags.仇家目標
+const currentGrudge = s => (s.karma || []).find(entry => entry.id === s.flags.仇家目標) || null;
+// 賠罪的價錢：max(5 季閉關靈石, 身上靈石 30%)
+const apologyPrice = (s, api) => Math.max(api.seasonStones(numbers.conduct.enemy.apologyMinSeasons), Math.ceil(s.stones * numbers.conduct.enemy.apologyStoneShare));
+// 和執法堂鬥法：陣仗決定門檻（一人／多人＝帶幫手／多人有高手）；輸了照現行受傷或身死
+function fightLawEnforcers(s, api) {
+  const opponent = { 一人: "一人", 多人: "幫手", 多人有高手: "高手" }[s.flags.執法陣仗 || "一人"];
+  const result = api.duel(opponent, "正道圍殺");
+  if (result.won) {
+    api.addKarma("青雲門執法堂", "擊退了青雲門執法堂的追緝", "中");
+    return "令牌掉在地上，人已經退走了。";
+  }
+  if (result.died) return "禁制一層一層合上。這一回，你沒能走出洞府。";   // TODO(墨淵)：規格沒給輸了身死的句子
+  return "你沒能擋住，帶著傷從洞府後面突圍出去。";                         // TODO(墨淵)：規格沒給輸了受傷的句子
+}
+// 和仇家鬥法：大因果的仇家帶幫手；贏了接「仇家勝後」讓玩家決定怎麼收場
+function fightGrudgeHolder(s, api) {
+  const grudge = currentGrudge(s);
+  const result = api.duel(grudge && grudge.weight === "大" ? "幫手" : "一人", "仇家尋仇");
+  if (result.won) { api.queueEventNext("仇家勝後"); return "幾個回合之後，對方倒了下去。"; }   // TODO(墨淵)
+  if (result.died) return "對方等這一天等得太久了。你沒能再站起來。";                         // TODO(墨淵)
+  return "你落了下風，帶著傷才脫身。";                                                         // TODO(墨淵)
+}
 
 export const actionEvents = {
   list: [
@@ -178,40 +204,109 @@ export const actionEvents = {
         { label: "丟下靈石，趁亂逃走", run: (s, api) => { api.addStones(-Math.ceil(s.stones / 2)); api.tend("穩躁", -2); return "靈石撒了一地。趁他們分神，你遁入了夜色。"; } }
       ] },
 
-    // ================= 作派：正道盤查、仇家（2026-11-17） =================
-    // 正道盤查：還沒入魔、但正邪已經偏邪的人才會遇到；越邪越常（權重由規則算，數字在 numbers.js 的 conduct.inspection）
-    // TODO(墨淵)：以下文字都是佔位，等正式文案
-    { id: "正道盤查", title: "正道盤查", actions: ["遊歷", "吐納"], routeNot: "魔修",
-      weight: (s, api) => api.inspectionWeight(),
-      when: s => s.tend && s.tend.正邪 <= numbers.conduct.inspection.startAt,
-      text: "幾名正道修士在路口設卡，說附近有人修習邪術，要逐一盤查過路的修士。",
+    // ================= 作派：正道盤查、仇家（墨淵定稿、衡天數字 11/17） =================
+    // 這幾則都不會被隨機抽到（when 一律 false），由 controller 依作派與因果排入；規則在 routes.js，數字在 numbers.js 的 conduct。
+    // 盤查三種：一般是「正道盤查」（山道照鏡）；因果帳有「恩」時「故人傳話」優先；正邪 ≤ -60 或照鏡被認出改「執法追緝」
+    { id: "正道盤查", title: "山道照鏡", weight: 0, when: s => false,
+      text: "兩名執法弟子攔在山道上。為首的那人手捧一面銅鏡，鏡面霧濛濛的，正對著你。「例行查問。道友從何處來，往何處去？」",
       choices: [
-        { label: "讓他們盤查", run: (s, api) => {
-            if (s.flags["魔種"] && api.chance(numbers.conduct.inspection.exposedChanceIfDemonSeed)) {
-              api.injure(); return "為首的修士一掌按在你心口，臉色驟變。你搶先出手才脫了身，自己也受了傷。";
+        { label: "站著讓他照", run: (s, api) => {
+            api.tend("穩躁", -5);
+            if (s.tend.正邪 <= numbers.conduct.inspection.recognizedAt) {
+              api.queueEventNext("執法追緝");
+              return "鏡面整個黑了。執法弟子退了一步，手按上劍柄。";
             }
-            return "他們查了半天，沒查出什麼，揮手讓你過去了。"; } },
-        { label: "找個藉口脫身", run: (s, api) => {
-            if (api.chance(numbers.conduct.inspection.evadeFailChance)) {
-              api.injure(); return "藉口沒能糊弄過去，雙方動起手來。你逃了出來，身上多了幾道傷。";
-            }
-            return "你說得滴水不漏，他們沒再為難你。"; } }
+            return "鏡面浮起一縷黑氣，又散了。執法弟子在冊子上記了一筆，側身讓路。"; } },
+        { label: "編一套來歷", run: (s, api) => {
+            api.tend("穩躁", 5);
+            if (api.chance(numbers.conduct.inspection.storyPassChance)) return "他聽完點點頭，收起了鏡子。";
+            api.setInspectionCooldown("提早");
+            return "他沒說話，只在冊子上寫了你的名字。"; } },
+        { label: "遞上一袋靈石，說是香火錢",
+          show: (s, api) => s.stones >= api.seasonStones(numbers.conduct.inspection.bribeSeasons),
+          run: (s, api) => { api.addStones(-api.seasonStones(numbers.conduct.inspection.bribeSeasons));
+            return "他掂了掂袋子，鏡子沒有舉起來。"; } },
+        { label: "轉身就走", run: (s, api) => {
+            api.tend("穩躁", 10); api.setInspectionCooldown("提早");
+            return "身後傳來一聲短哨，山那頭有人應了一聲。"; } }
       ] },
-    // 仇家：不會被隨機抽到；每次行動依未了結的中、大因果擲一次，由 controller 排入（數字在 numbers.js 的 conduct.enemy）
-    // TODO(墨淵)：以下文字都是佔位，等正式文案
-    { id: "仇家尋仇", title: "仇家", weight: 0,
-      when: s => false,
-      text: "有人一路打聽你的下落，終於在這裡堵到了你。來的是你從前結下的仇。",
+    { id: "故人傳話", title: "故人傳話", weight: 0, when: s => false,
+      // 〔恩類因果對象〕：因果帳最早一筆未了結的「恩」（排入時記在 flags.傳話恩），顯示那筆因果的描述
+      text: (s) => {
+        const benefactor = (s.karma || []).find(entry => entry.id === s.flags.傳話恩);
+        return `一隻紙鶴落在你肩上，是當年「${benefactor ? benefactor.text : "那段舊緣"}」那人的字跡：「青雲門在打聽你。我替你說了幾句話，下次未必說得上。」`;
+      },
       choices: [
-        { label: "迎戰", run: (s, api) => {
-            if (api.chance(numbers.conduct.enemy.fightWinChance)) {
-              const settled = api.settleOldestGrudge();
-              return settled ? `一番纏鬥後，對方敗走。「${settled}」這段恩怨，算是了了。` : "一番纏鬥後，對方敗走。";
-            }
-            api.injure(); return "對方有備而來，你落了下風，帶著傷才脫身。"; } },
-        { label: "避走", run: (s, api) => {
-            api.addStones(-Math.ceil(s.stones * numbers.conduct.enemy.fleeStoneLossRatio));
-            return "你丟下一包靈石擋住對方，趁機離開。這筆帳，他還會再來找你算。"; } }
+        { label: "回信道謝", run: (s, api) => { api.tend("善惡", 5);
+            return "你回了一封短信道謝。這一回，沒有人來盤查。"; } },   // TODO(墨淵)：規格沒給這句
+        { label: "請他別再插手", run: (s, api) => {
+            api.tend("穩躁", -5); api.setFlag("盤查下季", true);   // 盤查照常：下一次行動就會遇上山道照鏡
+            return "你把紙鶴摺回去，只寫了一句：「不必。」"; } },
+        { label: "把紙鶴燒了", run: (s, api) => {
+            api.tend("善惡", -5); api.settleKarma(s.flags.傳話恩, "燒了故人傳來的紙鶴");
+            return "紙燒得很快。"; } }
+      ] },
+    { id: "執法追緝", title: "執法追緝", weight: 0, when: s => false,
+      // 陣仗（排入時記在 flags.執法陣仗）：一人／多人／多人有高手；線索句與實際鬥法門檻一致，高手那句只有神識高才看得到
+      text: (s) => {
+        const squad = s.flags.執法陣仗 || "一人";
+        const clue = squad === "一人" ? "門外只有一個人的腳步。" : "門外有三四道呼吸，排得很整齊。"
+          + (squad === "多人有高手" && s.demon < numbers.conduct.keenSenseDemonBelow ? "其中一道很輕，比其他人都穩。" : "");
+        return "夜裡，洞府外的禁制被人一層一層解開。來的人不說話，只亮了一面令牌：青雲門執法堂。\n" + clue;
+      },
+      choices: [
+        { label: "迎戰", run: (s, api) => { api.tend("穩躁", 5); api.noteRecordOnce("曾被青雲門執法堂追緝"); return fightLawEnforcers(s, api); } },
+        { label: "破陣遁走", run: (s, api) => {
+            api.tend("穩躁", -5); api.noteRecordOnce("曾被青雲門執法堂追緝");
+            if (!api.tryFlee((s.flags.執法陣仗 || "一人") !== "一人")) return fightLawEnforcers(s, api);
+            // 「洞府這一季不能用」較難做，改成失去一季閉關的靈石（衡天 11/17 允許的替代）
+            api.addStones(-api.seasonStones(1));
+            return "你從洞府後面的山縫鑽出去，天亮時已經在百里之外。"; } },
+        { label: "束手就擒", run: (s, api) => {
+            api.tend("正邪", 5); api.noteRecordOnce("曾被青雲門執法堂追緝");
+            api.addLife(-0.25);                                   // 關了一整季：多過一季
+            api.addStones(-Math.floor(s.stones / 2));
+            api.setInspectionCooldown("延後");
+            return "他們把你帶到執法堂，關了一整季。放出來時，你的靈石只剩一半。"; } }
+      ] },
+    // 仇家：遊歷時依未了結的「仇」類中、大因果擲（controller 排入，對象記在 flags.仇家目標）；大因果的仇家帶幫手
+    { id: "仇家尋仇", title: "仇家", weight: 0, when: s => false,
+      text: (s) => {
+        const grudge = currentGrudge(s);
+        const hasHelpers = grudge && grudge.weight === "大";
+        const opening = hasHelpers
+          ? "你走到半路，前後的鳥聲同時停了。前面站著一個人，後面也站著一個人。前面那個說：「找你很久了。」"
+          : `山道拐角站著一個人，你一時沒認出來。他先開口：「${grudge ? grudge.text : "那件事"}——還記得嗎？」`;
+        if (s.demon >= numbers.conduct.keenSenseDemonBelow) return opening;
+        return opening + "\n" + (hasHelpers ? "林子裡還有人，你數不清有幾個。" : "他握刀的手在抖，不是怕，是等太久了。");
+      },
+      choices: [
+        { label: "迎戰", run: (s, api) => { api.tend("穩躁", 5); return fightGrudgeHolder(s, api); } },
+        { label: "遁走", run: (s, api) => {
+            api.tend("穩躁", -5);
+            const grudge = currentGrudge(s);
+            if (!api.tryFlee(!!grudge && grudge.weight === "大")) return fightGrudgeHolder(s, api);
+            return "你一路沒有回頭，跑到天黑才停下。"; } },
+        { label: "賠罪了結",
+          // 只限中因果；要付 max(5 季閉關靈石, 身上靈石 30%)，不夠就不顯示
+          show: (s, api) => { const grudge = currentGrudge(s); return !!grudge && grudge.weight === "中" && s.stones >= apologyPrice(s, api); },
+          run: (s, api) => {
+            api.tend("善惡", 5); api.addStones(-apologyPrice(s, api));
+            api.settleKarma(s.flags.仇家目標, "賠罪了結");
+            return "他收下了，看了你很久：「這件事，到這裡為止。」"; } }
+      ] },
+    { id: "仇家勝後", title: "仇家", weight: 0, when: s => false,
+      text: "他倒在地上，手裡的刀已經握不住了。",   // TODO(墨淵)：規格沒給勝後的開頭
+      choices: [
+        { label: "放他走", run: (s, api) => { api.tend("善惡", 5);
+            return "他撐著站起來，什麼也沒說就走了。"; } },
+        { label: "斬草除根", run: (s, api) => {
+            api.tend("善惡", -10);
+            const grudge = currentGrudge(s);
+            api.settleKarma(s.flags.仇家目標, "斬草除根");
+            // 他的同門記你一筆新的中因果・仇（動態產生，直接給種類）
+            api.addKarma(`${s.flags.仇家目標}的同門`, `斬草除根，結下「${grudge ? grudge.text : "舊仇"}」那人同門的仇`, "中", "仇");
+            return "山道上安靜下來。"; } }
       ] },
 
     // ================= 路線入門：劍修 =================

@@ -31,7 +31,7 @@ export const legacy = {
     const st = state, N = numbers;
     const L = save.loadLegacy();
     // 線索頁會自動傳下，不佔筆記頁名額：就算被勾到也不算進來，名額只給一般筆記
-    const pages = noteIndexes.map(i => s.notes[i]).filter(n => n && !this.isAutoPassedNote(n)).slice(0, N.legacy.maxPages)
+    const pages = noteIndexes.map(i => s.notes[i]).filter(n => n && !this.isUnpickableNote(n)).slice(0, N.legacy.maxPages)
       .map(n => ({ text: n.text, kind: n.kind, realm: n.realm, from: s.name }));
     L.lives.push({ name: s.name, title: this.title(s), realm: st.stageName(s), age: Math.floor(st.age(s)), cause: s.cause, root: s.root ? s.root.label : "" });
     L.pending = (L.pending || []).concat(pages);
@@ -75,6 +75,8 @@ export const legacy = {
 
   // 會自動傳下的線索頁（本世記下的、前人留下的），不出現在可勾選的筆記清單、也不佔名額
   isAutoPassedNote(note) { return note.kind === "妖王線索" || note.kind === "前人妖王線索"; },
+  // 不列在可勾選清單、也不佔名額的筆記：自動傳下的線索，加上只做紀錄的頁（例如「曾被青雲門執法堂追緝」）
+  isUnpickableNote(note) { return this.isAutoPassedNote(note) || note.kind === "紀錄"; },
 
   // 新的一世開始時讀進前人的妖王線索：隔 1 世全效、隔 2 世減半、更早沒有效果
   inheritDemonKingClues(s, legacyData) {
