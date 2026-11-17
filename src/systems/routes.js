@@ -110,14 +110,19 @@ export const routes = {
     return isEvil ? Math.min(enemy.evilChanceCap, baseChance * enemy.evilMultiplier) : Math.min(enemy.chanceCap, baseChance);
   },
 
-  // 一世結束時寫進筆記的作派描述（文字為佔位，TODO(墨淵)：換成正式文案）
+  // 一世結束時寫進筆記的作派描述（墨淵 11/17 定稿）。每軸過門檻（numbers.js 的 conduct.describeAt）才算偏向，
+  // 其餘算持平；三軸都持平時整句換成「世人不太記得你」
   describeConductAtDeath(gameState) {
-    const conduct = this.view(gameState);
-    const describeAt = numbers.conduct.describeAt;
-    const pick = (value, high, low, middle) => value >= describeAt ? high : value <= -describeAt ? low : middle;
-    return `這一世，世人記得你${pick(conduct.善惡, "待人寬厚", "待人刻薄", "待人尋常")}、`
-      + `${pick(conduct.正邪, "行事端正", "走的是旁門左道", "不偏不倚")}、`
-      + `${pick(conduct.穩躁, "性子急躁", "性子沉穩", "不急不徐")}。`;
+    const conduct = this.view(gameState), thresholds = numbers.conduct.describeAt;
+    const lean = axis => conduct[axis] >= thresholds[axis] ? "positive" : conduct[axis] <= -thresholds[axis] ? "negative" : "level";
+    const phrases = {
+      善惡: { positive: "待人寬厚，受過你恩的人不少", level: "對人不遠不近", negative: "下手不留情，記恨你的人不少" },
+      正邪: { positive: "走的是正路，山門裡有人叫得出你的名字", level: "沒有投進哪一道", negative: "走的是偏路，正道的冊子上有你的名字" },
+      穩躁: { positive: "做事急，常常先出手再想", level: "該快的時候快，該等的時候也等得住", negative: "做事慢，每一步都踩實了" }
+    };
+    const axes = ["善惡", "正邪", "穩躁"];
+    if (axes.every(axis => lean(axis) === "level")) return "這一世，世人不太記得你。";
+    return `這一世，世人記得你${axes.map(axis => phrases[axis][lean(axis)]).join("，")}。`;
   },
 
   // ---- 稱號（人稱「…」）----

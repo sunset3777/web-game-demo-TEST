@@ -162,13 +162,12 @@ test("宗門指點改看善惡 ≥ 20", () => {
 
 test("一世結束時三項終值寫進筆記，下一世從 0 開始", () => {
   const game = startCultivatingLife("前一世");
-  setConduct(game.s, { 善惡: 30, 正邪: -40, 穩躁: 10 });
+  setConduct(game.s, { 善惡: 30, 正邪: -60, 穩躁: 10 });
   legacy.die(game.s, "坐化");
   const conductNote = game.s.notes.find(note => note.kind === "作派");
   assert.ok(conductNote, "要有一頁作派筆記");
-  assert.deepEqual(conductNote.conduct, { 善惡: 30, 正邪: -40, 穩躁: 10 });
-  assert.match(conductNote.text, /待人寬厚/);
-  assert.match(conductNote.text, /旁門左道/);
+  assert.deepEqual(conductNote.conduct, { 善惡: 30, 正邪: -60, 穩躁: 10 });
+  assert.equal(conductNote.text, "這一世，世人記得你待人寬厚，受過你恩的人不少，走的是偏路，正道的冊子上有你的名字，該快的時候快，該等的時候也等得住。");
   assert.doesNotMatch(conductNote.text, /\d/, "筆記文字不寫數字（沉浸感）");
   game.ui.picks = []; game.bequeath();
   const nextLife = startCultivatingLife("下一世");
@@ -433,4 +432,19 @@ test("衡天定案：編來歷 -30～-44 成功 50%、-45 以下 30%；執法陣
   for (const righteousness of [-45, -60, -80, -100]) {
     assert.deepEqual(squadAt(righteousness), { 一人: 0.5, 多人: 0.35, 多人有高手: 0.15 }, `正邪 ${righteousness}`);
   }
+});
+
+test("作派筆記描述（墨淵定稿）：各軸過門檻才算偏向，三軸都持平時世人不太記得你", () => {
+  const gameState = startCultivatingLife().s;
+  const describe = values => { setConduct(gameState, values); return routes.describeConductAtDeath(gameState); };
+  const thresholds = conduct.describeAt;
+  // 墨淵的例句
+  assert.equal(describe({ 善惡: thresholds.善惡, 正邪: 0, 穩躁: thresholds.穩躁 }),
+    "這一世，世人記得你待人寬厚，受過你恩的人不少，沒有投進哪一道，做事急，常常先出手再想。");
+  // 另一端：惡、正、穩
+  assert.equal(describe({ 善惡: -thresholds.善惡, 正邪: thresholds.正邪, 穩躁: -thresholds.穩躁 }),
+    "這一世，世人記得你下手不留情，記恨你的人不少，走的是正路，山門裡有人叫得出你的名字，做事慢，每一步都踩實了。");
+  // 三軸都持平（差一點到門檻也算持平）
+  assert.equal(describe({ 善惡: thresholds.善惡 - 1, 正邪: -(thresholds.正邪 - 1), 穩躁: thresholds.穩躁 - 1 }), "這一世，世人不太記得你。");
+  assert.equal(describe({ 善惡: 0, 正邪: 0, 穩躁: 0 }), "這一世，世人不太記得你。");
 });
