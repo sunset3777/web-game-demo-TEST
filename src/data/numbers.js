@@ -126,8 +126,8 @@ export const numbers = {
     describeAt: 25,                    // 一世結束寫進筆記時，三軸過 ±25 才有「寬厚／刻薄」這類描述
     sectGuidanceMaxPerLife: 2,         // 宗門指點一世最多出現幾次（玄機 11/17 定）
     darkPathOpensAtGoodEvil: -30,      // 黑市、魔音入耳：正邪還沒到門檻，但善惡 ≤ 這個值也會出現（魔種萌芽仍只看正邪）
-    // 兩個「選擇走正道」選項的正邪幅度：玄機（甲）拆穿 6／相救 4，衡天（乙）拆穿 4／相救 6，協調中，先照甲
-    choiceShift: { 當眾拆穿正邪: 6, 出手相救正邪: 4 },
+    // 兩個「選擇走正道」選項的正邪幅度（11/17 玄機定案）：會重複出現的事件只給小幅，所以市集騙子的當眾拆穿只 +2
+    choiceShift: { 當眾拆穿正邪: 2, 出手相救正邪: 6 },
     // 正邪機緣事件（墨淵 11/17）的「少量」與判定；TODO(衡天)：目前比照既有同類事件的小額，待調
     encounters: { smallInsight: 5, smallStones: 8, raidStones: 20, smallXiuSeasons: 1,
                   letterAmbushChance: 0.3,                               // 代送信時路上遇劫的機率
@@ -138,8 +138,8 @@ export const numbers = {
                   exposedChanceIfDemonSeed: 0.5,   // 配合盤查時，身上有魔種被看穿的機率（看穿就受傷）
                   evadeFailChance: 0.4 },          // 找藉口脫身失敗的機率（失敗就受傷）
     // 仇家：每次行動擲一次（機率 0 時不擲）。機率＝未了結的「仇」類中因果數 × 中 ＋ 大因果數 × 大；
-    // 善惡 ≤ evilAt 時先 × evilMultiplier，再封頂：一般 chanceCap，偏惡 evilChanceCap（甲 20%；乙主張一律 15%，協調中）
-    enemy: { chancePerKarma: { "中": 0.01, "大": 0.04 }, chanceCap: 0.15, evilChanceCap: 0.20, evilAt: -30, evilMultiplier: 1.5,
+    // 善惡 ≤ evilAt 時先 × evilMultiplier，再封頂：一般 chanceCap，偏惡 evilChanceCap（11/17 玄機定案：一律 15%）
+    enemy: { chancePerKarma: { "中": 0.01, "大": 0.04 }, chanceCap: 0.15, evilChanceCap: 0.15, evilAt: -30, evilMultiplier: 1.5,
              fightWinChance: 0.5,                  // 迎戰得勝的機率（得勝了結一筆因果，落敗受傷）
              fleeStoneLossRatio: 1 / 3 }           // 避走時丟下的靈石比例
   },

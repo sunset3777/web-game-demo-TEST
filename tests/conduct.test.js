@@ -289,3 +289,10 @@ test("正邪機緣六則：各選項的作派幅度照墨淵規格，記下的�
     assert.equal(events.available(gameState, "遊歷").some(event => event.id === eventId), true, `${eventId} 要在遊歷出現`);
   }
 });
+
+test("妖獸不記因果：斬妖狼不再寫進因果帳", () => {
+  const gameState = startCultivatingLife().s;
+  gameState.karma = []; gameState.realmIndex = 2;   // 境界高，迎戰必勝（0.55 + 2 × 0.2 ≥ 0.95）
+  withSeededRandom(1, () => chooseOption(gameState, "妖獸襲擊", "迎戰"));
+  assert.equal(gameState.karma.length, 0);
+});

@@ -66,7 +66,7 @@ export const eventsData = {
         { label: "迎戰",
           run: (s, api) => {
             const win = api.chance(0.55 + s.realmIndex * 0.2);
-            if (win) { api.addMaterial("妖獸內丹", 1); api.addKarma("斬妖狼", "斬一頭妖狼", "小"); return "一番苦戰後你斬殺妖狼，取得妖獸內丹。"; }
+            if (win) { api.addMaterial("妖獸內丹", 1); return "一番苦戰後你斬殺妖狼，取得妖獸內丹。"; }
             api.injure(); return "你不敵妖狼，負傷逃走（受傷，兩季內修為減半）。";
           } },
         { label: "以遁術脫身",
