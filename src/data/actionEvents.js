@@ -139,7 +139,8 @@ export const actionEvents = {
         { label: "繞道而行", run: (s, api) => { api.tend("穩躁", -2); return "你繞開了那片林子。"; } }
       ] },
     { id: "黑市", title: "黑市", actions: ["遊歷"], weight: 2, tend: { 正邪: -1 },
-      when: s => s.tend && s.tend.正邪 <= -20 && s.stones >= 10,
+      // 拆軸後只看正邪會讓邪路走不通（11/17 衡天模擬），所以作惡夠多（善惡 ≤ darkPathOpensAtGoodEvil）也會被帶進來
+      when: s => s.tend && (s.tend.正邪 <= -20 || s.tend.善惡 <= numbers.conduct.darkPathOpensAtGoodEvil) && s.stones >= 10,
       text: "你被帶進一處地下黑市。攤上擺著來路不明的丹藥，據說吃了能一夜漲十年功力。",
       choices: [
         { label: "買一顆", run: (s, api) => { api.addStones(-10); api.tend("正邪", -15); api.tend("善惡", -5); api.addDemon(12); api.addXiu(numbers.realms[s.realmIndex].perSeason * 3); return "藥力像火一樣燒遍全身。功力漲了，心底卻多了點說不清的東西。"; } },
@@ -153,7 +154,7 @@ export const actionEvents = {
 
     // ================= 路線入門：魔修 =================
     { id: "魔音入耳", title: "魔音", actions: ["周天", "閉關"], weight: 4, once: true, routeNot: "魔修",
-      when: s => s.route === "氣修" && !s.flags["魔種"] && s.demon >= 40 && s.tend && s.tend.正邪 <= -10,   // 種下魔種：任何境界都可能（累積邪修作派）
+      when: s => s.route === "氣修" && !s.flags["魔種"] && s.demon >= 40 && s.tend && (s.tend.正邪 <= -10 || s.tend.善惡 <= numbers.conduct.darkPathOpensAtGoodEvil),   // 種下魔種：任何境界都可能（累積邪修作派）
       text: "心魔不再只是低語。它清清楚楚地對你說：「你壓著我，只會越來越累。讓我進來，我給你力量。」",
       choices: [
         { label: "讓它進來", run: (s, api) => { api.setFlag("魔種"); api.tend("正邪", -12); api.addDemon(10); api.note("心魔在我心底種下了一顆種子。"); return "一股冰涼的東西沉進了你的丹田。不痛，甚至有點舒服。"; } },

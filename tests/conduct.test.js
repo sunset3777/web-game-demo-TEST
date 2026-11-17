@@ -180,3 +180,23 @@ test("宗門指點：恭敬請教加正，一世最多出現 sectGuidanceMaxPerL
   }
   assert.equal(isAvailable(), false, "超過上限就不再出現");
 });
+
+test("黑市、魔音入耳：正邪到門檻或善惡夠低（≤ -30）都會出現；魔種萌芽仍只看正邪", () => {
+  const gameState = startCultivatingLife().s;
+  const has = (eventId, action) => events.available(gameState, action).some(event => event.id === eventId);
+  gameState.stones = 100; gameState.demon = 50; gameState.route = "氣修"; gameState.flags["魔種"] = false;
+  setConduct(gameState, { 善惡: 0, 正邪: 0 });
+  assert.equal(has("黑市", "遊歷"), false);
+  setConduct(gameState, { 善惡: conduct.darkPathOpensAtGoodEvil, 正邪: 0 });
+  assert.equal(has("黑市", "遊歷"), true, "作惡夠多就會被帶進黑市");
+  const demonVoice = events.find("魔音入耳");
+  assert.equal(demonVoice.when(gameState), true, "作惡夠多也會聽見魔音");
+  setConduct(gameState, { 善惡: conduct.darkPathOpensAtGoodEvil + 1, 正邪: -10 });
+  assert.equal(demonVoice.when(gameState), true, "原本的正邪門檻照舊有效");
+  // 魔種萌芽：只看正邪
+  gameState.flags["魔種"] = true; gameState.realmIndex = 2;
+  setConduct(gameState, { 善惡: -100, 正邪: -29 });
+  assert.equal(events.find("魔種萌芽").when(gameState), false);
+  setConduct(gameState, { 善惡: 0, 正邪: -30 });
+  assert.equal(events.find("魔種萌芽").when(gameState), true);
+});
