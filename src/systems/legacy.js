@@ -2,11 +2,16 @@
 import { numbers } from "../data/numbers.js";
 import { state } from "./state.js";
 import { save } from "./save.js";
+import { routes } from "./routes.js";
 
 export const legacy = {
   die(s, cause) {
     if (!s.alive) return;
     s.alive = false; s.cause = cause; s.phase = "end";
+    // 作派三項終值記進筆記：文字給玩家看，數值另外存在這頁筆記的 conduct 欄位（下一世作派仍從 0 開始）
+    const conduct = routes.view(s);
+    state.note(s, routes.describeConductAtDeath(s), "作派");
+    s.notes[s.notes.length - 1].conduct = { 善惡: conduct.善惡, 正邪: conduct.正邪, 穩躁: conduct.穩躁 };
     state.note(s, `${cause}，享年 ${Math.floor(state.age(s))} 歲。`, "結局");
   },
 
