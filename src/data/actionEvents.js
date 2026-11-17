@@ -31,7 +31,7 @@ function fightLawEnforcers(s, api) {
 function fightGrudgeHolder(s, api) {
   const grudge = currentGrudge(s);
   const result = api.duel(grudge && grudge.weight === "大" ? "幫手" : "一人", "仇家尋仇");
-  if (result.won) { api.queueEventNext("仇家勝後"); return "幾個回合之後，對方倒了下去。"; }   // TODO(墨淵)
+  if (result.won) { api.queueEventNext("仇家勝後"); return "他的刀被你挑飛，插進路邊的土裡。"; }   // 後面直接接「仇家勝後」的開頭
   if (result.died) return "他的刀比你記得的快。最後你看見的，是他蹲下來，把你的眼睛闔上。";
   return "你倒在山道上，他沒有再補一刀，只蹲下來看了你一會兒：「這樣就夠了。」等你爬起來，他已經不在了。";   // 仇照舊留著
 }
