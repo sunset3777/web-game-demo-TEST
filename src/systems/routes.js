@@ -111,10 +111,15 @@ export const routes = {
   },
 
   // 一世結束時寫進筆記的作派描述（墨淵 11/17 定稿）。每軸過門檻（numbers.js 的 conduct.describeAt）才算偏向，
-  // 其餘算持平；三軸都持平時整句換成「世人不太記得你」
+  // 其餘算持平；三軸都持平時整句換成「世人不太記得你」。門檻有「含等號」與「嚴格」兩種寫法，照設定判斷
   describeConductAtDeath(gameState) {
     const conduct = this.view(gameState), thresholds = numbers.conduct.describeAt;
-    const lean = axis => conduct[axis] >= thresholds[axis] ? "positive" : conduct[axis] <= -thresholds[axis] ? "negative" : "level";
+    const lean = axis => {
+      const value = conduct[axis], rule = thresholds[axis];
+      const isPositive = rule.positiveAbove !== undefined ? value > rule.positiveAbove : value >= rule.positiveAtLeast;
+      const isNegative = rule.negativeBelow !== undefined ? value < rule.negativeBelow : value <= rule.negativeAtMost;
+      return isPositive ? "positive" : isNegative ? "negative" : "level";
+    };
     const phrases = {
       善惡: { positive: "待人寬厚，受過你恩的人不少", level: "對人不遠不近", negative: "下手不留情，記恨你的人不少" },
       正邪: { positive: "走的是正路，山門裡有人叫得出你的名字", level: "沒有投進哪一道", negative: "走的是偏路，正道的冊子上有你的名字" },

@@ -437,14 +437,20 @@ test("衡天定案：編來歷 -30～-44 成功 50%、-45 以下 30%；執法陣
 test("作派筆記描述（墨淵定稿）：各軸過門檻才算偏向，三軸都持平時世人不太記得你", () => {
   const gameState = startCultivatingLife().s;
   const describe = values => { setConduct(gameState, values); return routes.describeConductAtDeath(gameState); };
-  const thresholds = conduct.describeAt;
-  // 墨淵的例句
-  assert.equal(describe({ 善惡: thresholds.善惡, 正邪: 0, 穩躁: thresholds.穩躁 }),
+  // 墨淵的例句（善惡 25、穩躁 40 含等號就算偏向）
+  assert.equal(describe({ 善惡: 25, 正邪: 0, 穩躁: 40 }),
     "這一世，世人記得你待人寬厚，受過你恩的人不少，沒有投進哪一道，做事急，常常先出手再想。");
   // 另一端：惡、正、穩
-  assert.equal(describe({ 善惡: -thresholds.善惡, 正邪: thresholds.正邪, 穩躁: -thresholds.穩躁 }),
+  assert.equal(describe({ 善惡: -25, 正邪: 41, 穩躁: -40 }),
     "這一世，世人記得你下手不留情，記恨你的人不少，走的是正路，山門裡有人叫得出你的名字，做事慢，每一步都踩實了。");
+  // 正邪是嚴格大於／小於：正好 40、正好 -30 都算持平；41、-31 才算偏向
+  const describeRighteousness = value => describe({ 善惡: 25, 正邪: value, 穩躁: 0 });
+  assert.ok(describeRighteousness(40).includes("沒有投進哪一道"));
+  assert.ok(describeRighteousness(41).includes("走的是正路"));
+  assert.ok(describeRighteousness(-30).includes("沒有投進哪一道"));
+  assert.ok(describeRighteousness(-31).includes("走的是偏路"));
   // 三軸都持平（差一點到門檻也算持平）
-  assert.equal(describe({ 善惡: thresholds.善惡 - 1, 正邪: -(thresholds.正邪 - 1), 穩躁: thresholds.穩躁 - 1 }), "這一世，世人不太記得你。");
+  assert.equal(describe({ 善惡: 24, 正邪: 40, 穩躁: 39 }), "這一世，世人不太記得你。");
+  assert.equal(describe({ 善惡: -24, 正邪: -30, 穩躁: -39 }), "這一世，世人不太記得你。");
   assert.equal(describe({ 善惡: 0, 正邪: 0, 穩躁: 0 }), "這一世，世人不太記得你。");
 });
