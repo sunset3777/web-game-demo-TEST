@@ -29,7 +29,7 @@ const EXPECTED_LIVES = {
      "選擇:growth": 7
     },
     "stepSequenceHash": "8eebe19b9a60fca7",
-    "finalStateHash": "bd4ec1c360645b7a",
+    "finalStateHash": "88058b810b75521d",
     "legacyFileHash": "ed374d3264770aab"
    },
    "full-2": {
@@ -50,7 +50,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 9
     },
     "stepSequenceHash": "547929ce1de21002",
-    "finalStateHash": "f02ca2fb5b7f220f",
+    "finalStateHash": "d48b93eaa1112aaa",
     "legacyFileHash": "12d75f895953d9a4"
    },
    "full-3": {
@@ -73,7 +73,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 20
     },
     "stepSequenceHash": "c1c3ba8f8dd5dfc1",
-    "finalStateHash": "668235ffb5a33cab",
+    "finalStateHash": "01ad8538500736fc",
     "legacyFileHash": "f05ffc71009b3cbc"
    },
    "full-4": {
@@ -94,7 +94,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 17
     },
     "stepSequenceHash": "bf0e66d4b69990b8",
-    "finalStateHash": "913c768d32fd3ebb",
+    "finalStateHash": "d5e4634d84c7d82b",
     "legacyFileHash": "f49c4f94b02029a2"
    },
    "full-5": {
@@ -113,7 +113,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 14
     },
     "stepSequenceHash": "d26d12b51abc60c9",
-    "finalStateHash": "8f5a2aca09ce5f3c",
+    "finalStateHash": "f9e736edf3262a51",
     "legacyFileHash": "15b845602709833d"
    },
    "quick-1": {
@@ -133,7 +133,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 18
     },
     "stepSequenceHash": "c2212dfd743da27d",
-    "finalStateHash": "19a1d5a5b838f2d6",
+    "finalStateHash": "b8ccd6ccfbebb5ea",
     "legacyFileHash": "019f79a1c181dce9"
    },
    "quick-2": {
@@ -155,7 +155,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 6
     },
     "stepSequenceHash": "7bf62bf297ae47b5",
-    "finalStateHash": "17346fd68148ed30",
+    "finalStateHash": "a8027fbb1c6d6370",
     "legacyFileHash": "c9b357a4c9486020"
    },
    "quick-3": {
@@ -175,7 +175,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 22
     },
     "stepSequenceHash": "f02d17e624a47d37",
-    "finalStateHash": "8dc11fea1913a0b9",
+    "finalStateHash": "7c9e48c1fdd6cbe4",
     "legacyFileHash": "9b42d27b792e5b7d"
    },
    "quick-4": {
@@ -197,7 +197,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 16
     },
     "stepSequenceHash": "0f24994bdc50a09d",
-    "finalStateHash": "585af6a32b20426b",
+    "finalStateHash": "7d1af959e3e6ac58",
     "legacyFileHash": "a73b6eb13cb153bf"
    },
    "quick-5": {
@@ -215,7 +215,7 @@ const EXPECTED_LIVES = {
      "選擇:growth": 4
     },
     "stepSequenceHash": "82409e2c969e934e",
-    "finalStateHash": "92d1888c86a8c76f",
+    "finalStateHash": "383ffc213750db1d",
     "legacyFileHash": "70975561c1a80ac9"
    },
    "full-29": {
@@ -238,7 +238,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 4
     },
     "stepSequenceHash": "a484cd400d7e8947",
-    "finalStateHash": "885dc1ea17cb9d91",
+    "finalStateHash": "6b3883729b923ddd",
     "legacyFileHash": "31fd114aee177d0c"
    }
   };
