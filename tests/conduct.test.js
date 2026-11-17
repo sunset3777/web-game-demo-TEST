@@ -283,11 +283,21 @@ test("正邪機緣六則：各選項的作派幅度照墨淵規格，記下的�
   assert.equal(karmaData.kindById["無眼鶴旁門"], "欠");
   assert.equal(karmaData.kindById["截道商隊"], "仇");
   assert.equal(karmaData.kindById["殘卷主人同門"], "仇");
-  // 只在遊歷抽到
+  // 只在遊歷抽到；一世各一次（遇過就不再出現）
+  gameState.eventsDone = [];
   for (const eventId of ["試劍石", "代送一封信", "坊市執事", "無眼鶴", "血跡殘卷", "截道"]) {
     assert.equal(events.available(gameState, "吐納").some(event => event.id === eventId), false, `${eventId} 不該在吐納出現`);
     assert.equal(events.available(gameState, "遊歷").some(event => event.id === eventId), true, `${eventId} 要在遊歷出現`);
+    events.resolve(gameState, events.find(eventId), 0);
+    assert.equal(events.available(gameState, "遊歷").some(event => event.id === eventId), false, `${eventId} 一世只出現一次`);
   }
+  // 酬勞以「一季閉關的靈石」為單位、依境界：送信 1.5 季＝煉氣 5／築基 12／金丹 30
+  const deliveryReward = realmIndex => {
+    setConduct(gameState, { 正邪: 0 }); gameState.realmIndex = realmIndex; gameState.stones = 0;
+    withSeededRandom(5, () => chooseOption(gameState, "代送一封信", "接下，路上拆開看"));
+    return gameState.stones;
+  };
+  assert.deepEqual([0, 1, 2].map(deliveryReward), [5, 12, 30]);
 });
 
 test("妖獸不記因果：斬妖狼不再寫進因果帳", () => {

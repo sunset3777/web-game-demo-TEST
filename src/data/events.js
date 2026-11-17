@@ -26,6 +26,9 @@
 
 import { numbers } from "./numbers.js";
 
+// 「一季閉關的靈石」依境界（煉氣 3／築基 8／金丹 20），正邪機緣的酬勞以它為單位，四捨五入
+const seasonStones = (s, seasons) => Math.round(numbers.risk.閉關.cost[Math.min(s.realmIndex, numbers.risk.閉關.cost.length - 1)] * seasons);
+
 export const eventsData = {
   // 妖王線索（冒險一探成功時三選一，寫進修仙筆記）
   demonKingClues: {
@@ -202,47 +205,47 @@ export const eventsData = {
       ]
     },
 
-    // ================= 作派：正邪機緣（墨淵 11/17，只在遊歷抽到；不寫筆記） =================
+    // ================= 作派：正邪機緣（墨淵文字、衡天數字 11/17；只在遊歷抽到、一世各一次；不寫筆記） =================
     // 正號：正＝正邪正值、邪＝負值；善＝善惡正值；躁＝穩躁正值、穩＝負值。
-    // 「少量」的數字放在 numbers.js 的 conduct.encounters（TODO(衡天)）；標 TODO(墨淵) 的是規格沒給的結果文字，先用佔位
+    // 數字都在 numbers.js 的 conduct.encounters；靈石以「一季閉關的靈石」（risk.閉關.cost，依境界）為單位
     {
-      id: "試劍石", title: "試劍石", weight: 2,
+      id: "試劍石", title: "試劍石", weight: s => numbers.conduct.encounters.weight, once: true,
       when: s => true,
       text: "山道邊有塊試劍石，石面上一道一道全是劍痕。幾個青雲門弟子輪流上去出劍，一個師兄朝你招手：「路過的道友也能上，照規矩報個名號就行。」",
       choices: [
         { label: "報上名號，行禮後出一劍", run: (s, api) => { api.tend("正邪", 10);
             return "師兄點點頭，把你的名字記在石邊的竹簡上：「往後到青雲門，說這個名字就行。」"; } },
-        { label: "站在一旁，看他們的劍路", run: (s, api) => { api.tend("穩躁", -5); api.addInsight(numbers.conduct.encounters.smallInsight);
+        { label: "站在一旁，看他們的劍路", run: (s, api) => { api.tend("穩躁", -5); api.addInsight(numbers.conduct.encounters.watchSwordInsight);
             return "看到第三個人，你才看出他們每一劍都留了半分。"; } },
-        { label: "不上去，繼續趕路", run: (s, api) => "你朝他們點點頭，繼續趕路。" }   // TODO(墨淵)
+        { label: "不上去，繼續趕路", run: (s, api) => "劍聲在身後響了一陣，轉過山彎就聽不見了。" }
       ]
     },
     {
-      id: "代送一封信", title: "代送一封信", weight: 2,
+      id: "代送一封信", title: "代送一封信", weight: s => numbers.conduct.encounters.weight, once: true,
       when: s => true,
       text: "驛站掌櫃攔住你：「青雲門的信差病倒了，有封信要送到山那頭的分堂。路上不太平，人家說給的酬勞不少。」",
       choices: [
         { label: "接下，照規矩送到", run: (s, api) => {
             const E = numbers.conduct.encounters;
             api.tend("正邪", 10);
-            // 路上照機率遇劫：先鬥法，打不過再遁走（沿用妖獸襲擊的判定）；只有送到才有酬勞與分堂執事的恩
+            // 路上照機率遇劫，照遁走判定：脫身就繼續送；沒脫身信被搶，不得酬勞也不記恩
+            let ambushLine = "";
             if (api.chance(E.letterAmbushChance)) {
-              if (!api.chance(E.fightBaseWinChance + s.realmIndex * E.fightWinPerRealm)) {
-                if (api.chance(E.fleeChance)) return "半路有人攔路搶信。你打不過，只能護著自己脫身，信在混亂中丟了。";   // TODO(墨淵)
-                api.injure(); return "半路有人攔路搶信。你沒能擋住，信被搶走，自己也受了傷。";   // TODO(墨淵)
-              }
+              if (!api.chance(E.fleeChance)) return "信被搶走了。你空手回到驛站，掌櫃什麼也沒說。";
+              ambushLine = "劫道的人退進林子裡。你拍掉信上的土，繼續走。\n";
             }
-            api.addStones(E.smallStones);
+            api.addStones(seasonStones(s, E.letterRewardSeasons));
             api.addKarma("青雲分堂執事", "替青雲門送信到分堂", "小");
-            return "信平安送到了分堂。執事收下信，付了酬勞，還記下了你的名字。";   // TODO(墨淵)
+            return ambushLine + "分堂執事拆開信看了一眼，回頭多看了你一眼：「辛苦。這份情，分堂記著。」";
           } },
-        { label: "接下，路上拆開看", run: (s, api) => { api.tend("穩躁", 5); api.addStones(numbers.conduct.encounters.smallStones);
-            return "信裡只有一句：淵口的字，這個月再抹一次。\n你把信封好，照樣送到，照樣拿了酬勞。"; } },
-        { label: "不接", run: (s, api) => "你搖搖頭，掌櫃只好去問下一個人。" }   // TODO(墨淵)
+        { label: "接下，路上拆開看", run: (s, api) => {
+            api.tend("穩躁", 5); api.addStones(seasonStones(s, numbers.conduct.encounters.letterRewardSeasons));
+            return "信裡只有一句：淵口的字，這個月再抹一次。\n分堂執事拆開信看了一眼，回頭多看了你一眼：「辛苦。這份情，分堂記著。」"; } },
+        { label: "不接", run: (s, api) => "掌櫃嘆了口氣，又去攔下一個人。" }
       ]
     },
     {
-      id: "坊市執事", title: "坊市爭執", weight: 2,
+      id: "坊市執事", title: "坊市爭執", weight: s => numbers.conduct.encounters.weight, once: true,
       when: s => true,
       text: "坊市裡兩個散修為一株靈草吵了起來，手都按在了法器上。旁邊的攤主不看他們，都在看你，像在等一個管事的人。",
       choices: [
@@ -253,28 +256,28 @@ export const eventsData = {
             api.tend("正邪", 8);
             if (api.chance(E.fightBaseWinChance + s.realmIndex * E.fightWinPerRealm)) {
               api.addKarma("制住鬧事散修", "在坊市制住了先拔法器的散修", "小");
-              return "你一掌按下他的法器。那人負傷離開，走前狠狠瞪了你一眼。";   // TODO(墨淵)
+              return "你扣住他的手腕，法器噹一聲掉在地上。他捂著手退開，臨走前看了你一眼，把你的臉記住了。";
             }
-            api.injure(); return "那人比你想的難纏，你挨了一下，兩人趁亂散了。";   // TODO(墨淵)
+            api.injure(); return "他比你快。你倒在攤子中間，靈草被他拿走了。";
           } },
         { label: "自己掏靈石買下靈草，兩人各分一半", run: (s, api) => {
-            api.tend("善惡", 5); api.addStones(-numbers.conduct.encounters.smallStones);
+            api.tend("善惡", 5); api.addStones(-seasonStones(s, numbers.conduct.encounters.buyHerbSeasons));
             api.addKarma("坊市散修甲", "替坊市兩個散修化解爭執（其一）", "小");
             api.addKarma("坊市散修乙", "替坊市兩個散修化解爭執（其二）", "小");
-            return "你掏錢買下靈草，一人一半。兩個散修愣了半晌，各自向你拱了拱手。";   // TODO(墨淵)
+            return "兩人各拿了一半靈草，愣了一下，都朝你拱了拱手。";
           } }
       ]
     },
     {
-      id: "無眼鶴", title: "無眼鶴", weight: 2,
+      id: "無眼鶴", title: "無眼鶴", weight: s => numbers.conduct.encounters.weight, once: true,
       when: s => true,
       text: "酒肆裡一個散修坐到你對面，袖口繡著一隻沒有眼睛的鶴：「正道規矩多，修得快嗎？我們那裡不問出身，也不問來路。」他把一枚骨牌推到你面前。",
       choices: [
         { label: "收下骨牌，跟他走一趟", run: (s, api) => {
             api.tend("正邪", -12);
-            api.addXiu(numbers.realms[s.realmIndex].perSeason * numbers.conduct.encounters.smallXiuSeasons);
+            api.addXiu(numbers.realms[s.realmIndex].perSeason * numbers.conduct.encounters.crowXiuSeasons);
             api.addKarma("無眼鶴旁門", "收下無眼鶴的骨牌，跟他走了一趟", "中");
-            return "他帶你去的地方不問來歷，教的法子也不問對錯。這一季，你的修為多了一點。";   // TODO(墨淵)
+            return "他帶你到一間沒有招牌的院子，教你一口反著吸的氣。你吐出那口氣時，覺得經脈比平常快了一點。臨走他說：「這口氣，我們記在帳上。」";
           } },
         { label: "收下骨牌，什麼都不說", run: (s, api) => { api.tend("穩躁", -5);
             return "骨牌留在身上，夜裡偶爾會發燙。"; } },
@@ -283,17 +286,15 @@ export const eventsData = {
       ]
     },
     {
-      id: "血跡殘卷", title: "血跡殘卷", weight: 2,
+      id: "血跡殘卷", title: "血跡殘卷", weight: s => numbers.conduct.encounters.weight, once: true,
       when: s => true,
       text: "你在亂石堆裡踢到一隻皮囊，裡面是半部功法，最後幾頁沾著乾掉的血。字寫得很好，練法卻是倒著走經脈。",
       choices: [
         { label: "照著練", run: (s, api) => {
-            const E = numbers.conduct.encounters;
             api.tend("正邪", -12);
+            api.addInsight(numbers.conduct.encounters.scrollInsight);
             api.addKarma("殘卷主人同門", "練了來路不明的血跡殘卷，被認定是你拿的", "中");
-            // 規格寫「感悟或修為少量」：給感悟（瓶頸時直接加，平時先存著，到瓶頸再用），不另外加修為
-            api.addInsight(E.smallInsight);
-            return "倒走的經脈讓你冷汗直流，卻真的通了幾處。\n沒過多久，皮囊主人的同門找上了你，認定東西是你拿的。";   // TODO(墨淵)
+            return "倒著走的經脈又冷又快。第三天夜裡，有人在你門外停了很久：「那本書，是我師兄的。」";
           } },
         { label: "交給坊市執事", run: (s, api) => { api.tend("正邪", 8);
             return "執事翻了兩頁就把它鎖進櫃子：「這種東西，不該在外面。」"; } },
@@ -302,7 +303,7 @@ export const eventsData = {
       ]
     },
     {
-      id: "截道", title: "截道", weight: 2,
+      id: "截道", title: "截道", weight: s => numbers.conduct.encounters.weight, once: true,
       when: s => true,
       text: "一個旁門修士在路邊攔住你：「山下那支商隊帶著一車血玉。你替我拖住護衛，分你三成。」",
       choices: [
@@ -310,20 +311,22 @@ export const eventsData = {
             const E = numbers.conduct.encounters;
             api.tend("正邪", -15);
             if (api.chance(E.fightBaseWinChance + s.realmIndex * E.fightWinPerRealm)) {
-              api.addStones(E.raidStones);
+              api.addStones(seasonStones(s, E.raidRewardSeasons));
               api.addKarma("截道商隊", "幫旁門修士截了商隊，傷了護衛", "中");
-              return "你拖住了護衛。事成之後，旁門修士把三成血玉換成的靈石丟給你。護衛負了傷。";   // TODO(墨淵)
+              return "護衛倒在車旁。旁門修士把三成血玉折成靈石丟給你，頭也不回地走了。";
             }
-            api.injure(); return "護衛比你想的強。你負傷退走，旁門修士早就不見了。";   // TODO(墨淵)
+            api.injure();
+            api.addKarma("截道商隊", "幫旁門修士截商隊，沒能得手", "小");   // 輸了商隊仍記你一筆（小）
+            return "護衛比你想的多。你帶著傷逃進山裡，旁門修士早就不見了。";
           } },
         { label: "只在遠處望風", run: (s, api) => {
-            api.tend("正邪", -10); api.addStones(numbers.conduct.encounters.smallStones);
+            api.tend("正邪", -10); api.addStones(seasonStones(s, numbers.conduct.encounters.lookoutRewardSeasons));
             api.addKarma("望風商隊", "替截道的旁門修士望風", "小");
             return "後來你聽說，那天有個護衛沒回家。"; } },
         { label: "轉頭去給商隊報信", run: (s, api) => {
             api.tend("正邪", 10);
             api.addKarma("截道旁門修士", "壞了旁門修士截道的事", "小");
-            return "商隊聽了你的話，改走另一條路。"; } }   // TODO(墨淵)
+            return "商隊改走了另一條路。那天晚上，路邊的樹上釘著一張紙，只畫了一隻眼睛。"; } }
       ]
     },
     {

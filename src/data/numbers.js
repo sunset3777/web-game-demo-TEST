@@ -128,9 +128,14 @@ export const numbers = {
     darkPathOpensAtGoodEvil: -30,      // 黑市、魔音入耳：正邪還沒到門檻，但善惡 ≤ 這個值也會出現（魔種萌芽仍只看正邪）
     // 兩個「選擇走正道」選項的正邪幅度（11/17 玄機定案）：會重複出現的事件只給小幅，所以市集騙子的當眾拆穿只 +2
     choiceShift: { 當眾拆穿正邪: 2, 出手相救正邪: 6 },
-    // 正邪機緣事件（墨淵 11/17）的「少量」與判定；TODO(衡天)：目前比照既有同類事件的小額，待調
-    encounters: { smallInsight: 5, smallStones: 8, raidStones: 20, smallXiuSeasons: 1,
-                  letterAmbushChance: 0.3,                               // 代送信時路上遇劫的機率
+    // 正邪機緣六則（衡天 11/17）：權重每則 weight、一世各一次；靈石以「幾季閉關的靈石」計（risk.閉關.cost，依境界）
+    encounters: { weight: 1,
+                  watchSwordInsight: 6,                                  // 試劍石：看劍路
+                  letterRewardSeasons: 1.5, letterAmbushChance: 0.15,   // 代送一封信：酬勞 1.5 季（5／12／30）；路上遇劫 15%
+                  buyHerbSeasons: 1,                                     // 坊市執事：自己掏錢買下靈草
+                  crowXiuSeasons: 2,                                     // 無眼鶴：跟他走，修為多兩季的量
+                  scrollInsight: 12,                                     // 血跡殘卷：照著練
+                  raidRewardSeasons: 4, lookoutRewardSeasons: 1.5,      // 截道：動手成了 4 季、望風 1.5 季
                   fightBaseWinChance: 0.55, fightWinPerRealm: 0.2,      // 鬥法：沿用妖獸襲擊「迎戰」的判定
                   fleeChance: 0.8 },                                     // 遁走：沿用妖獸襲擊「以遁術脫身」
     // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
