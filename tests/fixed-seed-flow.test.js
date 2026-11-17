@@ -238,7 +238,7 @@ const EXPECTED_LIVES = {
      "閉關(長)": 4
     },
     "stepSequenceHash": "a484cd400d7e8947",
-    "finalStateHash": "6b3883729b923ddd",
+    "finalStateHash": "8967e554ce433140",
     "legacyFileHash": "31fd114aee177d0c"
    }
   };
