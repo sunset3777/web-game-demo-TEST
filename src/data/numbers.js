@@ -128,6 +128,11 @@ export const numbers = {
     darkPathOpensAtGoodEvil: -30,      // 黑市、魔音入耳：正邪還沒到門檻，但善惡 ≤ 這個值也會出現（魔種萌芽仍只看正邪）
     // 兩個「選擇走正道」選項的正邪幅度：玄機（甲）拆穿 6／相救 4，衡天（乙）拆穿 4／相救 6，協調中，先照甲
     choiceShift: { 當眾拆穿正邪: 6, 出手相救正邪: 4 },
+    // 正邪機緣事件（墨淵 11/17）的「少量」與判定；TODO(衡天)：目前比照既有同類事件的小額，待調
+    encounters: { smallInsight: 5, smallStones: 8, raidStones: 20, smallXiuSeasons: 1,
+                  letterAmbushChance: 0.3,                               // 代送信時路上遇劫的機率
+                  fightBaseWinChance: 0.55, fightWinPerRealm: 0.2,      // 鬥法：沿用妖獸襲擊「迎戰」的判定
+                  fleeChance: 0.8 },                                     // 遁走：沿用妖獸襲擊「以遁術脫身」
     // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
     inspection: { startAt: -30, baseWeight: 2, weightPerPoint: 0.1,
                   exposedChanceIfDemonSeed: 0.5,   // 配合盤查時，身上有魔種被看穿的機率（看穿就受傷）

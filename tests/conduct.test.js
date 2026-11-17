@@ -244,3 +244,48 @@ test("當眾拆穿、出手相救的正邪幅度照 numbers.js 的 conduct.choic
   assert.deepEqual(shiftOf("市集騙子", "當眾拆穿"), { 善惡: 2, 正邪: conduct.choiceShift.當眾拆穿正邪 });
   assert.deepEqual(shiftOf("被欺凌的散修", "出手相救"), { 善惡: 6, 正邪: conduct.choiceShift.出手相救正邪 });
 });
+
+test("正邪機緣六則：各選項的作派幅度照墨淵規格，記下的因果種類正確，且不寫筆記", async () => {
+  const { karmaData } = await import("../src/data/karma.js");
+  // [事件, 選項, 期望的作派變化]（正邪：正＋邪－；穩躁：躁＋穩－；善惡：善＋）
+  const expectations = [
+    ["試劍石", "報上名號，行禮後出一劍", { 正邪: 10 }],
+    ["試劍石", "站在一旁，看他們的劍路", { 穩躁: -5 }],
+    ["試劍石", "不上去，繼續趕路", {}],
+    ["代送一封信", "接下，照規矩送到", { 正邪: 10 }],
+    ["代送一封信", "接下，路上拆開看", { 穩躁: 5 }],
+    ["代送一封信", "不接", {}],
+    ["坊市執事", "照坊市規矩，請兩人把靈草交給執事評斷", { 正邪: 10 }],
+    ["坊市執事", "出手制住先拔法器的那個", { 正邪: 8 }],
+    ["坊市執事", "自己掏靈石買下靈草，兩人各分一半", { 善惡: 5 }],
+    ["無眼鶴", "收下骨牌，跟他走一趟", { 正邪: -12 }],
+    ["無眼鶴", "收下骨牌，什麼都不說", { 穩躁: -5 }],
+    ["無眼鶴", "把骨牌推回去", { 正邪: 5 }],
+    ["血跡殘卷", "照著練", { 正邪: -12 }],
+    ["血跡殘卷", "交給坊市執事", { 正邪: 8 }],
+    ["血跡殘卷", "一把火燒了", { 穩躁: -5 }],
+    ["截道", "動手", { 正邪: -15 }],
+    ["截道", "只在遠處望風", { 正邪: -10 }],
+    ["截道", "轉頭去給商隊報信", { 正邪: 10 }]
+  ];
+  const gameState = startCultivatingLife().s;
+  for (const [eventId, optionLabel, expected] of expectations) {
+    setConduct(gameState, { 善惡: 0, 正邪: 0, 穩躁: 0 });
+    gameState.stones = 100; gameState.karma = []; const notesBefore = gameState.notes.length;
+    withSeededRandom(3, () => chooseOption(gameState, eventId, optionLabel));
+    const actual = Object.fromEntries(["善惡", "正邪", "穩躁"].map(axis => [axis, gameState.tend[axis]]).filter(([, value]) => value !== 0));
+    assert.deepEqual(actual, expected, `${eventId}／${optionLabel}`);
+    assert.equal(gameState.notes.length, notesBefore, `${eventId}／${optionLabel} 不該寫筆記`);
+    for (const entry of gameState.karma) assert.ok(karmaData.kindById[entry.id], `${entry.id} 要在 data/karma.js 列出種類`);
+  }
+  // 種類：送信的分堂執事是恩、無眼鶴是欠、截道與殘卷是仇
+  assert.equal(karmaData.kindById["青雲分堂執事"], "恩");
+  assert.equal(karmaData.kindById["無眼鶴旁門"], "欠");
+  assert.equal(karmaData.kindById["截道商隊"], "仇");
+  assert.equal(karmaData.kindById["殘卷主人同門"], "仇");
+  // 只在遊歷抽到
+  for (const eventId of ["試劍石", "代送一封信", "坊市執事", "無眼鶴", "血跡殘卷", "截道"]) {
+    assert.equal(events.available(gameState, "吐納").some(event => event.id === eventId), false, `${eventId} 不該在吐納出現`);
+    assert.equal(events.available(gameState, "遊歷").some(event => event.id === eventId), true, `${eventId} 要在遊歷出現`);
+  }
+});
