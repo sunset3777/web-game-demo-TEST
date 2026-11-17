@@ -147,8 +147,14 @@ export const numbers = {
                   recognizedAt: -45,          // 山道照鏡：正邪 ≤ 這個值，鏡子整個黑了，轉執法追緝
                   pursuitAt: -60,             // 正邪 ≤ 這個值，盤查直接是執法追緝
                   bribeSeasons: 3,            // 香火錢：3 季閉關靈石的量；不夠就不顯示這個選項
-                  storyPassChance: 0.5,       // TODO(衡天)：編來歷的交涉（原為 d10，demo 沒有交涉判定）暫定五成
-                  lawSquadChance: { 一人: 0.5, 多人: 0.35, 多人有高手: 0.15 } },   // TODO(衡天)：執法追緝來的陣仗，暫定
+                  // 編來歷的交涉（衡天 11/17）：正邪在 recognizedAt 以上（-30～-44）成功 50%，-45 以下 30%；沒過，下一次盤查提早
+                  storyPassChance: 0.5, storyPassChanceIfRecognizable: 0.3,
+                  // 執法追緝的陣仗（衡天 11/17），依正邪分三段，由上往下找第一個符合的（正邪 > above）
+                  lawSquadChanceByBand: [
+                    { above: -60, chances: { 一人: 0.6, 多人: 0.3, 多人有高手: 0.1 } },     // -45～-59（照鏡被認出轉來）
+                    { above: -80, chances: { 一人: 0.3, 多人: 0.45, 多人有高手: 0.25 } },   // -60～-79
+                    { above: -Infinity, chances: { 一人: 0, 多人: 0.5, 多人有高手: 0.5 } }  // -80 以下
+                  ] },
     // 鬥法與遁走（衡天 11/17）：原設計用 d20 門檻（擲 1 必敗）與 d12 生死，demo 沒有擲骰畫面，換算成機率：
     //   勝率＝(21 − 門檻) / 20，上限 maxWinChance；輸了的存活率＝(13 − 門檻) / 12，活下來照現行受傷
     duel: { winThreshold: { 一人: { healthy: 5, injured: 13 },          // 仇家一人／執法一人：勝率 0.80／0.40

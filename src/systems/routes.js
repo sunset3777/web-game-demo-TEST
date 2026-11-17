@@ -63,6 +63,16 @@ export const routes = {
     if (this.view(gameState).正邪 <= numbers.conduct.inspection.pursuitAt) return "執法追緝";
     return this.oldestOpenKarma(gameState, "恩") ? "故人傳話" : "正道盤查";
   },
+  // 編來歷的交涉成功率：邪到會被照鏡認出的程度（≤ recognizedAt）就比較難糊弄
+  storyPassChance(gameState) {
+    const inspection = numbers.conduct.inspection;
+    return this.view(gameState).正邪 <= inspection.recognizedAt ? inspection.storyPassChanceIfRecognizable : inspection.storyPassChance;
+  },
+  // 執法追緝的陣仗機率：依正邪落在哪一段
+  lawSquadChance(gameState) {
+    const righteousness = this.view(gameState).正邪;
+    return numbers.conduct.inspection.lawSquadChanceByBand.find(band => righteousness > band.above).chances;
+  },
   // 最早一筆還沒了結、也還沒淡去的某類因果（可限定輕重）
   oldestOpenKarma(gameState, kind, weights) {
     const kindOf = entry => entry.kind || karmaData.kindById[entry.id] || karmaData.defaultKind;

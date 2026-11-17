@@ -421,3 +421,23 @@ test("線索句：穩躁 ≤ keenSenseTemperAtMost（偏穩）才看得清，和
   assert.doesNotMatch(textOf("執法追緝"), /其中一道很輕/);
   assert.match(textOf("執法追緝"), /三四道呼吸/, "一人／多人的線索不需要看得清");
 });
+
+test("衡天定案：編來歷 -30～-44 成功 50%、-45 以下 30%；執法陣仗依正邪分三段", () => {
+  const gameState = startCultivatingLife().s;
+  const inspection = conduct.inspection;
+  const passAt = righteousness => { setConduct(gameState, { 正邪: righteousness }); return routes.storyPassChance(gameState); };
+  assert.equal(passAt(-30), 0.5);
+  assert.equal(passAt(-44), 0.5);
+  assert.equal(passAt(-45), 0.3);
+  assert.equal(passAt(-90), 0.3);
+  const squadAt = righteousness => { setConduct(gameState, { 正邪: righteousness }); return routes.lawSquadChance(gameState); };
+  assert.deepEqual(squadAt(-45), { 一人: 0.6, 多人: 0.3, 多人有高手: 0.1 });
+  assert.deepEqual(squadAt(-59), { 一人: 0.6, 多人: 0.3, 多人有高手: 0.1 });
+  assert.deepEqual(squadAt(-60), { 一人: 0.3, 多人: 0.45, 多人有高手: 0.25 });
+  assert.deepEqual(squadAt(-79), { 一人: 0.3, 多人: 0.45, 多人有高手: 0.25 });
+  assert.deepEqual(squadAt(-80), { 一人: 0, 多人: 0.5, 多人有高手: 0.5 });
+  // 每一段的機率加起來都是 1
+  for (const band of inspection.lawSquadChanceByBand) {
+    assert.ok(Math.abs(Object.values(band.chances).reduce((a, b) => a + b, 0) - 1) < 1e-12);
+  }
+});

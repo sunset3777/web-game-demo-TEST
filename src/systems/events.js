@@ -80,6 +80,7 @@ export const events = {
       oldestOpenKarma: (kind, weights) => routes.oldestOpenKarma(s, kind, weights),
       settleKarma: (id, ending) => { const entry = s.karma.find(k => k.id === id && !k.done); if (entry) { entry.done = true; entry.ending = ending; } },
       hasKeenSense: () => routes.hasKeenSense(s),
+      storyPassChance: () => routes.storyPassChance(s),
       // 鬥法：照對手陣仗擲勝負；輸了再擲生死，活下來照現行受傷。回傳 { won, died }
       duel: (opponent, deathCause) => {
         const isInjured = s.injury > 0;

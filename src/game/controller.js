@@ -188,8 +188,8 @@ export function createGame(onChange) {
         } else if (q.type === "event") {
           // 執法追緝每次都重新決定陣仗（不論是盤查直接排入，還是照鏡被認出轉來的）
           if (q.id === "執法追緝") {
-            const lawSquadChance = numbers.conduct.inspection.lawSquadChance;
-            s.flags.執法陣仗 = util.weighted(Object.keys(lawSquadChance), squad => lawSquadChance[squad]);
+            const lawSquadChance = routes.lawSquadChance(s);
+            s.flags.執法陣仗 = util.weighted(Object.keys(lawSquadChance).filter(squad => lawSquadChance[squad] > 0), squad => lawSquadChance[squad]);
           }
           s.current = { type: "event", id: q.id };
         } else if (q.type === "qiudeviation") {

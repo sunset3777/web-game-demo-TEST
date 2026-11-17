@@ -219,7 +219,7 @@ export const actionEvents = {
             return "鏡面浮起一縷黑氣，又散了。執法弟子在冊子上記了一筆，側身讓路。"; } },
         { label: "編一套來歷", run: (s, api) => {
             api.tend("穩躁", 5);
-            if (api.chance(numbers.conduct.inspection.storyPassChance)) return "他聽完點點頭，收起了鏡子。";
+            if (api.chance(api.storyPassChance())) return "他聽完點點頭，收起了鏡子。";
             api.setInspectionCooldown("提早");
             return "他沒說話，只在冊子上寫了你的名字。"; } },
         { label: "遞上一袋靈石，說是香火錢",
