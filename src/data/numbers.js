@@ -123,7 +123,8 @@ export const numbers = {
     // 修練行動對穩躁的影響：減半，且行動最多只把穩躁推到 ±40，再往外要靠事件選項
     actionStepScale: 0.5,
     actionStepLimit: 40,
-    describeAt: 25,                    // 一世結束寫進筆記時，三軸過 ±25 才有「寬厚／刻薄」這類描述
+    describeAt: 25,
+    sectGuidanceMaxPerLife: 2,         // 宗門指點一世最多出現幾次（玄機 11/17 定）                    // 一世結束寫進筆記時，三軸過 ±25 才有「寬厚／刻薄」這類描述
     // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
     // 正道盤查：正邪 ≤ startAt 才會出現；抽中權重＝baseWeight＋（startAt − 正邪）× weightPerPoint，越邪越常
     inspection: { startAt: -30, baseWeight: 2, weightPerPoint: 0.1,

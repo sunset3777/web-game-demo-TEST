@@ -167,3 +167,16 @@ test("一世結束時三項終值寫進筆記，下一世從 0 開始", () => {
   const nextLife = startCultivatingLife("下一世");
   assert.deepEqual([nextLife.s.tend.善惡, nextLife.s.tend.正邪, nextLife.s.tend.穩躁], [0, 0, 0]);
 });
+
+test("宗門指點：恭敬請教加正，一世最多出現 sectGuidanceMaxPerLife 次", () => {
+  const gameState = startCultivatingLife().s;
+  const isAvailable = () => events.available(gameState, "遊歷").some(event => event.id === "宗門指點");
+  setConduct(gameState, { 善惡: 30, 正邪: 0 });
+  for (let i = 0; i < conduct.sectGuidanceMaxPerLife; i++) {
+    assert.equal(isAvailable(), true, `第 ${i + 1} 次應該還會出現`);
+    const before = gameState.tend.正邪;
+    chooseOption(gameState, "宗門指點", "恭敬請教");
+    assert.equal(gameState.tend.正邪 - before, 3);
+  }
+  assert.equal(isAvailable(), false, "超過上限就不再出現");
+});

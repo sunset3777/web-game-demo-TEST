@@ -146,9 +146,10 @@ export const actionEvents = {
         { label: "看看就走", run: (s, api) => { api.tend("穩躁", -2); api.tend("正邪", 5); return "你在黑市裡轉了一圈，記下了入口的位置。"; } }
       ] },
     { id: "宗門指點", title: "宗門長老", actions: ["遊歷"], weight: 2, tend: { 善惡: 1 },
-      when: s => s.tend && s.tend.善惡 >= 20,
+      // 一世最多出現 numbers.conduct.sectGuidanceMaxPerLife 次，免得行善的人被同一位長老反覆指點
+      when: s => s.tend && s.tend.善惡 >= 20 && (s.flags["宗門指點次數"] || 0) < numbers.conduct.sectGuidanceMaxPerLife,
       text: "一位宗門長老聽說了你行善的事，特地在山腳等你，要指點你幾句。",
-      choices: [{ label: "恭敬請教", run: (s, api) => { api.addInsight(25); return "長老說了半個時辰，有幾句話讓你茅塞頓開。"; } }] },
+      choices: [{ label: "恭敬請教", run: (s, api) => { api.addInsight(25); api.tend("正邪", 3); api.setFlag("宗門指點次數", (api.flag("宗門指點次數") || 0) + 1); return "長老說了半個時辰，有幾句話讓你茅塞頓開。"; } }] },
 
     // ================= 路線入門：魔修 =================
     { id: "魔音入耳", title: "魔音", actions: ["周天", "閉關"], weight: 4, once: true, routeNot: "魔修",
