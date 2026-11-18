@@ -117,6 +117,64 @@ export const numbers = {
   // 因果淡去時間（季）；大因果不淡去
   karma: { fade: { "小": 8, "中": 60, "大": Infinity }, maxOpen: 6 },
 
+  // 作派（2026-11-17 定，玄機審、衡天之後微調）：一世一組善惡、正邪、穩躁（−100～100），其他系統只讀這三軸。
+  // 正值＝善／正／躁，負值＝惡／邪／穩。下一世從 0 開始
+  conduct: {
+    // 修練行動對穩躁的影響：減半，且行動最多只把穩躁推到 ±40，再往外要靠事件選項
+    actionStepScale: 0.5,
+    actionStepLimit: 40,
+    // 一世結束寫進筆記時，各軸怎樣算偏向（11/17 定案），其餘算持平：
+    //   善惡：≥ 25 偏善、≤ −25 偏惡；穩躁：≥ 40 偏躁、≤ −40 偏穩（照急性子／老成持重稱號，含等號）
+    //   正邪：> 40 偏正、< −30 偏邪（嚴格大於／小於，跟作派驗收「正 > 40、邪 > 30」一致）
+    describeAt: {
+      善惡: { positiveAtLeast: 25, negativeAtMost: -25 },
+      正邪: { positiveAbove: 40, negativeBelow: -30 },
+      穩躁: { positiveAtLeast: 40, negativeAtMost: -40 }
+    },
+    sectGuidanceMaxPerLife: 2,         // 宗門指點一世最多出現幾次（玄機 11/17 定）
+    darkPathOpensAtGoodEvil: -30,      // 黑市、魔音入耳：正邪還沒到門檻，但善惡 ≤ 這個值也會出現（魔種萌芽仍只看正邪）
+    // 兩個「選擇走正道」選項的正邪幅度（11/17 玄機定案）：會重複出現的事件只給小幅，所以市集騙子的當眾拆穿只 +2
+    choiceShift: { 當眾拆穿正邪: 2, 出手相救正邪: 6 },
+    // 正邪機緣六則（衡天 11/17）：權重每則 weight、一世各一次；靈石以「幾季閉關的靈石」計（risk.閉關.cost，依境界）
+    encounters: { weight: 1,
+                  watchSwordInsight: 6,                                  // 試劍石：看劍路
+                  letterRewardSeasons: 1.5, letterAmbushChance: 0.15,   // 代送一封信：酬勞 1.5 季（5／12／30）；路上遇劫 15%
+                  buyHerbSeasons: 1,                                     // 坊市執事：自己掏錢買下靈草
+                  crowXiuSeasons: 2,                                     // 無眼鶴：跟他走，修為多兩季的量
+                  scrollInsight: 12,                                     // 血跡殘卷：照著練
+                  raidRewardSeasons: 4, lookoutRewardSeasons: 1.5,      // 截道：動手成了 4 季、望風 1.5 季
+                  fightBaseWinChance: 0.55, fightWinPerRealm: 0.2,      // 鬥法：沿用妖獸襲擊「迎戰」的判定
+                  fleeChance: 0.8 },                                     // 遁走：沿用妖獸襲擊「以遁術脫身」
+    // 風聲：正邪落在這段（還沒到盤查）時，遊歷事件前面夾一句旁人的反應（不是事件，只是文字）
+    rumorRange: { from: -29, to: -15 },
+    // 正道盤查（衡天 11/17）：正邪 ≤ startAt 起，每遊歷一季 baseChancePerSeason，每再邪 10 點 + extraChancePer10，最多 maxChancePerSeason。
+    // 出現後進入冷卻：平常 cooldownSeasons；選項說「提早」用 earlyCooldownSeasons、「延後」用 lateCooldownSeasons。
+    inspection: { startAt: -30, baseChancePerSeason: 0.02, extraChancePer10: 0.01, maxChancePerSeason: 0.06,
+                  cooldownSeasons: 12, earlyCooldownSeasons: 4, lateCooldownSeasons: 40,
+                  recognizedAt: -45,          // 山道照鏡：正邪 ≤ 這個值，鏡子整個黑了，轉執法追緝
+                  pursuitAt: -60,             // 正邪 ≤ 這個值，盤查直接是執法追緝
+                  bribeSeasons: 3,            // 香火錢：3 季閉關靈石的量；不夠就不顯示這個選項
+                  // 編來歷的交涉（衡天 11/17）：正邪在 recognizedAt 以上（-30～-44）成功 50%，-45 以下 30%；沒過，下一次盤查提早
+                  storyPassChance: 0.5, storyPassChanceIfRecognizable: 0.3,
+                  // 執法追緝的陣仗（衡天 11/17 定案：一套機率，不依正邪分段）
+                  lawSquadChance: { 一人: 0.5, 多人: 0.35, 多人有高手: 0.15 } },
+    // 鬥法與遁走（衡天 11/17）：原設計用 d20 門檻（擲 1 必敗）與 d12 生死，demo 沒有擲骰畫面，換算成機率：
+    //   勝率＝(21 − 門檻) / 20，上限 maxWinChance；輸了的存活率＝(13 − 門檻) / 12，活下來照現行受傷
+    duel: { winThreshold: { 一人: { healthy: 5, injured: 13 },          // 仇家一人／執法一人：勝率 0.80／0.40
+                            幫手: { healthy: 8, injured: 16 },          // 仇家帶幫手（大因果）／執法多人：0.65／0.25
+                            高手: { healthy: 10, injured: 18 } },       // 執法多人且有高手：0.55／0.15
+            surviveThreshold: { healthy: 4, injured: 6 },             // 輸了：沒帶傷存活 0.75、帶傷 7/12≈0.58
+            maxWinChance: 0.95,
+            fleeChance: 0.8, fleeHelperPenalty: 0.1 },                // 遁走沿用現行判定；有幫手時難一級（−10%）
+    // 線索句（看得清才看得到）：穩躁 ≤ 這個值（偏穩）的人看得清（玄機 11/17）。
+    // 之後有神識改看神識；卦象做好後「這一季卜過卦」也算（擇一即可）
+    keenSenseTemperAtMost: -20,
+    // 仇家：遊歷時擲（機率 0 時不擲）。機率＝未了結的「仇」類中因果數 × 中 ＋ 大因果數 × 大；
+    // 善惡 ≤ evilAt 時先 × evilMultiplier，再封頂：一般 chanceCap，偏惡 evilChanceCap（11/17 玄機定案：一律 15%）
+    enemy: { chancePerKarma: { "中": 0.01, "大": 0.04 }, chanceCap: 0.15, evilChanceCap: 0.15, evilAt: -30, evilMultiplier: 1.5,
+             apologyMinSeasons: 5, apologyStoneShare: 0.3 }   // 賠罪：max(5 季閉關靈石, 身上靈石 30%)；不夠就不顯示
+  },
+
   // 傳承
   legacy: { maxPages: 3, pageInsight: 20 }
 };

@@ -1,5 +1,6 @@
 // 存檔系統：存檔版本與遷移、遊戲存檔與傳承檔的讀寫（localStorage）
 import { state } from "./state.js";
+import { karmaData } from "../data/karma.js";
 
 // 存檔資料版本（跟 localStorage 的 key 後綴 v1 無關，那是舊的格式標記，不要動）。
 // 新增欄位時：把 create() 加上預設值即可，舊存檔載入時會自動補齊；
@@ -51,6 +52,9 @@ export const save = {
     try {
       for (let v = (s.v | 0) + 1; v <= SAVE_VERSION; v++) if (MIGRATIONS[v]) s = MIGRATIONS[v](s) || s;
       fillDefaults(s, state.create(s.name));
+      // 因果的種類（恩／仇，11/17 新增）：舊存檔的因果沒有這個欄位，照 data/karma.js 的對照表補上，沒列到的算「恩」。
+      // 只是補新欄位、不改既有欄位，所以不升存檔版本
+      if (Array.isArray(s.karma)) s.karma.forEach(entry => { if (isPlain(entry) && !entry.kind) entry.kind = karmaData.kindById[entry.id] || karmaData.defaultKind; });
       s.v = SAVE_VERSION;
     } catch (e) {}
     return s;

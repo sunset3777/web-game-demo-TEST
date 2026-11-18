@@ -19,7 +19,7 @@ export default function EndScreen({ game }) {
       <p className="muted small">下一世遊歷時可能找到你的遺府，你留下的筆記會成為後人的一點領悟。{game.testMode && <span className="test">〔每頁化為 {numbers.legacy.pageInsight} 點感悟〕</span>}</p>
       <ul className="notes-pick">
         {/* 線索頁會自動傳下，不列在這裡；勾選用的仍是筆記在 s.notes 裡的原始位置 */}
-        {s.notes.map((n, i) => legacy.isAutoPassedNote(n) ? null : (
+        {s.notes.map((n, i) => legacy.isUnpickableNote(n) ? null : (
           <li key={i}>
             <label>
               <input type="checkbox" checked={game.ui.picks.includes(i)} onChange={() => game.toggleNotePick(i)} />

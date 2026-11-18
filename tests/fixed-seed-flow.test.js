@@ -14,224 +14,232 @@ const OPENING_MODE_LABELS = { full: "凡人期完整開局", quick: "快速開�
 
 const EXPECTED_LIVES = {
    "full-1": {
-    "cause": "走火",
-    "stage": "築基圓滿",
-    "age": 70,
-    "turns": 109,
-    "breakFails": 1,
-    "eventOrder": "古廟傳聞>誤食靈果>發現裂谷>發現地火>發現金脈>富戶求法>山道老者>老者報恩>引雷訣殘卷>石壁劍痕",
+    "cause": "遇劫身死",
+    "stage": "煉氣第8層",
+    "age": 27,
+    "turns": 37,
+    "breakFails": 0,
+    "eventOrder": "古廟傳聞>誤食靈果>代送一封信>發現裂谷>試劍石>古戰場遺跡",
     "stepKinds": {
-     "事件": 42,
-     "吐納(短)": 11,
-     "吐納(長)": 63,
-     "突破:失敗": 1,
-     "突破:成功": 1,
-     "遊歷(短)": 3,
-     "遊歷(長)": 17,
-     "選擇:ability": 1,
-     "選擇:growth": 12,
-     "閉關(長)": 13
+     "事件": 11,
+     "吐納(短)": 4,
+     "吐納(長)": 23,
+     "遊歷(短)": 1,
+     "遊歷(長)": 9,
+     "選擇:growth": 7
     },
-    "stepSequenceHash": "c1151a9f5bfbbdfe",
-    "finalStateHash": "45f988413db10399",
-    "legacyFileHash": "051994cd8b26567f"
+    "stepSequenceHash": "8eebe19b9a60fca7",
+    "finalStateHash": "88058b810b75521d",
+    "legacyFileHash": "ed374d3264770aab"
    },
    "full-2": {
     "cause": "走火",
     "stage": "煉氣第10層",
-    "age": 31,
-    "turns": 56,
+    "age": 28,
+    "turns": 44,
     "breakFails": 1,
-    "eventOrder": "青梅竹馬>誤食靈果>山道老者>古戰場遺跡",
+    "eventOrder": "青梅竹馬>誤食靈果>坊市執事>山道老者>發現地火>雷雨夜",
     "stepKinds": {
-     "事件": 12,
-     "吐納(短)": 6,
-     "吐納(長)": 23,
+     "事件": 10,
+     "吐納(短)": 5,
+     "吐納(長)": 22,
      "突破:失敗": 1,
      "遊歷(短)": 1,
-     "遊歷(長)": 7,
+     "遊歷(長)": 6,
      "選擇:growth": 9,
-     "閉關(長)": 18
+     "閉關(長)": 9
     },
-    "stepSequenceHash": "2744d657800718fc",
-    "finalStateHash": "55e107a4a6aec0db",
-    "legacyFileHash": "11a5d26dbec3808a"
+    "stepSequenceHash": "547929ce1de21002",
+    "finalStateHash": "d48b93eaa1112aaa",
+    "legacyFileHash": "12d75f895953d9a4"
    },
    "full-3": {
-    "cause": "坐化",
-    "stage": "金丹圓滿",
-    "age": 111,
-    "turns": 143,
-    "breakFails": 0,
-    "eventOrder": "青梅竹馬>小荷生病>誤食靈果>發現金脈>古戰場遺跡>劍冢>故人老去>富戶求法>發現地火>引雷訣殘卷>山道老者",
-    "stepKinds": {
-     "事件": 71,
-     "吐納(短)": 16,
-     "吐納(長)": 89,
-     "坐化": 1,
-     "突破:成功": 2,
-     "遊歷(短)": 2,
-     "遊歷(長)": 27,
-     "選擇:ability": 2,
-     "選擇:growth": 15,
-     "閉關(長)": 7
-    },
-    "stepSequenceHash": "fc1175e822a593fd",
-    "finalStateHash": "b684a943306966dd",
-    "legacyFileHash": "1169303619441783"
-   },
-   "full-4": {
-    "cause": "坐化",
-    "stage": "金丹圓滿",
-    "age": 119,
-    "turns": 142,
-    "breakFails": 0,
-    "eventOrder": "誤食靈果>先生借書>小荷生病>煉體殘卷>以身為爐>發現地火>發現裂谷>古戰場遺跡>發現金脈>富戶求法>引雷訣殘卷>山道老者>老者報恩",
-    "stepKinds": {
-     "事件": 72,
-     "吐納(短)": 13,
-     "吐納(長)": 89,
-     "坐化": 1,
-     "突破:成功": 2,
-     "遊歷(短)": 3,
-     "遊歷(長)": 29,
-     "選擇:ability": 2,
-     "選擇:growth": 15,
-     "閉關(長)": 6
-    },
-    "stepSequenceHash": "7b07f0b2d75603cc",
-    "finalStateHash": "b67df4e392910174",
-    "legacyFileHash": "98d17a4212edad5c"
-   },
-   "full-5": {
     "cause": "走火",
     "stage": "築基圓滿",
-    "age": 78,
-    "turns": 114,
+    "age": 99,
+    "turns": 144,
     "breakFails": 1,
-    "eventOrder": "先生借書>小荷生病>古廟傳聞>古戰場遺跡>發現裂谷>劍冢>劍意試煉>山道老者>富戶求法>石壁劍痕",
+    "eventOrder": "青梅竹馬>小荷生病>誤食靈果>發現地火>試劍石>故人老去>截道>山道老者>代送一封信>富戶求法>引雷訣殘卷>古戰場遺跡>劍冢",
     "stepKinds": {
-     "事件": 46,
-     "吐納(短)": 10,
-     "吐納(長)": 66,
+     "事件": 55,
+     "吐納(短)": 17,
+     "吐納(長)": 83,
      "突破:失敗": 1,
      "突破:成功": 1,
      "遊歷(短)": 2,
-     "遊歷(長)": 18,
+     "遊歷(長)": 20,
      "選擇:ability": 1,
      "選擇:growth": 12,
-     "閉關(長)": 16
+     "閉關(長)": 20
     },
-    "stepSequenceHash": "5ef458893bbbc66c",
-    "finalStateHash": "2eba50593ccba497",
-    "legacyFileHash": "026c408bbf806802"
+    "stepSequenceHash": "c1c3ba8f8dd5dfc1",
+    "finalStateHash": "01ad8538500736fc",
+    "legacyFileHash": "f05ffc71009b3cbc"
+   },
+   "full-4": {
+    "cause": "走火",
+    "stage": "煉氣第10層",
+    "age": 39,
+    "turns": 87,
+    "breakFails": 1,
+    "eventOrder": "誤食靈果>先生借書>小荷生病>煉體殘卷>以身為爐>發現金脈>坊市執事>血跡殘卷>發現地火",
+    "stepKinds": {
+     "事件": 22,
+     "吐納(短)": 7,
+     "吐納(長)": 49,
+     "突破:失敗": 1,
+     "遊歷(短)": 2,
+     "遊歷(長)": 11,
+     "選擇:growth": 9,
+     "閉關(長)": 17
+    },
+    "stepSequenceHash": "bf0e66d4b69990b8",
+    "finalStateHash": "d5e4634d84c7d82b",
+    "legacyFileHash": "f49c4f94b02029a2"
+   },
+   "full-5": {
+    "cause": "走火",
+    "stage": "煉氣第10層",
+    "age": 32,
+    "turns": 57,
+    "breakFails": 0,
+    "eventOrder": "先生借書>小荷生病>古廟傳聞>古戰場遺跡>發現裂谷>無眼鶴",
+    "stepKinds": {
+     "事件": 14,
+     "吐納(短)": 6,
+     "吐納(長)": 31,
+     "遊歷(長)": 6,
+     "選擇:growth": 9,
+     "閉關(長)": 14
+    },
+    "stepSequenceHash": "d26d12b51abc60c9",
+    "finalStateHash": "f9e736edf3262a51",
+    "legacyFileHash": "15b845602709833d"
    },
    "quick-1": {
     "cause": "走火",
     "stage": "煉氣第10層",
-    "age": 32,
-    "turns": 58,
+    "age": 31,
+    "turns": 53,
     "breakFails": 1,
-    "eventOrder": "雷雨夜>煉體殘卷>以身為爐>石壁劍痕",
+    "eventOrder": "截道>煉體殘卷>以身為爐>無眼鶴>古戰場遺跡>發現地火",
     "stepKinds": {
-     "事件": 15,
-     "吐納(短)": 3,
-     "吐納(長)": 26,
+     "事件": 17,
+     "吐納(短)": 5,
+     "吐納(長)": 23,
+     "突破:失敗": 1,
+     "遊歷(長)": 6,
+     "選擇:growth": 9,
+     "閉關(長)": 18
+    },
+    "stepSequenceHash": "c2212dfd743da27d",
+    "finalStateHash": "b8ccd6ccfbebb5ea",
+    "legacyFileHash": "019f79a1c181dce9"
+   },
+   "quick-2": {
+    "cause": "遇劫身死",
+    "stage": "築基圓滿",
+    "age": 53,
+    "turns": 84,
+    "breakFails": 0,
+    "eventOrder": "發現金脈>古戰場遺跡>發現地火>試劍石>代送一封信>坊市執事>無眼鶴>富戶求法>發現裂谷",
+    "stepKinds": {
+     "事件": 33,
+     "吐納(短)": 7,
+     "吐納(長)": 51,
+     "突破:成功": 1,
+     "遊歷(短)": 2,
+     "遊歷(長)": 17,
+     "選擇:ability": 1,
+     "選擇:growth": 12,
+     "閉關(長)": 6
+    },
+    "stepSequenceHash": "7bf62bf297ae47b5",
+    "finalStateHash": "a8027fbb1c6d6370",
+    "legacyFileHash": "c9b357a4c9486020"
+   },
+   "quick-3": {
+    "cause": "走火",
+    "stage": "煉氣第10層",
+    "age": 31,
+    "turns": 54,
+    "breakFails": 1,
+    "eventOrder": "發現地火>血跡殘卷",
+    "stepKinds": {
+     "事件": 11,
+     "吐納(短)": 2,
+     "吐納(長)": 23,
      "突破:失敗": 1,
      "遊歷(長)": 6,
      "選擇:growth": 9,
      "閉關(長)": 22
     },
-    "stepSequenceHash": "7a9405d177a4eeeb",
-    "finalStateHash": "e2dc54acfc1e4fd9",
-    "legacyFileHash": "f298009b00b4b4dc"
-   },
-   "quick-2": {
-    "cause": "走火",
-    "stage": "築基圓滿",
-    "age": 73,
-    "turns": 111,
-    "breakFails": 0,
-    "eventOrder": "發現地火>發現裂谷>古戰場遺跡>劍冢>發現金脈>富戶求法>劍意試煉>山道老者",
-    "stepKinds": {
-     "事件": 44,
-     "吐納(短)": 10,
-     "吐納(長)": 65,
-     "突破:成功": 1,
-     "遊歷(短)": 4,
-     "遊歷(長)": 16,
-     "選擇:ability": 1,
-     "選擇:growth": 12,
-     "閉關(長)": 15
-    },
-    "stepSequenceHash": "b42d3e12bf74d6d1",
-    "finalStateHash": "0046ed56585d1d11",
-    "legacyFileHash": "3b8aeeaa46d4e20e"
-   },
-   "quick-3": {
-    "cause": "走火",
-    "stage": "煉氣第10層",
-    "age": 32,
-    "turns": 58,
-    "breakFails": 1,
-    "eventOrder": "古戰場遺跡>發現地火>雷雨夜>發現裂谷",
-    "stepKinds": {
-     "事件": 11,
-     "吐納(短)": 4,
-     "吐納(長)": 21,
-     "突破:失敗": 1,
-     "遊歷(短)": 1,
-     "遊歷(長)": 7,
-     "選擇:growth": 9,
-     "閉關(長)": 24
-    },
-    "stepSequenceHash": "b26deec1c77b2f81",
-    "finalStateHash": "883874bd91878f81",
-    "legacyFileHash": "69b97a7034bec3aa"
+    "stepSequenceHash": "f02d17e624a47d37",
+    "finalStateHash": "7c9e48c1fdd6cbe4",
+    "legacyFileHash": "9b42d27b792e5b7d"
    },
    "quick-4": {
     "cause": "走火",
     "stage": "築基圓滿",
-    "age": 79,
-    "turns": 122,
+    "age": 71,
+    "turns": 115,
     "breakFails": 0,
-    "eventOrder": "發現裂谷>古戰場遺跡>發現地火>石壁劍痕>劍冢>富戶求法>發現金脈",
+    "eventOrder": "代送一封信>發現地火>截道>坊市執事>富戶求法>發現裂谷>發現金脈>無眼鶴>劍冢>石壁劍痕",
     "stepKinds": {
      "事件": 43,
-     "吐納(短)": 11,
-     "吐納(長)": 70,
+     "吐納(短)": 10,
+     "吐納(長)": 64,
      "突破:成功": 1,
      "遊歷(短)": 3,
-     "遊歷(長)": 17,
+     "遊歷(長)": 21,
      "選擇:ability": 1,
      "選擇:growth": 12,
-     "閉關(長)": 20
+     "閉關(長)": 16
     },
-    "stepSequenceHash": "5faab507ce6410bc",
-    "finalStateHash": "cb78c01312768a53",
-    "legacyFileHash": "9f3fced6eca71042"
+    "stepSequenceHash": "0f24994bdc50a09d",
+    "finalStateHash": "7d1af959e3e6ac58",
+    "legacyFileHash": "a73b6eb13cb153bf"
    },
    "quick-5": {
     "cause": "遇劫身死",
-    "stage": "築基中期",
-    "age": 41,
-    "turns": 64,
+    "stage": "煉氣第6層",
+    "age": 22,
+    "turns": 17,
     "breakFails": 0,
-    "eventOrder": "古戰場遺跡>山道老者>發現金脈>老者報恩>富戶求法",
+    "eventOrder": "發現地火>古戰場遺跡>發現金脈",
     "stepKinds": {
-     "事件": 30,
-     "吐納(短)": 8,
-     "吐納(長)": 37,
-     "突破:成功": 1,
-     "遊歷(短)": 1,
-     "遊歷(長)": 10,
-     "選擇:ability": 1,
-     "選擇:growth": 10,
-     "閉關(長)": 7
+     "事件": 9,
+     "吐納(短)": 2,
+     "吐納(長)": 10,
+     "遊歷(長)": 5,
+     "選擇:growth": 4
     },
-    "stepSequenceHash": "7abdc9fbd046c81e",
-    "finalStateHash": "9582e6e2da878b25",
-    "legacyFileHash": "19c81dea5411ea2c"
+    "stepSequenceHash": "82409e2c969e934e",
+    "finalStateHash": "383ffc213750db1d",
+    "legacyFileHash": "70975561c1a80ac9"
+   },
+   "full-29": {
+    "cause": "坐化",
+    "stage": "金丹圓滿",
+    "age": 132,
+    "turns": 156,
+    "breakFails": 0,
+    "eventOrder": "誤食靈果>古廟傳聞>雷擊>先生借書>小荷生病>坊市執事>發現裂谷>山道老者>古戰場遺跡>發現金脈>發現地火>老者報恩>富戶求法>劍冢>無眼鶴>代送一封信>引雷訣殘卷",
+    "stepKinds": {
+     "事件": 85,
+     "吐納(短)": 17,
+     "吐納(長)": 102,
+     "坐化": 1,
+     "突破:成功": 2,
+     "遊歷(短)": 6,
+     "遊歷(長)": 25,
+     "選擇:ability": 2,
+     "選擇:growth": 15,
+     "閉關(長)": 4
+    },
+    "stepSequenceHash": "a484cd400d7e8947",
+    "finalStateHash": "8967e554ce433140",
+    "legacyFileHash": "31fd114aee177d0c"
    }
   };
 
@@ -289,13 +297,14 @@ test("固定種子下確實會趕上秘境開啟並拿到收穫（遊歷與秘�
 });
 
 test("一世結束後傳承：存檔被清掉、傳承檔多一筆生平與兩頁待取筆記、game.s 變 null", () => {
-  const { lifeResult } = playAndSummarize("full", 3);
+  // 用一個結局是坐化的種子（作派加入後 full-3 改為走火，11/17 換成 full-29）
+  const { lifeResult } = playAndSummarize("full", 29);
   assert.equal(lifeResult.game.s, null);
   assert.equal(lifeResult.storage.getItem(save.SAVE_KEY), null);
   const legacyFile = save.loadLegacy();
   assert.equal(legacyFile.lives.length, 1);
-  assert.equal(legacyFile.lives[0].name, "測試修士3");
+  assert.equal(legacyFile.lives[0].name, "測試修士29");
   assert.equal(legacyFile.lives[0].cause, "坐化");
   assert.equal(legacyFile.pending.length, 2);
-  assert.equal(legacyFile.pending[0].from, "測試修士3");
+  assert.equal(legacyFile.pending[0].from, "測試修士29");
 });

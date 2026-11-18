@@ -50,7 +50,7 @@ export const state = {
       abilities: [], growth: [], constitutions: [],
       envs: layoutData.startEnvironments.slice(),
       karma: [], notes: [], flags: {}, eventsDone: [],
-      route: "氣修", tend: { act: { 吐納: 0, 周天: 0, 閉關: 0, 遊歷: 0 }, 正邪: 0, 穩躁: 0 }, recentEvents: [],
+      route: "氣修", tend: { act: { 吐納: 0, 周天: 0, 閉關: 0, 遊歷: 0 }, 善惡: 0, 正邪: 0, 穩躁: 0 }, recentEvents: [],
       legacyAvailable: false,
       queue: [], current: null,              // 待處理的選擇（成長池、事件……）
       log: [], lastText: "",
