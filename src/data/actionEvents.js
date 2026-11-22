@@ -264,11 +264,11 @@ export const actionEvents = {
             return "你從洞府後面的山縫鑽出去，留下的靈石來不及帶。天亮時，你已經在百里之外。"; } },
         { label: "束手就擒", run: (s, api) => {
             api.tend("正邪", 5); api.noteRecordOnce("曾被青雲門執法堂追緝");
-            api.addLife(-0.25);                                   // 關了一整季：多過一季
             api.addStones(-Math.floor(s.stones / 2));
             api.setInspectionCooldown("延後");
-            // 機制照舊：多過一季壽元、靈石減半、下一次盤查延後
-            return "他們把你帶到執法堂，關了一整季。放出來時，外面已經換了季節。"; } }
+            // 關了一整季：真的推進一季（季節、秘境、傷勢一起走），靈石減半、下一次盤查延後
+            const seasonLines = api.passSeason();
+            return "他們把你帶到執法堂，關了一整季。放出來時，外面已經換了季節。" + (seasonLines ? "\n" + seasonLines : ""); } }
       ] },
     // 仇家：遊歷時依未了結的「仇」類中、大因果擲（controller 排入，對象記在 flags.仇家目標）；大因果的仇家帶幫手
     { id: "仇家尋仇", title: "仇家", weight: 0, when: s => false,

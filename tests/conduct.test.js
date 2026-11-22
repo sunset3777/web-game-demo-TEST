@@ -500,3 +500,16 @@ test("盤查：一次遊歷的機率只算冷卻結束之後的季數", () => {
   setConduct(gameState, { 正邪: -29 });                 // 沒邪到門檻：0
   assert.equal(routes.inspectionChanceForTrip(gameState, 4), 0);
 });
+
+test("執法追緝：束手就擒真的推進一季（季節、經過季數、傷勢一起走），靈石減半、盤查延後", () => {
+  const gameState = startCultivatingLife().s;
+  gameState.flags.執法陣仗 = "一人"; setConduct(gameState, { 正邪: -70 });
+  gameState.stones = 41; gameState.injury = 2;
+  const before = { seasons: gameState.seasons, seasonIdx: gameState.seasonIdx };
+  chooseOption(gameState, "執法追緝", "束手就擒");
+  assert.equal(gameState.seasons, before.seasons + 1, "經過季數 +1");
+  assert.equal(gameState.seasonIdx, (before.seasonIdx + 1) % 4, "季節往前推一季");
+  assert.equal(gameState.injury, 1, "傷勢少一季");
+  assert.equal(gameState.stones, 21, "靈石減半（無條件捨去後剩下的一半）");
+  assert.equal(gameState.flags.盤查冷卻至 - gameState.seasons, conduct.inspection.lateCooldownSeasons - 1, "延後的冷卻從被抓那季起算");
+});

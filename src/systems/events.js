@@ -7,8 +7,9 @@ import { util, state } from "./state.js";
 import { legacy } from "./legacy.js";
 import { save } from "./save.js";
 import { karmaData } from "../data/karma.js";
-// 互相匯入：travel 經由 cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
+// 互相匯入：travel、cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
 import { travel } from "./travel.js";
+import { cultivation } from "./cultivation.js";
 
 export const events = {
   all() { return eventsData.list.concat(actionEvents.list); },
@@ -92,6 +93,14 @@ export const events = {
       tryFlee: hasHelpers => util.chance(routes.fleeChance(hasHelpers)),
       // 只做紀錄、不佔筆記名額的一頁（例如被執法堂追緝過）；同一句一世只寫一次
       noteRecordOnce: text => { if (!s.notes.some(note => note.kind === "紀錄" && note.text === text)) st.note(s, text, "紀錄"); },
+      // 什麼都不做地過完一季（例如被關一整季）：傷勢照修練迴圈的方式少一季，再走修練系統推進季節的那段
+      // （季節、秘境、因果淡去、瓶頸焦躁、氣血衰退、壽盡都一起推進）。回傳這一季冒出來的文字（可能是空的）
+      passSeason: () => {
+        const lines = [];
+        if (s.injury > 0) s.injury--;
+        cultivation.advanceSeason(s, lines);
+        return lines.join("\n");
+      },
       unlockEnv: env => { if (!s.envs.includes(env)) s.envs.push(env); },
       setFlag: (k, v) => { s.flags[k] = v === undefined ? true : v; },
       flag: k => s.flags[k],
