@@ -1,16 +1,24 @@
 // 存檔系統：存檔版本與遷移、遊戲存檔與傳承檔的讀寫（localStorage）
 import { state } from "./state.js";
+import { karmaData } from "../data/karma.js";
 
 // 存檔資料版本（跟 localStorage 的 key 後綴 v1 無關，那是舊的格式標記，不要動）。
 // 新增欄位時：把 create() 加上預設值即可，舊存檔載入時會自動補齊；
 // 只有「既有欄位的意義或形狀改了」才需要加版本號，並在 MIGRATIONS 補一個轉換函式。
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 // MIGRATIONS[n]：把 (n-1) 版的存檔就地轉成 n 版。沒有版本號的舊存檔視為第 0 版。
 const MIGRATIONS = {
-  1: (s) => s   // 第 0 → 1 版：只補版本號，缺的欄位由 fillDefaults 補
+  1: (s) => s,  // 第 0 → 1 版：只補版本號，缺的欄位由 fillDefaults 補
+  // 第 1 → 2 版（2026-11-17 作派拆軸）：舊的「正邪」其實同時記著善行與守正道，意義改了。
+  // 照玄機選的 (a)：把舊正邪搬進新的「善惡」、正邪歸 0，免得過去做的好事被當成「走正路」。已經有善惡的存檔不動
+  2: (s) => {
+    if (isPlain(s.tend) && s.tend.善惡 === undefined && typeof s.tend.正邪 === "number") { s.tend.善惡 = s.tend.正邪; s.tend.正邪 = 0; }
+    return s;
+  }
 };
 const LEGACY_MIGRATIONS = {
-  1: (L) => L
+  1: (L) => L,
+  2: (L) => L   // 傳承檔格式沒變，只跟著存檔升版號
 };
 const isPlain = (x) => x !== null && typeof x === "object" && !Array.isArray(x);
 // 只補「缺少」的欄位（undefined），已有的值一律不動；預設值是一般物件時往下一層補
@@ -51,6 +59,9 @@ export const save = {
     try {
       for (let v = (s.v | 0) + 1; v <= SAVE_VERSION; v++) if (MIGRATIONS[v]) s = MIGRATIONS[v](s) || s;
       fillDefaults(s, state.create(s.name));
+      // 因果的種類（恩／仇，11/17 新增）：舊存檔的因果沒有這個欄位，照 data/karma.js 的對照表補上，沒列到的算「恩」。
+      // 只是補新欄位、不改既有欄位，所以不升存檔版本
+      if (Array.isArray(s.karma)) s.karma.forEach(entry => { if (isPlain(entry) && !entry.kind) entry.kind = karmaData.kindById[entry.id] || karmaData.defaultKind; });
       s.v = SAVE_VERSION;
     } catch (e) {}
     return s;

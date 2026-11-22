@@ -21,8 +21,9 @@ function createOldSaveWithoutFields(fieldNamesToRemove, { version } = {}) {
 }
 
 test("存檔版本號與 localStorage key 字串固定不變（改名會讓玩家舊存檔失效）", () => {
-  assert.equal(SAVE_VERSION, 1);
-  assert.equal(save.SAVE_VERSION, 1);
+  // 2026-11-17 作派拆軸改了「正邪」的意義，存檔升到第 2 版（附遷移）；key 字串照舊不變
+  assert.equal(SAVE_VERSION, 2);
+  assert.equal(save.SAVE_VERSION, 2);
   assert.equal(save.SAVE_KEY, "xiuxian-demo-save-v1");
   assert.equal(save.LEGACY_KEY, "xiuxian-demo-legacy-v1");
 });
@@ -60,14 +61,32 @@ test("版本號為 1 但缺欄位的存檔：照樣補齊，既有欄位不變",
 test("巢狀物件缺子欄位時只補缺的那一個，已有的值不動", () => {
   const storage = installMemoryStorage();
   const oldSave = createOldSaveWithoutFields([]);
-  oldSave.tend = { act: { 吐納: 9 }, 正邪: 3 };
+  // 用遷移不會碰的欄位（穩躁）當「已有的值」；正邪在第 2 版有刻意的遷移，另外驗
+  oldSave.tend = { act: { 吐納: 9 }, 穩躁: 3 };
   storage.setItem(save.SAVE_KEY, JSON.stringify(oldSave));
 
   const loaded = save.load();
   assert.equal(loaded.tend.act.吐納, 9);
   assert.equal(loaded.tend.act.周天, 0);
-  assert.equal(loaded.tend.正邪, 3);
-  assert.equal(loaded.tend.穩躁, 0);
+  assert.equal(loaded.tend.穩躁, 3);
+  assert.equal(loaded.tend.正邪, 0);
+  assert.equal(loaded.tend.善惡, 0);
+});
+
+test("第 1 版存檔升到第 2 版：舊的正邪搬進善惡、正邪歸 0（作派拆軸）；已有善惡的存檔不動", () => {
+  const storage = installMemoryStorage();
+  const versionOneSave = createOldSaveWithoutFields([], { version: 1 });
+  versionOneSave.tend = { act: { 吐納: 0, 周天: 0, 閉關: 0, 遊歷: 0 }, 正邪: 27, 穩躁: -5 };
+  storage.setItem(save.SAVE_KEY, JSON.stringify(versionOneSave));
+  const loaded = save.load();
+  assert.equal(loaded.v, SAVE_VERSION);
+  assert.deepEqual([loaded.tend.善惡, loaded.tend.正邪, loaded.tend.穩躁], [27, 0, -5]);
+
+  const alreadySplitSave = createOldSaveWithoutFields([], { version: 1 });
+  alreadySplitSave.tend = { act: { 吐納: 0, 周天: 0, 閉關: 0, 遊歷: 0 }, 善惡: 8, 正邪: -12, 穩躁: 0 };
+  storage.setItem(save.SAVE_KEY, JSON.stringify(alreadySplitSave));
+  const reloaded = save.load();
+  assert.deepEqual([reloaded.tend.善惡, reloaded.tend.正邪], [8, -12]);
 });
 
 test("存檔內容無法解析成 JSON 時：load 回傳 null，不丟例外", () => {

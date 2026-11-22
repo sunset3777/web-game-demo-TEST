@@ -6,8 +6,10 @@ import { routes } from "./routes.js";
 import { util, state } from "./state.js";
 import { legacy } from "./legacy.js";
 import { save } from "./save.js";
-// 互相匯入：travel 經由 cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
+import { karmaData } from "../data/karma.js";
+// 互相匯入：travel、cultivation 也匯入這裡；兩邊都只在函式執行時才用到對方，載入順序不影響
 import { travel } from "./travel.js";
+import { cultivation } from "./cultivation.js";
 
 export const events = {
   all() { return eventsData.list.concat(actionEvents.list); },
@@ -36,12 +38,15 @@ export const events = {
       return m;
     };
     const recent = e => { const k = s.recentEvents.indexOf(e.id); return k < 0 ? 1 : 0.1 + 0.15 * k; };
-    const e = util.weighted(list, e => (e.weight || 1) * fit(e) * recent(e) * (e.id === "前人遺府" ? 1 + b.legacyFind * 10 : 1));
+    // weight 可以是函式（例如越邪越常出現的正道盤查），由規則依當下狀態算
+    const baseWeightOf = e => typeof e.weight === "function" ? e.weight(s, this.api(s)) : (e.weight || 1);
+    const e = util.weighted(list, e => baseWeightOf(e) * fit(e) * recent(e) * (e.id === "前人遺府" ? 1 + b.legacyFind * 10 : 1));
     if (e) { s.recentEvents.unshift(e.id); s.recentEvents = s.recentEvents.filter((x, i, a) => a.indexOf(x) === i).slice(0, 6); }
     return e;
   },
 
-  text(s, e) { return typeof e.text === "function" ? e.text(s) : e.text; },
+  // text 也拿得到 api：像盤查、仇家的線索句要問規則「看不看得清」，判定不寫在資料裡
+  text(s, e) { return typeof e.text === "function" ? e.text(s, this.api(s)) : e.text; },
   // show 也拿得到 api：像「照筆記避開」要看線索條數，條數的算法在 systems，不寫在資料裡
   choices(s, e) { return e.choices.filter(c => !c.show || c.show(s, this.api(s))); },
 
@@ -68,10 +73,38 @@ export const events = {
       probeDemonKing: options => travel.probeDemonKing(s, options),
       demonKingClueCount: () => travel.countDemonKingClues(s),
       demonKingFleeHurtChance: baseChance => travel.demonKingFleeHurtChance(s, baseChance),
+      // ---- 作派：盤查、仇家用（規則都在 routes.js） ----
+      // 排在下一個要處理的事件（例如照鏡被認出，馬上轉執法追緝）
+      queueEventNext: id => { s.queue.unshift({ type: "event", id }); },
+      setInspectionCooldown: timing => routes.setInspectionCooldown(s, timing),
+      seasonStones: seasons => routes.seasonStones(s, seasons),
+      oldestOpenKarma: (kind, weights) => routes.oldestOpenKarma(s, kind, weights),
+      settleKarma: (id, ending) => { const entry = s.karma.find(k => k.id === id && !k.done); if (entry) { entry.done = true; entry.ending = ending; } },
+      hasKeenSense: () => routes.hasKeenSense(s),
+      storyPassChance: () => routes.storyPassChance(s),
+      // 鬥法：照對手陣仗擲勝負；輸了再擲生死，活下來照現行受傷。回傳 { won, died }
+      duel: (opponent, deathCause) => {
+        const isInjured = s.injury > 0;
+        if (util.chance(routes.duelWinChance(opponent, isInjured))) return { won: true, died: false };
+        if (util.chance(routes.duelSurviveChance(isInjured))) { s.injury = Math.max(s.injury, N.injurySeasons); return { won: false, died: false }; }
+        legacy.die(s, deathCause);
+        return { won: false, died: true };
+      },
+      tryFlee: hasHelpers => util.chance(routes.fleeChance(hasHelpers)),
+      // 只做紀錄、不佔筆記名額的一頁（例如被執法堂追緝過）；同一句一世只寫一次
+      noteRecordOnce: text => { if (!s.notes.some(note => note.kind === "紀錄" && note.text === text)) st.note(s, text, "紀錄"); },
+      // 什麼都不做地過完一季（例如被關一整季）：傷勢照修練迴圈的方式少一季，再走修練系統推進季節的那段
+      // （季節、秘境、因果淡去、瓶頸焦躁、氣血衰退、壽盡都一起推進）。回傳這一季冒出來的文字（可能是空的）
+      passSeason: () => {
+        const lines = [];
+        if (s.injury > 0) s.injury--;
+        cultivation.advanceSeason(s, lines);
+        return lines.join("\n");
+      },
       unlockEnv: env => { if (!s.envs.includes(env)) s.envs.push(env); },
       setFlag: (k, v) => { s.flags[k] = v === undefined ? true : v; },
       flag: k => s.flags[k],
-      addKarma: (id, text, weight) => this.addKarma(s, id, text, weight),
+      addKarma: (id, text, weight, kind) => this.addKarma(s, id, text, weight, kind),
       hasKarma: id => s.karma.some(k => k.id === id),
       resolveKarma: (id, ending) => {
         const k = s.karma.find(x => x.id === id);
@@ -89,10 +122,12 @@ export const events = {
     };
   },
 
-  addKarma(s, id, text, weight) {
+  // kind 不給時照 data/karma.js 的對照表；動態產生的因果（例如「某某的同門」）由呼叫端直接給種類
+  addKarma(s, id, text, weight, kind) {
     const N = numbers;
     if (s.karma.some(k => k.id === id && !k.done)) return;
-    s.karma.push({ id, text, weight, born: s.seasons, done: false });
+    // 種類（恩／仇）照 data/karma.js 的對照表，沒列到的算「恩」
+    s.karma.push({ id, text, weight, kind: kind || karmaData.kindById[id] || karmaData.defaultKind, born: s.seasons, done: false });
     const open = s.karma.filter(k => !k.done && !k.faded);
     if (open.length > N.karma.maxOpen) { const old = open.find(k => k.weight !== "大"); if (old) old.faded = true; }
     if (!s.flags.karmaTaught) { s.flags.karmaTaught = true; state.log(s, "這件事記進了修仙筆記的「因果」頁。有些因果，日後會回來找你。"); }

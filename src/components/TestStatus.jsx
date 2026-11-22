@@ -61,7 +61,7 @@ export default function TestStatus({ game }) {
   if (s.root) {
     const rv = routes.view(s), rd = routesData.routes[s.route || "氣修"];
     row("路線", `${rd.name}：${rd.desc}${Object.keys(rd.mods).length ? `（${JSON.stringify(rd.mods).replace(/"/g, "")}）` : ""}`);
-    row("傾向", `正邪 ${Math.round(rv.正邪)}・穩躁 ${Math.round(rv.穩躁)}・習慣 ${rv.habit || "無"}（${Object.entries(rv.act).map(([k, v]) => `${k} ${v.toFixed(1)}`).join("、")}）・稱號「${routes.title(s)}」`);
+    row("傾向", `善惡 ${Math.round(rv.善惡)}・正邪 ${Math.round(rv.正邪)}・穩躁 ${Math.round(rv.穩躁)}・習慣 ${rv.habit || "無"}（${Object.entries(rv.act).map(([k, v]) => `${k} ${v.toFixed(1)}`).join("、")}）・稱號「${routes.title(s)}」`);
     row("最近事件", (s.recentEvents || []).join("、") || "無");
   }
   row("靈石", s.stones);
