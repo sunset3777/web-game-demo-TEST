@@ -29,8 +29,8 @@ const EXPECTED_LIVES = {
      "選擇:growth": 7
     },
     "stepSequenceHash": "8eebe19b9a60fca7",
-    "finalStateHash": "88058b810b75521d",
-    "legacyFileHash": "ed374d3264770aab"
+    "finalStateHash": "dab66a750a304783",
+    "legacyFileHash": "2f835c5943d57380"
    },
    "full-2": {
     "cause": "走火",
@@ -50,8 +50,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 9
     },
     "stepSequenceHash": "547929ce1de21002",
-    "finalStateHash": "d48b93eaa1112aaa",
-    "legacyFileHash": "12d75f895953d9a4"
+    "finalStateHash": "c9b15e47bfd3d242",
+    "legacyFileHash": "a18a7618281e018f"
    },
    "full-3": {
     "cause": "走火",
@@ -73,8 +73,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 20
     },
     "stepSequenceHash": "c1c3ba8f8dd5dfc1",
-    "finalStateHash": "01ad8538500736fc",
-    "legacyFileHash": "f05ffc71009b3cbc"
+    "finalStateHash": "106c7e3c41214683",
+    "legacyFileHash": "86aa417e2f17993d"
    },
    "full-4": {
     "cause": "走火",
@@ -94,8 +94,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 17
     },
     "stepSequenceHash": "bf0e66d4b69990b8",
-    "finalStateHash": "d5e4634d84c7d82b",
-    "legacyFileHash": "f49c4f94b02029a2"
+    "finalStateHash": "1465add99f83b207",
+    "legacyFileHash": "c691a17a6836b7f8"
    },
    "full-5": {
     "cause": "走火",
@@ -113,8 +113,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 14
     },
     "stepSequenceHash": "d26d12b51abc60c9",
-    "finalStateHash": "f9e736edf3262a51",
-    "legacyFileHash": "15b845602709833d"
+    "finalStateHash": "109f69762555002f",
+    "legacyFileHash": "d35feda9a4f45b62"
    },
    "quick-1": {
     "cause": "走火",
@@ -133,8 +133,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 18
     },
     "stepSequenceHash": "c2212dfd743da27d",
-    "finalStateHash": "b8ccd6ccfbebb5ea",
-    "legacyFileHash": "019f79a1c181dce9"
+    "finalStateHash": "715ca3a62b36403a",
+    "legacyFileHash": "6b63ef32fcad0157"
    },
    "quick-2": {
     "cause": "遇劫身死",
@@ -155,8 +155,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 6
     },
     "stepSequenceHash": "7bf62bf297ae47b5",
-    "finalStateHash": "a8027fbb1c6d6370",
-    "legacyFileHash": "c9b357a4c9486020"
+    "finalStateHash": "49a10591d13e6b3b",
+    "legacyFileHash": "7fdff370a4b48a09"
    },
    "quick-3": {
     "cause": "走火",
@@ -175,8 +175,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 22
     },
     "stepSequenceHash": "f02d17e624a47d37",
-    "finalStateHash": "7c9e48c1fdd6cbe4",
-    "legacyFileHash": "9b42d27b792e5b7d"
+    "finalStateHash": "9487cd1a80e60ba5",
+    "legacyFileHash": "80feb692c3c4e876"
    },
    "quick-4": {
     "cause": "走火",
@@ -197,8 +197,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 16
     },
     "stepSequenceHash": "0f24994bdc50a09d",
-    "finalStateHash": "7d1af959e3e6ac58",
-    "legacyFileHash": "a73b6eb13cb153bf"
+    "finalStateHash": "f750e19b4db033f6",
+    "legacyFileHash": "5d350c51a00a817f"
    },
    "quick-5": {
     "cause": "遇劫身死",
@@ -215,8 +215,8 @@ const EXPECTED_LIVES = {
      "選擇:growth": 4
     },
     "stepSequenceHash": "82409e2c969e934e",
-    "finalStateHash": "383ffc213750db1d",
-    "legacyFileHash": "70975561c1a80ac9"
+    "finalStateHash": "e869dcd1fdf39f81",
+    "legacyFileHash": "ff234b204e53eed1"
    },
    "full-29": {
     "cause": "坐化",
@@ -238,8 +238,8 @@ const EXPECTED_LIVES = {
      "閉關(長)": 4
     },
     "stepSequenceHash": "a484cd400d7e8947",
-    "finalStateHash": "8967e554ce433140",
-    "legacyFileHash": "31fd114aee177d0c"
+    "finalStateHash": "a9de3ffc3a79ea13",
+    "legacyFileHash": "b59ac31951bac428"
    }
   };
 
