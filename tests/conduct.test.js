@@ -35,11 +35,26 @@ function chooseOption(gameState, eventId, optionLabel) {
   return events.resolve(gameState, event, optionIndex);
 }
 
-test("新的一世三軸都從 0 開始；舊存檔沒有善惡時補 0", () => {
+test("新的一世三軸都從 0 開始；舊存檔沒有善惡時，舊正邪搬進善惡、正邪歸 0", async () => {
+  const { save } = await import("../src/systems/save.js");
   const gameState = startCultivatingLife().s;
   assert.deepEqual([gameState.tend.善惡, gameState.tend.正邪, gameState.tend.穩躁], [0, 0, 0]);
-  delete gameState.tend.善惡;
-  assert.equal(routes.view(gameState).善惡, 0);
+  // 存檔遷移（玄機選 (a)）：舊的「正邪」其實同時記著善行，搬進善惡
+  for (const [oldRighteousness, expected] of [[35, [35, 0]], [-42, [-42, 0]], [0, [0, 0]]]) {
+    const oldSave = JSON.parse(JSON.stringify(gameState));
+    oldSave.v = 1;                                                                // 拆軸前（第 1 版）的存檔
+    oldSave.tend = { act: oldSave.tend.act, 正邪: oldRighteousness, 穩躁: 12 };   // 拆軸前的形狀：沒有善惡
+    const loaded = save.migrate(oldSave);
+    assert.deepEqual([loaded.tend.善惡, loaded.tend.正邪, loaded.tend.穩躁], [expected[0], expected[1], 12], `舊正邪 ${oldRighteousness}`);
+  }
+  // 已經有善惡的新存檔：不動
+  const newSave = JSON.parse(JSON.stringify(gameState));
+  newSave.tend.善惡 = 10; newSave.tend.正邪 = -20;
+  const reloaded = save.migrate(newSave);
+  assert.deepEqual([reloaded.tend.善惡, reloaded.tend.正邪], [10, -20]);
+  // 沒經過載入的狀態物件：同一規則
+  gameState.tend.正邪 = 18; delete gameState.tend.善惡;
+  assert.deepEqual([routes.view(gameState).善惡, routes.view(gameState).正邪], [18, 0]);
 });
 
 test("稱號：好心／不好惹看善惡 ±25，活菩薩／心狠手辣看善惡 ±50，魔頭看正邪", () => {

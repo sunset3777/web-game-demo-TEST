@@ -9,8 +9,9 @@ export const routes = {
   // 舊存檔沒有這些欄位時補上
   ensure(s) {
     if (!s.tend) s.tend = { act: { 吐納: 0, 周天: 0, 閉關: 0, 遊歷: 0 }, 善惡: 0, 正邪: 0, 穩躁: 0 };
-    // 作派第三軸（2026-11-17 加入）：舊存檔沒有善惡，從 0 開始
-    if (s.tend.善惡 === undefined) s.tend.善惡 = 0;
+    // 作派第三軸（2026-11-17 加入）：沒有善惡時，照存檔遷移的同一規則，把舊正邪搬進善惡、正邪歸 0
+    // （存檔載入時 save.migrate 已經處理過；這裡是給沒經過載入的狀態物件的保險）
+    if (s.tend.善惡 === undefined) { s.tend.善惡 = s.tend.正邪 || 0; s.tend.正邪 = 0; }
     if (!s.route) s.route = "氣修";
     if (!s.recentEvents) s.recentEvents = [];
     return s;
