@@ -123,9 +123,9 @@ export function createGame(onChange) {
       // 故人傳話裡選了「請他別再插手」：盤查照常，下一次行動就遇上山道照鏡
       if (s.flags.盤查下季) { s.flags.盤查下季 = false; G.queueInspection("正道盤查"); }
       else if (action === "遊歷") {
-        // 正道盤查：每遊歷一季擲一次的機率，換算成這次遊歷的總機率
-        const perSeason = routes.inspectionChancePerSeason(s);
-        if (perSeason > 0 && util.chance(1 - Math.pow(1 - perSeason, Math.max(1, seasonsSpent)))) G.queueInspection(routes.chooseInspectionVariant(s));
+        // 正道盤查：每遊歷一季擲一次的機率，換算成這次遊歷的總機率（只算冷卻結束後的季數）
+        const tripChance = routes.inspectionChanceForTrip(s, seasonsSpent);
+        if (tripChance > 0 && util.chance(tripChance)) G.queueInspection(routes.chooseInspectionVariant(s));
       }
       // 仇家：遊歷時依未了結的「仇」類中、大因果擲；找上門的是最早那一筆
       const enemyChance = action === "遊歷" ? routes.enemyChance(s) : 0;

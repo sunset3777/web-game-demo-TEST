@@ -47,11 +47,24 @@ export const routes = {
   // ---- 作派帶出的事件機率 ----
   // 正道盤查：每遊歷一季的機率。還沒邪到門檻、已經入魔（改由正道追殺處理）、或還在冷卻中都是 0
   inspectionChancePerSeason(gameState) {
+    if (gameState.seasons < (gameState.flags.盤查冷卻至 || 0)) return 0;
+    return this.inspectionChanceIgnoringCooldown(gameState);
+  },
+  inspectionChanceIgnoringCooldown(gameState) {
     const inspection = numbers.conduct.inspection, righteousness = this.view(gameState).正邪;
     if (righteousness > inspection.startAt || gameState.route === "魔修") return 0;
-    if (gameState.seasons < (gameState.flags.盤查冷卻至 || 0)) return 0;
     const extraSteps = Math.floor((inspection.startAt - righteousness) / 10);
     return Math.min(inspection.maxChancePerSeason, inspection.baseChancePerSeason + extraSteps * inspection.extraChancePer10);
+  },
+  // 一次遊歷（已經走完 seasonsSpent 季）遇到盤查的總機率：只算冷卻結束之後的那幾季（Codex 審查第 3 點），
+  // 免得冷卻在途中到期時，把冷卻期間的季數也算進去
+  inspectionChanceForTrip(gameState, seasonsSpent) {
+    const perSeason = this.inspectionChanceIgnoringCooldown(gameState);
+    if (perSeason <= 0) return 0;
+    const seasonsAfterCooldown = gameState.seasons - (gameState.flags.盤查冷卻至 || 0);
+    const eligibleSeasons = Math.min(Math.max(1, seasonsSpent), seasonsAfterCooldown);
+    if (eligibleSeasons <= 0) return 0;
+    return 1 - Math.pow(1 - perSeason, eligibleSeasons);
   },
   // 盤查出現後的冷卻：平常／提早／延後（選項可以改寫）
   setInspectionCooldown(gameState, timing = "平常") {

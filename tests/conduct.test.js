@@ -482,3 +482,21 @@ test("坊市執事：自己掏靈石買下靈草要付得起一季閉關的靈�
   chooseOption(gameState, "坊市執事", label);
   assert.equal(gameState.stones, 0);
 });
+
+test("盤查：一次遊歷的機率只算冷卻結束之後的季數", () => {
+  const gameState = startCultivatingLife().s;
+  const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-12, `${actual} ≠ ${expected}`);
+  setConduct(gameState, { 正邪: -30 });                 // 每季 2%
+  const perSeason = 0.02;
+  // 遊歷了 4 季，走完時是第 20 季
+  gameState.seasons = 20;
+  gameState.flags.盤查冷卻至 = 10;                       // 出發前就冷卻完了：4 季都算
+  near(routes.inspectionChanceForTrip(gameState, 4), 1 - Math.pow(1 - perSeason, 4));
+  gameState.flags.盤查冷卻至 = 18;                       // 途中第 18 季才冷卻完：只算最後 2 季
+  near(routes.inspectionChanceForTrip(gameState, 4), 1 - Math.pow(1 - perSeason, 2));
+  gameState.flags.盤查冷卻至 = 25;                       // 走完還在冷卻：0
+  assert.equal(routes.inspectionChanceForTrip(gameState, 4), 0);
+  gameState.flags.盤查冷卻至 = 0;
+  setConduct(gameState, { 正邪: -29 });                 // 沒邪到門檻：0
+  assert.equal(routes.inspectionChanceForTrip(gameState, 4), 0);
+});
