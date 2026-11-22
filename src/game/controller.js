@@ -119,26 +119,26 @@ export function createGame(onChange) {
 
     // 作派帶出的事件（盤查、仇家）。機率是 0 時都不擲，免得與作派無關的人生多耗亂數
     queueConductEvents(action, seasonsSpent) {
-      const s = G.s;
+      const gameState = G.s;
       // 故人傳話裡選了「請他別再插手」：盤查照常，下一次行動就遇上山道照鏡
-      if (s.flags.盤查下季) { s.flags.盤查下季 = false; G.queueInspection("正道盤查"); }
+      if (gameState.flags.盤查下季) { gameState.flags.盤查下季 = false; G.queueInspection("正道盤查"); }
       else if (action === "遊歷") {
         // 正道盤查：每遊歷一季擲一次的機率，換算成這次遊歷的總機率（只算冷卻結束後的季數）
-        const tripChance = routes.inspectionChanceForTrip(s, seasonsSpent);
-        if (tripChance > 0 && util.chance(tripChance)) G.queueInspection(routes.chooseInspectionVariant(s));
+        const tripChance = routes.inspectionChanceForTrip(gameState, seasonsSpent);
+        if (tripChance > 0 && util.chance(tripChance)) G.queueInspection(routes.chooseInspectionVariant(gameState));
       }
       // 仇家：遊歷時依未了結的「仇」類中、大因果擲；找上門的是最早那一筆
-      const enemyChance = action === "遊歷" ? routes.enemyChance(s) : 0;
+      const enemyChance = action === "遊歷" ? routes.enemyChance(gameState) : 0;
       if (enemyChance > 0 && util.chance(enemyChance)) {
-        const grudge = routes.oldestOpenKarma(s, "仇", ["中", "大"]);
-        if (grudge) { s.flags.仇家目標 = grudge.id; s.queue.push({ type: "event", id: "仇家尋仇" }); }
+        const grudge = routes.oldestOpenKarma(gameState, "仇", ["中", "大"]);
+        if (grudge) { gameState.flags.仇家目標 = grudge.id; gameState.queue.push({ type: "event", id: "仇家尋仇" }); }
       }
     },
     queueInspection(variant) {
-      const s = G.s;
-      if (variant === "故人傳話") s.flags.傳話恩 = routes.oldestOpenKarma(s, "恩").id;
-      routes.setInspectionCooldown(s, "平常");
-      s.queue.push({ type: "event", id: variant });
+      const gameState = G.s;
+      if (variant === "故人傳話") gameState.flags.傳話恩 = routes.oldestOpenKarma(gameState, "恩").id;
+      routes.setInspectionCooldown(gameState, "平常");
+      gameState.queue.push({ type: "event", id: variant });
     },
 
     togglePanel(name) { G.ui.panel = G.ui.panel === name ? null : name; onChange(); },

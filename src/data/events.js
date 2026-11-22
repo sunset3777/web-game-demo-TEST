@@ -26,8 +26,6 @@
 
 import { numbers } from "./numbers.js";
 
-// 「一季閉關的靈石」依境界（煉氣 3／築基 8／金丹 20），正邪機緣的酬勞以它為單位，四捨五入
-const seasonStones = (s, seasons) => Math.round(numbers.risk.閉關.cost[Math.min(s.realmIndex, numbers.risk.閉關.cost.length - 1)] * seasons);
 
 export const eventsData = {
   // 風聲（墨淵 11/17）：正邪偏邪、還沒到盤查時，遊歷事件前面隨機夾一句（不是事件）
@@ -241,12 +239,12 @@ export const eventsData = {
               if (!api.chance(E.fleeChance)) return "信被搶走了。你空手回到驛站，掌櫃什麼也沒說。";
               ambushLine = "劫道的人退進林子裡。你拍掉信上的土，繼續走。\n";
             }
-            api.addStones(seasonStones(s, E.letterRewardSeasons));
+            api.addStones(api.seasonStones(E.letterRewardSeasons));
             api.addKarma("青雲分堂執事", "替青雲門送信到分堂", "小");
             return ambushLine + "分堂執事拆開信看了一眼，回頭多看了你一眼：「辛苦。這份情，分堂記著。」";
           } },
         { label: "接下，路上拆開看", run: (s, api) => {
-            api.tend("穩躁", 5); api.addStones(seasonStones(s, numbers.conduct.encounters.letterRewardSeasons));
+            api.tend("穩躁", 5); api.addStones(api.seasonStones(numbers.conduct.encounters.letterRewardSeasons));
             return "信裡只有一句：淵口的字，這個月再抹一次。\n分堂執事拆開信看了一眼，回頭多看了你一眼：「辛苦。這份情，分堂記著。」"; } },
         { label: "不接", run: (s, api) => "掌櫃嘆了口氣，又去攔下一個人。" }
       ]
@@ -271,7 +269,7 @@ export const eventsData = {
           // 付得起一季閉關的靈石才顯示（跟香火錢一樣），免得沒錢也能白拿善行與兩筆恩
           show: (s, api) => s.stones >= api.seasonStones(numbers.conduct.encounters.buyHerbSeasons),
           run: (s, api) => {
-            api.tend("善惡", 5); api.addStones(-seasonStones(s, numbers.conduct.encounters.buyHerbSeasons));
+            api.tend("善惡", 5); api.addStones(-api.seasonStones(numbers.conduct.encounters.buyHerbSeasons));
             api.addKarma("坊市散修甲", "替坊市兩個散修化解爭執（其一）", "小");
             api.addKarma("坊市散修乙", "替坊市兩個散修化解爭執（其二）", "小");
             return "兩人各拿了一半靈草，愣了一下，都朝你拱了拱手。";
@@ -321,7 +319,7 @@ export const eventsData = {
             const E = numbers.conduct.encounters;
             api.tend("正邪", -15);
             if (api.chance(E.fightBaseWinChance + s.realmIndex * E.fightWinPerRealm)) {
-              api.addStones(seasonStones(s, E.raidRewardSeasons));
+              api.addStones(api.seasonStones(E.raidRewardSeasons));
               api.addKarma("截道商隊", "幫旁門修士截了商隊，傷了護衛", "中");
               return "護衛倒在車旁。旁門修士把三成血玉折成靈石丟給你，頭也不回地走了。";
             }
@@ -330,7 +328,7 @@ export const eventsData = {
             return "護衛比你想的多。你帶著傷逃進山裡，旁門修士早就不見了。";
           } },
         { label: "只在遠處望風", run: (s, api) => {
-            api.tend("正邪", -10); api.addStones(seasonStones(s, numbers.conduct.encounters.lookoutRewardSeasons));
+            api.tend("正邪", -10); api.addStones(api.seasonStones(numbers.conduct.encounters.lookoutRewardSeasons));
             api.addKarma("望風商隊", "替截道的旁門修士望風", "小");
             return "後來你聽說，那天有個護衛沒回家。"; } },
         { label: "轉頭去給商隊報信", run: (s, api) => {
