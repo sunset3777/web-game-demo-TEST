@@ -267,7 +267,10 @@ export const eventsData = {
             }
             api.injure(); return "他比你快。你倒在攤子中間，靈草被他拿走了。";
           } },
-        { label: "自己掏靈石買下靈草，兩人各分一半", run: (s, api) => {
+        { label: "自己掏靈石買下靈草，兩人各分一半",
+          // 付得起一季閉關的靈石才顯示（跟香火錢一樣），免得沒錢也能白拿善行與兩筆恩
+          show: (s, api) => s.stones >= api.seasonStones(numbers.conduct.encounters.buyHerbSeasons),
+          run: (s, api) => {
             api.tend("善惡", 5); api.addStones(-seasonStones(s, numbers.conduct.encounters.buyHerbSeasons));
             api.addKarma("坊市散修甲", "替坊市兩個散修化解爭執（其一）", "小");
             api.addKarma("坊市散修乙", "替坊市兩個散修化解爭執（其二）", "小");

@@ -469,3 +469,16 @@ test("作派筆記描述（墨淵定稿）：各軸過門檻才算偏向，三�
   assert.equal(describe({ 善惡: -24, 正邪: -30, 穩躁: -39 }), "這一世，世人不太記得你。");
   assert.equal(describe({ 善惡: 0, 正邪: 0, 穩躁: 0 }), "這一世，世人不太記得你。");
 });
+
+test("坊市執事：自己掏靈石買下靈草要付得起一季閉關的靈石才顯示", () => {
+  const gameState = startCultivatingLife().s;
+  const label = "自己掏靈石買下靈草，兩人各分一半";
+  const labels = () => events.choices(gameState, events.find("坊市執事")).map(option => option.label);
+  const price = routes.seasonStones(gameState, conduct.encounters.buyHerbSeasons);
+  gameState.stones = price - 1;
+  assert.ok(!labels().includes(label), "付不起就不顯示");
+  gameState.stones = price;
+  assert.ok(labels().includes(label));
+  chooseOption(gameState, "坊市執事", label);
+  assert.equal(gameState.stones, 0);
+});
